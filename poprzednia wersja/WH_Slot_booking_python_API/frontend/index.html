@@ -1,0 +1,1826 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Time Slot App – UI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #f4f5f7;
+      --card-bg: #ffffff;
+      --accent: #2563eb;
+      --accent-soft: #e0ecff;
+      --accent-dark: #1d4ed8;
+      --border: #e2e8f0;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --danger: #dc2626;
+      --success: #16a34a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #e0ecff, #f4f5f7 50%);
+      color: var(--text-main);
+    }
+
+    .app-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem 3rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      gap: 1rem;
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo-pill {
+      background: var(--accent-soft);
+      color: var(--accent-dark);
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .tagline {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(4px);
+    }
+
+    .pill span.dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr);
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      box-shadow: 0 18px 25px rgba(15, 23, 42, 0.09);
+      padding: 1.3rem 1.4rem;
+    }
+
+    .card h2 { margin: 0 0 0.5rem; font-size: 1.1rem; }
+
+    .card-subtitle {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      margin-top: 2.5rem;
+      margin-bottom: 0.75rem;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      border: 1px solid #cbd5f5;
+      background: #e0ecff;
+      color: #1d4ed8;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 0.15rem;
+      display: block;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.45rem 0.6rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border 0.15s ease, box-shadow 0.15s ease;
+      background-color: #f9fafb;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.15);
+      background-color: #ffffff;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 0.45rem 0.9rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    button.primary {
+      background: linear-gradient(to right, #2563eb, #1d4ed8);
+      color: white;
+      box-shadow: 0 10px 15px rgba(37, 99, 235, 0.3);
+    }
+
+    button.primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 13px 20px rgba(37, 99, 235, 0.35);
+    }
+
+    button.outline {
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text-main);
+    }
+
+    button.small {
+      padding: 0.3rem 0.7rem;
+      font-size: 0.8rem;
+      box-shadow: none;
+    }
+
+    button.small.primary {
+      box-shadow: 0 6px 10px rgba(37, 99, 235, 0.25);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .input-row > div { flex: 1; }
+
+    .slots-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .slots-table thead { background: #f9fafb; }
+
+    .slots-table th,
+    .slots-table td {
+      padding: 0.55rem 0.45rem;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .slots-table th {
+      font-weight: 600;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6b7280;
+    }
+
+    .date-row {
+      background: #eff6ff;
+      font-weight: 600;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.08rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+
+    .status-OPEN {
+      background: #ecfdf3;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    .status-RESERVED_PENDING {
+      background: #fef9c3;
+      color: #854d0e;
+      border: 1px solid #facc15;
+    }
+
+    .status-APPROVED_WAITING_DETAILS {
+      background: #fde68a;
+      color: #92400e;
+      border: 1px solid #f59e0b;
+    }
+
+    .status-RESERVED_CONFIRMED {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+    }
+
+    .status-CANCEL_PENDING {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+
+    .status-CLOSED {
+      background: #e5e7eb;
+      color: #374151;
+      border: 1px solid #d1d5db;
+    }
+
+    .user-info {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .user-info strong { color: var(--text-main); }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .toolbar h3 {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    .hint {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+    }
+
+    .section-description {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 0.2rem;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.12rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      color: #4b5563;
+      gap: 0.35rem;
+    }
+
+    .tag.dot::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+      display: inline-block;
+    }
+
+    .hidden { display: none; }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: minmax(0, 1fr); }
+      header { flex-direction: column; align-items: flex-start; }
+    }
+
+    @media (max-width: 600px) {
+      .input-row { flex-direction: column; }
+      .app-container { padding: 1.5rem 0.75rem 2rem; }
+      .slots-table { font-size: 0.8rem; }
+      .slots-table th,
+      .slots-table td { padding: 0.45rem 0.35rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header>
+      <div>
+        <div class="logo">
+          TimeSlot
+          <span class="logo-pill">Magazyn</span>
+        </div>
+        <div class="tagline">
+          Awizacja dostaw i wysyłek z podziałem na sloty czasowe.
+        </div>
+      </div>
+      <div class="pill">
+        <span class="dot"></span>
+        Połączone z backendem FastAPI (API)
+      </div>
+    </header>
+
+    <!-- LOGOWANIE -->
+    <section id="login-section">
+      <div class="section-title">
+        <span class="badge">Krok 1</span>
+        Logowanie
+      </div>
+      <p class="section-description">
+        Zaloguj się jako <strong>admin</strong> (magazyn) lub <strong>client</strong> (klient).
+      </p>
+
+      <div class="grid">
+        <div class="card">
+          <h2>Logowanie do systemu</h2>
+          <div class="card-subtitle">
+            Startowe konta: <strong>admin / admin</strong> oraz demo klient <strong>client1 / client1</strong>.
+          </div>
+          <form id="login-form">
+            <div>
+              <label for="login-username">Login</label>
+              <input id="login-username" placeholder="np. admin" />
+            </div>
+            <div>
+              <label for="login-password">Hasło</label>
+              <input id="login-password" type="password" placeholder="••••••••" />
+            </div>
+            <button class="primary" type="submit">
+              Zaloguj się
+            </button>
+            <div id="login-error" class="hint" style="color: var(--danger);"></div>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2>Role użytkowników</h2>
+          <div class="card-subtitle">
+            Dwa główne typy kont – magazyn i klienci.
+          </div>
+          <ul style="padding-left: 1.2rem; margin: 0 0 0.8rem; font-size: 0.88rem; color: var(--text-muted);">
+            <li><strong>Admin (magazyn)</strong> – tworzy sloty, zarządza szablonami, limitami dziennymi i klientami.</li>
+            <li><strong>Client (klient)</strong> – rezerwuje sloty (limit dzienny Inbound/Outbound współdzielony), wysyła prośbę o anulację.</li>
+          </ul>
+          <div style="margin-top: 0.8rem;">
+            <div class="tag dot">
+              W tej wersji prototypu logowanie odbywa się bez SSO – bezpośrednio przez API.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL ADMINA -->
+    <section id="admin-section" class="hidden">
+      <div class="section-title">
+        <span class="badge">Admin</span>
+        Panel magazynu
+      </div>
+      <p class="section-description">
+        Sloty, szablony, limity dzienne Inbound/Outbound, klienci i potwierdzanie/anulowanie rezerwacji.
+      </p>
+
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:0.8rem;">
+          <div class="user-info">
+            Zalogowany jako: <strong id="admin-username"></strong> (<span>admin</span>)<br />
+            Firma: <strong id="admin-company"></strong>
+          </div>
+          <button id="logout-admin" class="outline small" type="button">Wyloguj</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- Formularz tworzenia slotu ręcznie -->
+        <div class="card">
+          <div class="toolbar">
+            <h3>Dodaj slot czasowy (ręcznie)</h3>
+          </div>
+          <form id="create-slot-form">
+            <div class="input-row">
+              <div>
+                <label for="slot-start">Start</label>
+                <input id="slot-start" type="datetime-local" />
+              </div>
+              <div>
+                <label for="slot-end">Koniec</label>
+                <input id="slot-end" type="datetime-local" />
+              </div>
+            </div>
+            <div class="input-row">
+              <div>
+                <label for="slot-type">Typ slotu</label>
+                <select id="slot-type">
+                  <option value="INBOUND">Dostawa (Inbound)</option>
+                  <option value="OUTBOUND">Wysyłka (Outbound)</option>
+                  <option value="ANY">Dowolny</option>
+                </select>
+              </div>
+              <div>
+                <label for="slot-status">Status</label>
+                <select id="slot-status">
+                  <option value="OPEN">Otwarty</option>
+                  <option value="CLOSED">Zamknięty</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; margin-top:0.4rem;">
+              <button class="primary" type="submit">
+                + Utwórz slot
+              </button>
+            </div>
+            <div id="create-slot-error" class="hint" style="color: var(--danger);"></div>
+          </form>
+        </div>
+
+        <!-- Klienci -->
+        <div class="card">
+          <div class="toolbar">
+            <h3>Klienci (firmy i użytkownicy)</h3>
+            <button id="admin-refresh-clients" class="outline small" type="button">Odśwież</button>
+          </div>
+
+          <form id="create-company-form" style="margin-bottom: 0.6rem;">
+            <div class="input-row">
+              <div>
+                <label for="company-name">Dodaj firmę</label>
+                <input id="company-name" placeholder="Np. Klient XYZ" />
+              </div>
+              <div style="display:flex; align-items:flex-end;">
+                <button class="outline small" type="submit">+ Dodaj firmę</button>
+              </div>
+            </div>
+            <div id="company-error" class="hint" style="color: var(--danger);"></div>
+          </form>
+
+          <form id="create-user-form">
+            <div class="input-row">
+              <div>
+                <label for="user-company">Firma</label>
+                <select id="user-company"></select>
+              </div>
+              <div>
+                <label for="user-username">Login</label>
+                <input id="user-username" placeholder="np. klient2" />
+              </div>
+            </div>
+            <div class="input-row">
+              <div>
+                <label for="user-password">Hasło</label>
+                <input id="user-password" type="password" placeholder="np. haslo123" />
+              </div>
+              <div>
+                <label for="user-role">Rola</label>
+                <select id="user-role">
+                  <option value="client" selected>client</option>
+                  <option value="admin">admin</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; margin-top:0.4rem;">
+              <button class="primary small" type="submit">+ Dodaj użytkownika</button>
+            </div>
+            <div id="user-error" class="hint" style="color: var(--danger);"></div>
+          </form>
+
+          <table class="slots-table" id="users-table" style="margin-top: 1rem;">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Login</th>
+                <th>Rola</th>
+                <th>Company ID</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <div class="hint">Na razie prosty panel: dodawanie firmy i kont. Docelowo możemy dodać reset hasła i blokady.</div>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top: 1.5rem;">
+        <!-- Szablony dzienne -->
+        <div class="card">
+          <div class="toolbar">
+            <h3>Szablony dzienne</h3>
+            <button id="admin-refresh-templates" class="outline small" type="button">Odśwież</button>
+          </div>
+
+          <div class="hint">Możesz tworzyć i edytować szablony (w tym interwał).</div>
+
+          <div style="margin-top: 0.6rem;">
+            <label for="tpl-select">Wybierz szablon do edycji:</label>
+            <select id="tpl-select">
+              <option value="">(brak)</option>
+            </select>
+          </div>
+
+          <form id="template-form" style="margin-top:0.8rem;">
+            <input id="tpl-id" type="hidden" value="" />
+            <div>
+              <label for="tpl-name">Nazwa</label>
+              <input id="tpl-name" placeholder="Np. Dzień roboczy 07-18" />
+            </div>
+            <div class="input-row">
+              <div>
+                <label for="tpl-type">Typ slotu</label>
+                <select id="tpl-type">
+                  <option value="INBOUND">Dostawa (Inbound)</option>
+                  <option value="OUTBOUND">Wysyłka (Outbound)</option>
+                  <option value="ANY">Dowolny</option>
+                </select>
+              </div>
+              <div>
+                <label for="tpl-capacity">Ilość równoległych slotów</label>
+                <input id="tpl-capacity" type="number" min="1" value="1" />
+              </div>
+            </div>
+            <div class="input-row">
+              <div>
+                <label for="tpl-start">Start (HH:MM)</label>
+                <input id="tpl-start" type="time" value="07:00" />
+              </div>
+              <div>
+                <label for="tpl-end">Koniec (HH:MM)</label>
+                <input id="tpl-end" type="time" value="18:00" />
+              </div>
+            </div>
+            <div>
+              <label for="tpl-interval">Interwał (min)</label>
+              <input id="tpl-interval" type="number" min="1" value="30" />
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.4rem;">
+              <button id="tpl-clear" class="outline small" type="button">Wyczyść</button>
+              <button id="tpl-save" class="primary small" type="submit">Zapisz (utwórz/edytuj)</button>
+            </div>
+            <div id="template-error" class="hint" style="color: var(--danger);"></div>
+          </form>
+
+          <div class="hint" style="margin-top:0.8rem;">
+            Generowanie slotów z szablonu na zakres dat (np. tydzień). Możesz też od razu ustawić limity dzienne.
+          </div>
+
+          <form id="generate-from-template-form" style="margin-top:0.6rem;">
+            <div class="input-row">
+              <div>
+                <label for="tpl-date-from">Data od</label>
+                <input id="tpl-date-from" type="date" />
+              </div>
+              <div>
+                <label for="tpl-date-to">Data do</label>
+                <input id="tpl-date-to" type="date" />
+              </div>
+            </div>
+            <div class="input-row">
+              <div>
+                <label for="gen-inbound-limit">Ustaw limit INBOUND (opcjonalnie)</label>
+                <input id="gen-inbound-limit" type="number" min="0" placeholder="np. 5" />
+              </div>
+              <div>
+                <label for="gen-outbound-limit">Ustaw limit OUTBOUND (opcjonalnie)</label>
+                <input id="gen-outbound-limit" type="number" min="0" placeholder="np. 30" />
+              </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; margin-top:0.4rem;">
+              <button class="outline small" type="submit">Generuj</button>
+            </div>
+            <div id="generate-template-info" class="hint"></div>
+          </form>
+        </div>
+
+        <!-- Limity dzienne -->
+        <div class="card">
+          <div class="toolbar">
+            <h3>Limity dzienne Inbound / Outbound</h3>
+            <button id="admin-refresh-capacity" class="outline small" type="button">Odśwież</button>
+          </div>
+          <form id="day-capacity-form">
+            <div class="input-row">
+              <div>
+                <label for="cap-date">Data</label>
+                <input id="cap-date" type="date" />
+              </div>
+              <div>
+                <label for="cap-inbound">Limit Inbound</label>
+                <input id="cap-inbound" type="number" min="0" value="0" />
+              </div>
+              <div>
+                <label for="cap-outbound">Limit Outbound</label>
+                <input id="cap-outbound" type="number" min="0" value="0" />
+              </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; margin-top:0.4rem;">
+              <button class="primary small" type="submit">Zapisz limit</button>
+            </div>
+            <div id="day-capacity-info" class="hint"></div>
+          </form>
+
+          <table class="slots-table" id="capacity-table" style="margin-top: 1rem;">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Inbound</th>
+                <th>Outbound</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <div class="hint">
+            Limity działają wspólnie dla wszystkich klientów (na dzień i typ). 0 = brak limitu.
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 1.8rem;">
+        <div class="toolbar">
+          <h3>Kalendarz slotów – widok magazynu</h3>
+          <button id="admin-refresh-slots" class="outline small" type="button">Odśwież</button>
+        </div>
+        <table class="slots-table" id="admin-slots-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Data</th>
+              <th>Godzina</th>
+              <th>Typ</th>
+              <th>Status</th>
+              <th>Rezerwacja</th>
+              <th>Dok</th>
+              <th>Akcje</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="hint">Sloty pogrupowane wg daty (prosty widok kalendarza).</div>
+      </div>
+    </section>
+
+    <!-- PANEL KLIENTA -->
+    <section id="client-section" class="hidden">
+      <div class="section-title">
+        <span class="badge">Client</span>
+        Panel klienta – awizacja
+      </div>
+      <p class="section-description">
+        Rezerwujesz tylko otwarte sloty. Jeśli limit dzienny INBOUND/OUTBOUND jest wyczerpany – dostaniesz komunikat.
+      </p>
+
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:0.8rem;">
+          <div class="user-info">
+            Zalogowany jako: <strong id="client-username"></strong> (<span>client</span>)<br />
+            Firma: <strong id="client-company"></strong>
+          </div>
+          <button id="logout-client" class="outline small" type="button">Wyloguj</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="toolbar">
+          <h3>Kalendarz slotów – widok klienta</h3>
+          <div style="display:flex; gap:0.6rem; align-items:center;">
+            <select id="client-requested-type" title="Wybierz typ rezerwacji">
+              <option value="INBOUND">Inbound (Dostawa)</option>
+              <option value="OUTBOUND">Outbound (Wysyłka)</option>
+            </select>
+            <button id="client-refresh-slots" class="outline small" type="button">Odśwież</button>
+          </div>
+        </div>
+        <div id="client-type-hint" class="hint" style="margin-top:0; margin-bottom:0.6rem;"></div>
+        <table class="slots-table" id="client-slots-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Data</th>
+              <th>Godzina</th>
+              <th>Typ</th>
+              <th>Status</th>
+              <th>Akcja</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="hint">
+          Statusy: OTWARTY → rezerwuj, OCZEKUJE → magazyn potwierdza, ZATWIERDZONY → uzupełnij awizację, POTWIERDZONY → gotowe, ANULACJA → czeka na magazyn.
+        </div>
+      </div>
+
+      <div class="card hidden" id="notice-card" style="margin-top:1.2rem;">
+        <div class="toolbar">
+          <h3>Uzupełnij dane awizacyjne</h3>
+          <button id="notice-cancel" class="outline small" type="button">Zamknij</button>
+        </div>
+        <div class="card-subtitle" id="notice-subtitle">Slot: —</div>
+        <form id="notice-form">
+          <input type="hidden" id="notice-slot-id" />
+          <div class="input-row">
+            <div>
+              <label for="notice-order">Numer zlecenia</label>
+              <input id="notice-order" />
+            </div>
+            <div>
+              <label for="notice-reference">Referencja</label>
+              <input id="notice-reference" />
+            </div>
+          </div>
+          <div class="input-row">
+            <div>
+              <label for="notice-vehicle">Rejestracja auta</label>
+              <input id="notice-vehicle" />
+            </div>
+            <div>
+              <label for="notice-trailer">Rejestracja naczepy</label>
+              <input id="notice-trailer" />
+            </div>
+          </div>
+          <div class="input-row">
+            <div>
+              <label for="notice-driver">Kierowca</label>
+              <input id="notice-driver" />
+            </div>
+            <div>
+              <label for="notice-phone">Telefon kierowcy</label>
+              <input id="notice-phone" />
+            </div>
+          </div>
+          <div class="input-row">
+            <div>
+              <label for="notice-pallets">Ilość palet</label>
+              <input id="notice-pallets" type="number" min="1" />
+            </div>
+            <div>
+              <label for="notice-remarks">Uwagi</label>
+              <input id="notice-remarks" placeholder="(opcjonalnie)" />
+            </div>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:0.6rem;">
+            <button class="primary" type="submit">Zapisz awizację</button>
+          </div>
+          <div id="notice-error" class="hint" style="color: var(--danger);"></div>
+        </form>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const API_BASE = "http://127.0.0.1:8000/api";
+
+    let accessToken = null;
+    let currentRole = null;
+    let currentCompany = null;
+    let currentUsername = null;
+    let currentUserId = null;
+
+    const loginSection = document.getElementById("login-section");
+    const adminSection = document.getElementById("admin-section");
+    const clientSection = document.getElementById("client-section");
+
+    const loginForm = document.getElementById("login-form");
+    const loginError = document.getElementById("login-error");
+    const loginUsernameInput = document.getElementById("login-username");
+    const loginPasswordInput = document.getElementById("login-password");
+
+    const adminUsernameSpan = document.getElementById("admin-username");
+    const adminCompanySpan = document.getElementById("admin-company");
+    const clientUsernameSpan = document.getElementById("client-username");
+    const clientCompanySpan = document.getElementById("client-company");
+
+    const logoutAdminBtn = document.getElementById("logout-admin");
+    const logoutClientBtn = document.getElementById("logout-client");
+
+    const adminSlotsTableBody = document.querySelector("#admin-slots-table tbody");
+    const clientSlotsTableBody = document.querySelector("#client-slots-table tbody");
+
+    const adminRefreshSlotsBtn = document.getElementById("admin-refresh-slots");
+    const clientRefreshSlotsBtn = document.getElementById("client-refresh-slots");
+
+    // klient: wybór typu rezerwacji
+    const clientRequestedTypeSelect = document.getElementById("client-requested-type");
+    const clientTypeHint = document.getElementById("client-type-hint");
+
+    // awizacja (po zatwierdzeniu przez admina)
+    const noticeCard = document.getElementById("notice-card");
+    const noticeForm = document.getElementById("notice-form");
+    const noticeCancelBtn = document.getElementById("notice-cancel");
+    const noticeSubtitle = document.getElementById("notice-subtitle");
+    const noticeSlotIdInput = document.getElementById("notice-slot-id");
+    const noticeOrderInput = document.getElementById("notice-order");
+    const noticeReferenceInput = document.getElementById("notice-reference");
+    const noticeVehicleInput = document.getElementById("notice-vehicle");
+    const noticeTrailerInput = document.getElementById("notice-trailer");
+    const noticeDriverInput = document.getElementById("notice-driver");
+    const noticePhoneInput = document.getElementById("notice-phone");
+    const noticePalletsInput = document.getElementById("notice-pallets");
+    const noticeRemarksInput = document.getElementById("notice-remarks");
+    const noticeError = document.getElementById("notice-error");
+
+    // doki
+    let docks = [];
+    let docksById = new Map();
+
+    // manual slot
+    const createSlotForm = document.getElementById("create-slot-form");
+    const createSlotError = document.getElementById("create-slot-error");
+    const slotStartInput = document.getElementById("slot-start");
+    const slotEndInput = document.getElementById("slot-end");
+    const slotTypeSelect = document.getElementById("slot-type");
+    const slotStatusSelect = document.getElementById("slot-status");
+
+    // clients panel
+    const adminRefreshClientsBtn = document.getElementById("admin-refresh-clients");
+    const createCompanyForm = document.getElementById("create-company-form");
+    const companyNameInput = document.getElementById("company-name");
+    const companyError = document.getElementById("company-error");
+
+    const createUserForm = document.getElementById("create-user-form");
+    const userCompanySelect = document.getElementById("user-company");
+    const userUsernameInput = document.getElementById("user-username");
+    const userPasswordInput = document.getElementById("user-password");
+    const userRoleSelect = document.getElementById("user-role");
+    const userError = document.getElementById("user-error");
+    const usersTableBody = document.querySelector("#users-table tbody");
+
+    // templates panel
+    const adminRefreshTemplatesBtn = document.getElementById("admin-refresh-templates");
+    const tplSelect = document.getElementById("tpl-select");
+    const tplForm = document.getElementById("template-form");
+    const tplIdInput = document.getElementById("tpl-id");
+    const tplNameInput = document.getElementById("tpl-name");
+    const tplTypeSelect = document.getElementById("tpl-type");
+    const tplCapacityInput = document.getElementById("tpl-capacity");
+    const tplStartInput = document.getElementById("tpl-start");
+    const tplEndInput = document.getElementById("tpl-end");
+    const tplIntervalInput = document.getElementById("tpl-interval");
+    const tplClearBtn = document.getElementById("tpl-clear");
+    const templateError = document.getElementById("template-error");
+
+    const generateFromTemplateForm = document.getElementById("generate-from-template-form");
+    const tplDateFromInput = document.getElementById("tpl-date-from");
+    const tplDateToInput = document.getElementById("tpl-date-to");
+    const genInboundLimitInput = document.getElementById("gen-inbound-limit");
+    const genOutboundLimitInput = document.getElementById("gen-outbound-limit");
+    const generateTemplateInfo = document.getElementById("generate-template-info");
+
+    // day capacity
+    const dayCapacityForm = document.getElementById("day-capacity-form");
+    const capDateInput = document.getElementById("cap-date");
+    const capInboundInput = document.getElementById("cap-inbound");
+    const capOutboundInput = document.getElementById("cap-outbound");
+    const dayCapacityInfo = document.getElementById("day-capacity-info");
+    const capacityTableBody = document.querySelector("#capacity-table tbody");
+    const adminRefreshCapacityBtn = document.getElementById("admin-refresh-capacity");
+
+    function showSection(section) {
+      loginSection.classList.add("hidden");
+      adminSection.classList.add("hidden");
+      clientSection.classList.add("hidden");
+      section.classList.remove("hidden");
+    }
+
+    function resetState() {
+      accessToken = null;
+      currentRole = null;
+      currentCompany = null;
+      currentUsername = null;
+      currentUserId = null;
+
+      loginError.textContent = "";
+      createSlotError.textContent = "";
+      companyError.textContent = "";
+      userError.textContent = "";
+      templateError.textContent = "";
+      generateTemplateInfo.textContent = "";
+      dayCapacityInfo.textContent = "";
+
+      adminSlotsTableBody.innerHTML = "";
+      clientSlotsTableBody.innerHTML = "";
+      usersTableBody.innerHTML = "";
+      tplSelect.innerHTML = "<option value=''>Wybierz...</option>";
+      userCompanySelect.innerHTML = "";
+      capacityTableBody.innerHTML = "";
+    }
+
+    async function apiRequest(path, options = {}) {
+      const url = API_BASE + path;
+      const headers = options.headers || {};
+      if (accessToken) headers["Authorization"] = "Bearer " + accessToken;
+      return fetch(url, { ...options, headers });
+    }
+
+    // ----- Doki -----
+    async function loadDocks() {
+      try {
+        const res = await apiRequest("/docks");
+        if (!res.ok) {
+          docks = [];
+          docksById = new Map();
+          return;
+        }
+        docks = await res.json();
+        docksById = new Map(docks.map((d) => [d.id, d.name]));
+      } catch (err) {
+        console.error(err);
+        docks = [];
+        docksById = new Map();
+      }
+    }
+
+    // ----- Logowanie -----
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      loginError.textContent = "";
+
+      const username = loginUsernameInput.value.trim();
+      const password = loginPasswordInput.value.trim();
+
+      if (!username || !password) {
+        loginError.textContent = "Podaj login i hasło.";
+        return;
+      }
+
+      try {
+        const res = await fetch(API_BASE + "/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          loginError.textContent = data.detail || "Błąd logowania.";
+          return;
+        }
+
+        accessToken = data.access_token;
+        currentRole = data.role;
+        currentCompany = data.company_name || "(brak)";
+        currentUsername = username;
+        currentUserId = data.user_id;
+
+        // wczytaj doki (potrzebne do przypisywania i podglądu)
+        await loadDocks();
+
+        if (currentRole === "admin") {
+          adminUsernameSpan.textContent = currentUsername;
+          adminCompanySpan.textContent = currentCompany;
+          showSection(adminSection);
+
+          const today = new Date().toISOString().slice(0, 10);
+          capDateInput.value = today;
+
+          await refreshClientsPanel();
+          await loadTemplates();
+          await loadDayCapacity();
+          await loadSlotsForAdmin();
+        } else {
+          clientUsernameSpan.textContent = currentUsername;
+          clientCompanySpan.textContent = currentCompany;
+          showSection(clientSection);
+          await loadSlotsForClient();
+        }
+      } catch (err) {
+        console.error(err);
+        loginError.textContent = "Błąd połączenia z API.";
+      }
+    });
+
+    function logout() {
+      resetState();
+      showSection(loginSection);
+    }
+
+    logoutAdminBtn.addEventListener("click", logout);
+    logoutClientBtn.addEventListener("click", logout);
+
+    // ----- Klienci (firmy + użytkownicy) -----
+    async function refreshClientsPanel() {
+      // companies
+      userCompanySelect.innerHTML = "<option value=''>Ładowanie...</option>";
+      usersTableBody.innerHTML = "<tr><td colspan='4'>Ładowanie...</td></tr>";
+
+      try {
+        const [cRes, uRes] = await Promise.all([
+          apiRequest("/companies"),
+          apiRequest("/users"),
+        ]);
+
+        const companies = cRes.ok ? await cRes.json() : [];
+        const users = uRes.ok ? await uRes.json() : [];
+
+        userCompanySelect.innerHTML = companies.map(c => `<option value="${c.id}">${c.name} (#${c.id})</option>`).join("")
+          || "<option value=''>Brak firm</option>";
+
+        if (!users.length) {
+          usersTableBody.innerHTML = "<tr><td colspan='4'>Brak użytkowników</td></tr>";
+        } else {
+          usersTableBody.innerHTML = users.map(u =>
+            `<tr><td>${u.id}</td><td>${u.username}</td><td>${u.role}</td><td>${u.company_id ?? ""}</td></tr>`
+          ).join("");
+        }
+      } catch (err) {
+        console.error(err);
+        userCompanySelect.innerHTML = "<option value=''>Błąd</option>";
+        usersTableBody.innerHTML = "<tr><td colspan='4'>Błąd</td></tr>";
+      }
+    }
+
+    adminRefreshClientsBtn.addEventListener("click", refreshClientsPanel);
+
+    createCompanyForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      companyError.textContent = "";
+      const name = companyNameInput.value.trim();
+      if (!name) {
+        companyError.textContent = "Podaj nazwę firmy.";
+        return;
+      }
+      try {
+        const res = await apiRequest("/companies", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          companyError.textContent = data.detail || "Nie udało się dodać firmy.";
+          return;
+        }
+        companyNameInput.value = "";
+        await refreshClientsPanel();
+      } catch (err) {
+        console.error(err);
+        companyError.textContent = "Błąd połączenia z API.";
+      }
+    });
+
+    createUserForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      userError.textContent = "";
+
+      const companyId = parseInt(userCompanySelect.value || "0", 10);
+      const username = userUsernameInput.value.trim();
+      const password = userPasswordInput.value.trim();
+      const role = userRoleSelect.value;
+
+      if (!companyId) {
+        userError.textContent = "Wybierz firmę.";
+        return;
+      }
+      if (!username || !password) {
+        userError.textContent = "Podaj login i hasło.";
+        return;
+      }
+
+      try {
+        const res = await apiRequest("/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password, role, company_id: companyId }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          userError.textContent = data.detail || "Nie udało się dodać użytkownika.";
+          return;
+        }
+
+        userUsernameInput.value = "";
+        userPasswordInput.value = "";
+        userRoleSelect.value = "client";
+        await refreshClientsPanel();
+      } catch (err) {
+        console.error(err);
+        userError.textContent = "Błąd połączenia z API.";
+      }
+    });
+
+    // ----- Sloty admin -----
+    async function loadSlotsForAdmin() {
+      adminSlotsTableBody.innerHTML = "<tr><td colspan='8'>Ładowanie...</td></tr>";
+      try {
+        const res = await apiRequest("/slots");
+        if (!res.ok) {
+          adminSlotsTableBody.innerHTML = "<tr><td colspan='8'>Błąd pobierania slotów</td></tr>";
+          return;
+        }
+        const slots = await res.json();
+        renderAdminSlots(slots);
+      } catch (err) {
+        console.error(err);
+        adminSlotsTableBody.innerHTML = "<tr><td colspan='7'>Błąd połączenia</td></tr>";
+      }
+    }
+
+    function groupSlotsByDate(slots) {
+      const groups = {};
+      for (const slot of slots) {
+        const d = new Date(slot.start_time);
+        const key = d.toISOString().slice(0, 10);
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(slot);
+      }
+      Object.values(groups).forEach(list =>
+        list.sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
+      );
+      const sortedKeys = Object.keys(groups).sort();
+      return { groups, sortedKeys };
+    }
+
+    function renderAdminSlots(slots) {
+      if (!slots.length) {
+        adminSlotsTableBody.innerHTML = "<tr><td colspan='8'>Brak slotów</td></tr>";
+        return;
+      }
+
+      const { groups, sortedKeys } = groupSlotsByDate(slots);
+      adminSlotsTableBody.innerHTML = "";
+
+      const rows = [];
+      for (const key of sortedKeys) {
+        const d = new Date(key + "T00:00:00");
+        const dateStr = d.toLocaleDateString();
+        rows.push(`<tr class="date-row"><td colspan="8">${dateStr}</td></tr>`);
+        for (const slot of groups[key]) {
+          const start = new Date(slot.start_time);
+          const end = new Date(slot.end_time);
+          const timeStr =
+            start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) +
+            "–" +
+            end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+          const statusClass = "status-" + slot.status;
+          const statusLabelMap = {
+            "OPEN": "OTWARTY",
+            "RESERVED_PENDING": "OCZEKUJE",
+            "APPROVED_WAITING_DETAILS": "ZATWIERDZONY (brak awizacji)",
+            "RESERVED_CONFIRMED": "POTWIERDZONY",
+            "CANCEL_PENDING": "ANULACJA OCZEKUJE",
+            "CLOSED": "ZAMKNIĘTY",
+          };
+          const statusLabel = statusLabelMap[slot.status] || slot.status;
+
+          let resInfo = "—";
+          if (slot.reserved_by_user_id) {
+            resInfo = "Użytkownik ID: " + slot.reserved_by_user_id;
+          }
+
+          let actions = "";
+          if (slot.status === "OPEN") {
+            actions += `<button class="outline small" data-action="close" data-id="${slot.id}">Zamknij</button>`;
+          } else if (slot.status === "CLOSED") {
+            actions += `<button class="outline small" data-action="open" data-id="${slot.id}">Otwórz</button>`;
+          } else if (slot.status === "RESERVED_PENDING") {
+            actions += `<button class="primary small" data-action="confirm" data-id="${slot.id}">Potwierdź</button>`;
+            actions += ` <button class="outline small" data-action="reject" data-id="${slot.id}">Odrzuć</button>`;
+          } else if (slot.status === "APPROVED_WAITING_DETAILS") {
+            actions += `<button class="outline small" data-action="reject" data-id="${slot.id}">Anuluj rezerwację</button>`;
+          } else if (slot.status === "RESERVED_CONFIRMED") {
+            actions += `<button class="outline small" data-action="reject" data-id="${slot.id}">Anuluj rezerwację</button>`;
+          } else if (slot.status === "CANCEL_PENDING") {
+            actions += `<button class="primary small" data-action="confirm" data-id="${slot.id}">Potwierdź anulację</button>`;
+            actions += ` <button class="outline small" data-action="keep" data-id="${slot.id}">Odrzuć anulację</button>`;
+          }
+
+          const dockName = slot.dock_id ? (docksById.get(slot.dock_id) || `#${slot.dock_id}`) : "—";
+          const dockSelectHtml = `
+            <select data-dock-select="${slot.id}" style="min-width: 140px;">
+              <option value="">(brak)</option>
+              ${docks.map((d) => `<option value="${d.id}" ${slot.dock_id === d.id ? "selected" : ""}>${d.name}</option>`).join("")}
+            </select>
+            <button class="outline small" type="button" data-dock-save="${slot.id}">Zapisz</button>
+          `;
+
+          rows.push(`
+            <tr>
+              <td>${slot.id}</td>
+              <td>${dateStr}</td>
+              <td>${timeStr}</td>
+              <td>${slot.slot_type}</td>
+              <td><span class="status-pill ${statusClass}">${statusLabel}</span></td>
+              <td>${resInfo}</td>
+              <td>${dockSelectHtml}</td>
+              <td>${actions}</td>
+            </tr>
+          `);
+        }
+      }
+
+      adminSlotsTableBody.innerHTML = rows.join("");
+
+      adminSlotsTableBody.querySelectorAll("button[data-action]").forEach((btn) => {
+        const id = btn.getAttribute("data-id");
+        const action = btn.getAttribute("data-action");
+        btn.addEventListener("click", () => handleAdminSlotAction(id, action));
+      });
+
+      // przypisywanie doków
+      adminSlotsTableBody.querySelectorAll("button[data-dock-save]").forEach((btn) => {
+        const slotId = btn.getAttribute("data-dock-save");
+        btn.addEventListener("click", async () => {
+          const select = adminSlotsTableBody.querySelector(`select[data-dock-select="${slotId}"]`);
+          const val = select ? select.value : "";
+          const dock_id = val ? parseInt(val, 10) : null;
+          try {
+            const res = await apiRequest(`/slots/${slotId}/assign-dock`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ dock_id }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok) return alert(data.detail || "Nie udało się przypisać doku.");
+            await loadSlotsForAdmin();
+          } catch (err) {
+            console.error(err);
+            alert("Błąd połączenia z API.");
+          }
+        });
+      });
+    }
+
+    async function handleAdminSlotAction(slotId, action) {
+      try {
+        if (action === "open" || action === "close") {
+          const status = action === "open" ? "OPEN" : "CLOSED";
+          const res = await apiRequest(`/slots/${slotId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) return alert(data.detail || "Nie udało się zaktualizować slotu.");
+        } else if (action === "confirm") {
+          const res = await apiRequest(`/slots/${slotId}/confirm`, { method: "POST" });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) return alert(data.detail || "Nie udało się potwierdzić.");
+        } else if (action === "reject") {
+          const res = await apiRequest(`/slots/${slotId}/reject`, { method: "POST" });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) return alert(data.detail || "Nie udało się odrzucić.");
+        } else if (action === "keep") {
+          const res = await apiRequest(`/slots/${slotId}/reject-cancel`, { method: "POST" });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) return alert(data.detail || "Nie udało się zaktualizować slotu.");
+        }
+        await loadSlotsForAdmin();
+      } catch (err) {
+        console.error(err);
+        alert("Błąd połączenia z API.");
+      }
+    }
+
+    adminRefreshSlotsBtn.addEventListener("click", loadSlotsForAdmin);
+
+    // ----- Tworzenie slotu ręcznie -----
+    createSlotForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      createSlotError.textContent = "";
+
+      const startVal = slotStartInput.value;
+      const endVal = slotEndInput.value;
+      const slotType = slotTypeSelect.value;
+      const status = slotStatusSelect.value;
+
+      if (!startVal || !endVal) {
+        createSlotError.textContent = "Uzupełnij datę i czas.";
+        return;
+      }
+
+      const startIso = new Date(startVal).toISOString();
+      const endIso = new Date(endVal).toISOString();
+
+      try {
+        const res = await apiRequest("/slots", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ start_time: startIso, end_time: endIso, slot_type: slotType, status }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          createSlotError.textContent = data.detail || "Nie udało się utworzyć slotu.";
+          return;
+        }
+        slotStartInput.value = "";
+        slotEndInput.value = "";
+        slotTypeSelect.value = "INBOUND";
+        slotStatusSelect.value = "OPEN";
+        await loadSlotsForAdmin();
+      } catch (err) {
+        console.error(err);
+        createSlotError.textContent = "Błąd połączenia z API.";
+      }
+    });
+
+    // ----- Szablony (tworzenie + edycja) -----
+    async function loadTemplates() {
+      tplSelect.innerHTML = "<option value=''>Ładowanie...</option>";
+      try {
+        const res = await apiRequest("/templates");
+        if (!res.ok) {
+          tplSelect.innerHTML = "<option value=''>Błąd</option>";
+          return;
+        }
+        const templates = await res.json();
+        const options = ["<option value=''>Wybierz...</option>"];
+        for (const t of templates) {
+          options.push(`<option value="${t.id}">#${t.id} - ${t.name} (${t.slot_type}, co ${t.interval_minutes} min, x${t.capacity})</option>`);
+        }
+        tplSelect.innerHTML = options.join("");
+      } catch (err) {
+        console.error(err);
+        tplSelect.innerHTML = "<option value=''>Błąd</option>";
+      }
+    }
+
+    adminRefreshTemplatesBtn.addEventListener("click", loadTemplates);
+
+    function clearTemplateForm() {
+      tplIdInput.value = "";
+      tplNameInput.value = "";
+      tplTypeSelect.value = "INBOUND";
+      tplCapacityInput.value = "1";
+      tplStartInput.value = "07:00";
+      tplEndInput.value = "18:00";
+      tplIntervalInput.value = "30";
+      templateError.textContent = "";
+    }
+
+    tplClearBtn.addEventListener("click", clearTemplateForm);
+
+    tplSelect.addEventListener("change", async () => {
+      const id = tplSelect.value;
+      if (!id) {
+        clearTemplateForm();
+        return;
+      }
+      // pobieramy listę i znajdujemy obiekt - prosto i wystarczająco na prototyp
+      const res = await apiRequest("/templates");
+      const templates = res.ok ? await res.json() : [];
+      const t = templates.find(x => String(x.id) === String(id));
+      if (!t) return;
+      tplIdInput.value = t.id;
+      tplNameInput.value = t.name;
+      tplTypeSelect.value = t.slot_type;
+      tplCapacityInput.value = String(t.capacity);
+      tplStartInput.value = t.start_time;
+      tplEndInput.value = t.end_time;
+      tplIntervalInput.value = String(t.interval_minutes);
+    });
+
+    tplForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      templateError.textContent = "";
+
+      const id = tplIdInput.value.trim();
+      const payload = {
+        name: tplNameInput.value.trim(),
+        slot_type: tplTypeSelect.value,
+        start_time: tplStartInput.value,
+        end_time: tplEndInput.value,
+        interval_minutes: parseInt(tplIntervalInput.value || "30", 10),
+        capacity: parseInt(tplCapacityInput.value || "1", 10),
+      };
+
+      if (!payload.name) {
+        templateError.textContent = "Podaj nazwę szablonu.";
+        return;
+      }
+      if (payload.interval_minutes <= 0 || payload.capacity <= 0) {
+        templateError.textContent = "Interwał i pojemność muszą być > 0.";
+        return;
+      }
+
+      try {
+        let res;
+        if (id) {
+          // update
+          res = await apiRequest(`/templates/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+        } else {
+          // create
+          res = await apiRequest("/templates", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+        }
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          templateError.textContent = data.detail || "Nie udało się zapisać szablonu.";
+          return;
+        }
+
+        await loadTemplates();
+        tplSelect.value = String(data.id);
+        tplIdInput.value = String(data.id);
+      } catch (err) {
+        console.error(err);
+        templateError.textContent = "Błąd połączenia z API.";
+      }
+    });
+
+    generateFromTemplateForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      generateTemplateInfo.textContent = "";
+
+      const tplId = tplSelect.value;
+      const dateFrom = tplDateFromInput.value;
+      const dateTo = tplDateToInput.value;
+
+      if (!tplId) {
+        generateTemplateInfo.textContent = "Wybierz szablon.";
+        return;
+      }
+      if (!dateFrom || !dateTo) {
+        generateTemplateInfo.textContent = "Ustaw zakres dat.";
+        return;
+      }
+
+      const inboundLimitStr = genInboundLimitInput.value.trim();
+      const outboundLimitStr = genOutboundLimitInput.value.trim();
+
+      const payload = { date_from: dateFrom, date_to: dateTo };
+      if (inboundLimitStr !== "") payload.inbound_limit = parseInt(inboundLimitStr, 10);
+      if (outboundLimitStr !== "") payload.outbound_limit = parseInt(outboundLimitStr, 10);
+
+      try {
+        const res = await apiRequest(`/templates/${tplId}/generate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          generateTemplateInfo.textContent = data.detail || "Nie udało się wygenerować slotów.";
+          return;
+        }
+
+        generateTemplateInfo.textContent = data.message || "Wygenerowano sloty.";
+        await loadDayCapacity();
+        await loadSlotsForAdmin();
+      } catch (err) {
+        console.error(err);
+        generateTemplateInfo.textContent = "Błąd połączenia z API.";
+      }
+    });
+
+    // ----- Limity dzienne -----
+    async function loadDayCapacity() {
+      capacityTableBody.innerHTML = "<tr><td colspan='3'>Ładowanie...</td></tr>";
+      try {
+        const res = await apiRequest("/day-capacity");
+        if (!res.ok) {
+          capacityTableBody.innerHTML = "<tr><td colspan='3'>Błąd pobierania limitów</td></tr>";
+          return;
+        }
+        const caps = await res.json();
+        if (!caps.length) {
+          capacityTableBody.innerHTML = "<tr><td colspan='3'>Brak ustawionych limitów</td></tr>";
+          return;
+        }
+        capacityTableBody.innerHTML = caps.map((c) => {
+          const d = new Date(c.date);
+          const dateStr = d.toLocaleDateString();
+          return `<tr><td>${dateStr}</td><td>${c.inbound_limit}</td><td>${c.outbound_limit}</td></tr>`;
+        }).join("");
+      } catch (err) {
+        console.error(err);
+        capacityTableBody.innerHTML = "<tr><td colspan='3'>Błąd połączenia</td></tr>";
+      }
+    }
+
+    adminRefreshCapacityBtn.addEventListener("click", loadDayCapacity);
+
+    dayCapacityForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      dayCapacityInfo.textContent = "";
+
+      const dateVal = capDateInput.value;
+      const inbound = parseInt(capInboundInput.value || "0", 10);
+      const outbound = parseInt(capOutboundInput.value || "0", 10);
+
+      if (!dateVal) {
+        dayCapacityInfo.textContent = "Ustaw datę.";
+        return;
+      }
+      if (inbound < 0 || outbound < 0) {
+        dayCapacityInfo.textContent = "Limity nie mogą być ujemne.";
+        return;
+      }
+
+      try {
+        const res = await apiRequest("/day-capacity", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ date: dateVal, inbound_limit: inbound, outbound_limit: outbound }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          dayCapacityInfo.textContent = data.detail || "Nie udało się zapisać limitu.";
+          return;
+        }
+        dayCapacityInfo.textContent = "Limit zapisany.";
+        await loadDayCapacity();
+      } catch (err) {
+        console.error(err);
+        dayCapacityInfo.textContent = "Błąd połączenia z API.";
+      }
+    });
+
+    // ----- Sloty klient -----
+    async function loadSlotsForClient() {
+      clientSlotsTableBody.innerHTML = "<tr><td colspan='6'>Ładowanie...</td></tr>";
+      try {
+        const res = await apiRequest("/slots");
+        if (!res.ok) {
+          clientSlotsTableBody.innerHTML = "<tr><td colspan='6'>Błąd pobierania slotów</td></tr>";
+          return;
+        }
+        const slots = await res.json();
+        const selectedType = clientRequestedTypeSelect.value;
+        const openAvailable = slots.some(
+          (s) => s.status === "OPEN" && (s.slot_type === selectedType || s.slot_type === "ANY")
+        );
+        clientTypeHint.textContent = openAvailable
+          ? `Wybrany typ rezerwacji: ${selectedType}.`
+          : `Brak dostępnych OTWARTYCH slotów typu ${selectedType} w tym okresie.`;
+
+        renderClientSlots(slots, selectedType);
+      } catch (err) {
+        console.error(err);
+        clientSlotsTableBody.innerHTML = "<tr><td colspan='6'>Błąd połączenia</td></tr>";
+      }
+    }
+
+    function renderClientSlots(slots, selectedType) {
+      if (!slots.length) {
+        clientSlotsTableBody.innerHTML = "<tr><td colspan='6'>Brak slotów</td></tr>";
+        return;
+      }
+
+      // filtr: otwarte sloty pokazujemy tylko dla wybranego typu (lub ANY)
+      const filtered = slots.filter(
+        (s) => s.status !== "OPEN" || s.slot_type === "ANY" || s.slot_type === selectedType
+      );
+
+      const { groups, sortedKeys } = groupSlotsByDate(filtered);
+      clientSlotsTableBody.innerHTML = "";
+
+      const rows = [];
+      for (const key of sortedKeys) {
+        const d = new Date(key + "T00:00:00");
+        const dateStr = d.toLocaleDateString();
+        rows.push(`<tr class="date-row"><td colspan="6">${dateStr}</td></tr>`);
+        for (const slot of groups[key]) {
+          const start = new Date(slot.start_time);
+          const end = new Date(slot.end_time);
+          const timeStr =
+            start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) +
+            "–" +
+            end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+          const statusClass = "status-" + slot.status;
+          const statusLabelMap = {
+            "OPEN": "OTWARTY",
+            "RESERVED_PENDING": "OCZEKUJE",
+            "APPROVED_WAITING_DETAILS": "ZATWIERDZONY (uzupełnij awizację)",
+            "RESERVED_CONFIRMED": "POTWIERDZONY",
+            "CANCEL_PENDING": "ANULACJA OCZEKUJE",
+            "CLOSED": "ZAMKNIĘTY",
+          };
+          const statusLabel = statusLabelMap[slot.status] || slot.status;
+
+          let actionHtml = "";
+          const isMine = slot.reserved_by_user_id && slot.reserved_by_user_id === currentUserId;
+
+          if (slot.status === "OPEN") {
+            const canReserve = slot.slot_type === "ANY" || slot.slot_type === selectedType;
+            actionHtml = canReserve
+              ? `<button class="primary small" type="button" data-client-action="reserve" data-id="${slot.id}">Zarezerwuj</button>`
+              : `<button class="outline small" disabled>Niedostępny typ</button>`;
+          } else if (slot.status === "RESERVED_PENDING") {
+            actionHtml = isMine
+              ? `<button class="outline small" type="button" data-client-action="cancel" data-id="${slot.id}">Anuluj (prośba)</button>`
+              : `<button class="outline small" disabled>Oczekuje</button>`;
+          } else if (slot.status === "APPROVED_WAITING_DETAILS") {
+            actionHtml = isMine
+              ? `<button class="primary small" type="button" data-client-action="notice" data-id="${slot.id}">Uzupełnij awizację</button>
+                 <button class="outline small" type="button" data-client-action="cancel" data-id="${slot.id}">Poproś o anulację</button>`
+              : `<button class="outline small" disabled>Zajęty</button>`;
+          } else if (slot.status === "RESERVED_CONFIRMED") {
+            actionHtml = isMine
+              ? `<button class="outline small" type="button" data-client-action="cancel" data-id="${slot.id}">Poproś o anulację</button>`
+              : `<button class="outline small" disabled>Zajęty</button>`;
+          } else {
+            actionHtml = `<button class="outline small" disabled>Niedostępne</button>`;
+          }
+
+          rows.push(`
+            <tr>
+              <td>${slot.id}</td>
+              <td>${dateStr}</td>
+              <td>${timeStr}</td>
+              <td>${slot.slot_type}</td>
+              <td><span class="status-pill ${statusClass}">${statusLabel}</span></td>
+              <td>${actionHtml}</td>
+            </tr>
+          `);
+        }
+      }
+
+      clientSlotsTableBody.innerHTML = rows.join("");
+
+      clientSlotsTableBody.querySelectorAll("button[data-client-action]").forEach((btn) => {
+        const id = btn.getAttribute("data-id");
+        const action = btn.getAttribute("data-client-action");
+        btn.addEventListener("click", () => handleClientAction(id, action));
+      });
+    }
+
+    clientRefreshSlotsBtn.addEventListener("click", loadSlotsForClient);
+    clientRequestedTypeSelect.addEventListener("change", loadSlotsForClient);
+
+    async function handleClientAction(slotId, action) {
+      try {
+        if (action === "reserve") {
+          const requested_type = clientRequestedTypeSelect.value;
+          const res = await apiRequest(`/slots/${slotId}/reserve`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ requested_type }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) return alert(data.detail || "Nie udało się zarezerwować.");
+          alert(data.message || "Zarezerwowano slot.");
+        } else if (action === "notice") {
+          await openNoticeForm(slotId);
+        } else if (action === "cancel") {
+          const res = await apiRequest(`/slots/${slotId}/request-cancel`, { method: "POST" });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) return alert(data.detail || "Nie udało się wysłać prośby o anulację.");
+          alert(data.message || "Prośba o anulację wysłana.");
+        }
+        await loadSlotsForClient();
+      } catch (err) {
+        console.error(err);
+        alert("Błąd połączenia z API.");
+      }
+    }
+
+    // ----- Awizacja klienta -----
+    function showNoticeCard(show) {
+      if (show) noticeCard.classList.remove("hidden");
+      else noticeCard.classList.add("hidden");
+    }
+
+    noticeCancelBtn.addEventListener("click", () => {
+      noticeError.textContent = "";
+      showNoticeCard(false);
+    });
+
+    async function openNoticeForm(slotId) {
+      noticeError.textContent = "";
+      noticeSlotIdInput.value = String(slotId);
+      noticeSubtitle.textContent = `Slot #${slotId}`;
+
+      // spróbuj pobrać istniejące dane (jeśli były zapisane)
+      try {
+        const res = await apiRequest(`/slots/${slotId}/notice`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data) {
+            noticeOrderInput.value = data.order_number || "";
+            noticeReferenceInput.value = data.reference || "";
+            noticeVehicleInput.value = data.vehicle_registration || "";
+            noticeTrailerInput.value = data.trailer_registration || "";
+            noticeDriverInput.value = data.driver_name || "";
+            noticePhoneInput.value = data.driver_phone || "";
+            noticePalletsInput.value = data.pallet_count != null ? String(data.pallet_count) : "";
+            noticeRemarksInput.value = data.remarks || "";
+          } else {
+            noticeForm.reset();
+            noticeSlotIdInput.value = String(slotId);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+
+      showNoticeCard(true);
+      noticeOrderInput.focus();
+    }
+
+    noticeForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      noticeError.textContent = "";
+
+      const slotId = noticeSlotIdInput.value;
+      const payload = {
+        order_number: noticeOrderInput.value.trim(),
+        reference: noticeReferenceInput.value.trim(),
+        vehicle_registration: noticeVehicleInput.value.trim(),
+        trailer_registration: noticeTrailerInput.value.trim(),
+        driver_name: noticeDriverInput.value.trim(),
+        driver_phone: noticePhoneInput.value.trim(),
+        pallet_count: parseInt(noticePalletsInput.value || "0", 10),
+        remarks: noticeRemarksInput.value.trim() || null,
+      };
+
+      const required = [
+        payload.order_number,
+        payload.reference,
+        payload.vehicle_registration,
+        payload.trailer_registration,
+        payload.driver_name,
+        payload.driver_phone,
+      ];
+      if (required.some((v) => !v)) {
+        noticeError.textContent = "Uzupełnij wszystkie wymagane pola.";
+        return;
+      }
+      if (!payload.pallet_count || payload.pallet_count <= 0) {
+        noticeError.textContent = "Ilość palet musi być większa od 0.";
+        return;
+      }
+
+      try {
+        const res = await apiRequest(`/slots/${slotId}/notice`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          noticeError.textContent = data.detail || "Nie udało się zapisać awizacji.";
+          return;
+        }
+        showNoticeCard(false);
+        await loadSlotsForClient();
+        alert("Awizacja zapisana. Slot jest potwierdzony.");
+      } catch (err) {
+        console.error(err);
+        noticeError.textContent = "Błąd połączenia z API.";
+      }
+    });
+
+    // start
+    showSection(loginSection);
+  </script>
+</body>
+</html>

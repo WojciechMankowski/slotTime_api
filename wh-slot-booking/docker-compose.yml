@@ -1,0 +1,23 @@
+services:
+  api:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./app.db
+      - JWT_SECRET_KEY=change_me_please
+      - JWT_EXPIRE_HOURS=8
+      - APP_CORS_ORIGINS=http://localhost:5173
+    volumes:
+      - ./backend:/app
+    command: bash -lc "pip install -r requirements.txt && python seed.py && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+  ui:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "5173:5173"
+    command: sh -lc "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    depends_on:
+      - api
