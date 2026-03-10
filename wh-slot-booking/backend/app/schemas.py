@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 from datetime import datetime, date, time
 from typing import Optional, List, Literal
 from .models import Role, SlotType, SlotStatus
+from .db import Base
 
 class ErrorOut(BaseModel):
     error_code: str
