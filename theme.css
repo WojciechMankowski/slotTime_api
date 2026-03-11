@@ -4,12 +4,10 @@
 
 :root {
   /* === BACKGROUND / LAYERS === */
-  --app-bg: linear-gradient(
-    180deg,
-    #eef3fb 0%,
-    #f6f8fc 35%,
-    #f4f5f7 100%
-  );
+  --app-bg: linear-gradient(180deg,
+      #eef3fb 0%,
+      #f6f8fc 35%,
+      #f4f5f7 100%);
 
   --card-bg: #ffffff;
   --surface-muted: #f9fafb;
@@ -84,11 +82,9 @@ button {
 }
 
 button.primary {
-  background: linear-gradient(
-    135deg,
-    var(--accent),
-    var(--accent-dark)
-  );
+  background: linear-gradient(135deg,
+      var(--accent),
+      var(--accent-dark));
   color: #fff;
   box-shadow: 0 12px 22px rgba(37, 99, 235, 0.35);
 }
@@ -179,11 +175,9 @@ select:focus {
    ========================================================= */
 
 .header {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.9),
-    rgba(255, 255, 255, 0.7)
-  );
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.9),
+      rgba(255, 255, 255, 0.7));
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
   padding: 1rem 1.5rem;
@@ -337,7 +331,8 @@ td {
 .section-card {
   background: var(--card-bg);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg); /* ← było md */
+  box-shadow: var(--shadow-lg);
+  /* ← było md */
   padding: 1.8rem;
 }
 
@@ -355,4 +350,3 @@ td {
   color: var(--text-muted);
   margin-top: 0.25rem;
 }
-

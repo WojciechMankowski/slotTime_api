@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../API/api'
+import { t, Lang, errorText } from '../Helper/i18n'
 
 type SlotType = 'INBOUND' | 'OUTBOUND' | 'ANY'
 
@@ -20,7 +21,7 @@ type ReportRow = {
   skipped_due_to_capacity: number
 }
 
-export default function GenerateSlots() {
+export default function GenerateSlots({ lang }: { lang: Lang }) {
   /* ===============================
      TEMPLATES
   =============================== */

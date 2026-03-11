@@ -12,7 +12,7 @@ import AdminUsers from './pages/AdminUsers'
 import AdminDocks from './pages/AdminDocks'
 import GenerateSlots from './pages/GenerateSlots'
 import Header from './components/Header'
-
+import Menu from './components/Menu'
 
 export default function App() {
   const [me, setMe] = useState<Me | null>(null)
@@ -55,20 +55,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <h4>Menu</h4>
-
-        <NavLink to="/slots">{t('slots', lang)}</NavLink>
-
-        {me.role !== 'client' && (
-          <>
-            <NavLink to="/generate">Generowanie slotów</NavLink>
-            <NavLink to="/admin/companies">{t('companies', lang)}</NavLink>
-            <NavLink to="/admin/users">{t('users', lang)}</NavLink>
-            <NavLink to="/admin/docks">{t('docks', lang)}</NavLink>
-          </>
-        )}
-      </aside>
+      {/* <Menu lang={lang} me={me} /> */}
 
       <div className="main">
         <Header me={me} lang={lang} onLang={onLang} onLogout={onLogout} />
