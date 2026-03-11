@@ -43,6 +43,7 @@ export const dict: Dict = {
   create: { pl: 'Utwórz', en: 'Create' },
   is_active: { pl: 'Aktywne', en: 'Active' },
   generate_slots: { pl: 'Generowanie slotów', en: 'Generate slots' }, // przeniesione z errorText
+  test: { pl: 'Test', en: 'Test' },
 }
 
 export function t(key: keyof typeof dict, lang: Lang): string {
@@ -59,4 +60,5 @@ export const errorText: Dict = {
   COMPANY_INACTIVE: { pl: 'Firma nieaktywna: brak dostępu.', en: 'Company inactive: access blocked.' },
   SLOT_NOT_AVAILABLE: { pl: 'Slot jest już zajęty.', en: 'Slot is not available.' },
   INVALID_STATUS: { pl: 'Nieprawidłowy status operacji.', en: 'Invalid status for operation.' },
+  test: { pl: 'Test', en: 'Test' },
 }

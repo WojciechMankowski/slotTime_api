@@ -34,41 +34,47 @@ export default function Login({
 
   return (
     <div
-      className="login-bg"
+      className="min-h-screen bg-cover bg-center"
       style={{ backgroundImage: 'url(/logo-MCG-background.png)' }}   // ← TU PODMIENIASZ ZDJĘCIE
     >
-      <div className="login-overlay">
-        <div className="card login-card">
-          <div style={{ textAlign: 'center', marginBottom: 16 }}>
+      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-100/75 backdrop-blur-[2px]">
+        <div className="w-full max-w-[420px] mx-auto bg-white rounded-xl border border-[var(--border)] shadow-lg p-6">
+          <div className="text-center mb-4">
             <img
               src="/static/MCG-logo.png"
               alt="Logo"
-              style={{ height: 52, marginBottom: 8 }}
+              className="h-[52px] mx-auto mb-2"
             />
-            <h2 style={{ margin: '0 0 4px' }}>
+            <h2 className="m-0 mb-1 text-2xl font-bold text-[var(--text-main)]">
               {t('login_title', lang)}
             </h2>
-            <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+            <div className="text-[var(--text-muted)] text-[13px]">
               System awizacji i slotów czasowych
             </div>
           </div>
 
-          <form onSubmit={submit} style={{ display: 'grid', gap: 12 }}>
-            <div>
-              <label htmlFor="username">{t('username', lang)}</label>
+          <form onSubmit={submit} className="grid gap-3">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="username" className="text-[0.85rem] text-[var(--text-muted)] block">
+                {t('username', lang)}
+              </label>
               <input
                 id="username"
+                className="w-full px-2.5 py-2 rounded-lg border border-[var(--border)] text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600/15 focus:bg-white"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 autoFocus
               />
             </div>
 
-            <div>
-              <label htmlFor="password">{t('password', lang)}</label>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="password" className="text-[0.85rem] text-[var(--text-muted)] block">
+                {t('password', lang)}
+              </label>
               <input
                 id="password"
                 type="password"
+                className="w-full px-2.5 py-2 rounded-lg border border-[var(--border)] text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600/15 focus:bg-white"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -76,22 +82,14 @@ export default function Login({
 
             <button
               type="submit"
-              className="primary"
+              className="bg-gradient-to-r from-blue-600 to-blue-700 text-white border-none rounded-full px-4 py-2 text-sm cursor-pointer transition-all duration-200 shadow-md shadow-blue-600/30 hover:-translate-y-[1px] active:translate-y-0 disabled:opacity-70 mt-1.5 font-medium"
               disabled={loading}
-              style={{ marginTop: 6 }}
             >
               {loading ? '...' : t('sign_in', lang)}
             </button>
 
             {err && (
-              <div
-                style={{
-                  color: 'var(--danger)',
-                  fontSize: 13,
-                  textAlign: 'center',
-                  marginTop: 4,
-                }}
-              >
+              <div className="text-red-600 text-[13px] text-center mt-1">
                 {err}
               </div>
             )}

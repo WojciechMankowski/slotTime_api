@@ -11,8 +11,9 @@ import AdminCompanies from './pages/AdminCompanies'
 import AdminUsers from './pages/AdminUsers'
 import AdminDocks from './pages/AdminDocks'
 import GenerateSlots from './pages/GenerateSlots'
+import TestPage from './pages/TestPage'
 import Header from './components/Header'
-import Menu from './components/Menu'
+
 
 export default function App() {
   const [me, setMe] = useState<Me | null>(null)
@@ -54,14 +55,12 @@ export default function App() {
   }
 
   return (
-    <div className="app-shell">
-      {/* <Menu lang={lang} me={me} /> */}
-
-      <div className="main">
+    <div className="flex min-h-screen bg-[var(--bg)] text-[var(--text-main)] font-sans text-sm">
+      <div className="flex-1 pt-0">
         <Header me={me} lang={lang} onLang={onLang} onLogout={onLogout} />
 
         {/* container = max-width dla contentu (tabele, formularze itd.) */}
-        <div className="container" style={{ paddingBottom: '2rem' }}>
+        <div className="max-w-[1200px] mx-auto px-5 pb-8">
           <Routes>
             <Route path="/slots" element={<Slots lang={lang} me={me} />} />
 
@@ -89,6 +88,8 @@ export default function App() {
               path="/admin/docks"
               element={me.role !== 'client' ? <AdminDocks lang={lang} /> : <Navigate to="/slots" replace />}
             />
+
+            <Route path="/test" element={<TestPage lang={lang} />} />
 
             <Route path="*" element={<Navigate to="/slots" replace />} />
           </Routes>
