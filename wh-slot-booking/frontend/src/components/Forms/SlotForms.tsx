@@ -22,8 +22,6 @@ const SlotForm: React.FC<FormProps> = ({
   const [errors, setErrors] = useState<{
     [key in keyof SlotFormData]?: string;
   }>({});
-
-  // POPRAWKA: Funkcja teraz przyjmuje wartość i opcjonalnie nazwę pola
   const handleValueChange = (value: string | number, name?: string) => {
     if (!name) return;
 
@@ -81,9 +79,9 @@ const SlotForm: React.FC<FormProps> = ({
         Dodaj slot (pojedynczy)
       </h2>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-        <div className="grid grid-cols-1 gap-5">
-            <div className="form-group w-full">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+            <div className="form-group col-span-1 md:col-span-2">
             <Label label="Data" />
             <Input
                 type="date"
