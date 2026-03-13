@@ -5,13 +5,22 @@ import Button from "../Button";
 import Label from "../Label";
 import { createCompany } from "../../API/serviceCopany";
 
-const CreateNewCompany: React.FC<FormCompanyProps> = (
-  serverError,
-  initialValues,
-) => {
+const CreateNewCompany: React.FC<FormCompanyProps> = () => {
   const [nameCompany, setNameCompany] = useState("");
   const [alias, setAlias] = useState("");
   const [error, setError] = useState("");
+
+  const formData = {
+    username: "",
+    password: "",
+    alias: "",
+    role: "admin",
+    company_id: 0,
+    warehouse_id: 0,
+  };
+  // pobranie nazw firm 
+  // pobranie magazynów 
+
 
   const create_company = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,27 +41,29 @@ const CreateNewCompany: React.FC<FormCompanyProps> = (
       <h2 className="text-2xl font-bold">Formularz tworzenie nowej firmy</h2>
       <form className="flex flex-col gap-6" onSubmit={create_company}>
         <div className="form-group col-span-1 md:col-span-2 grid-3">
-           <div className="form-group w-full">
-          <Label label="Nazwa firmy" />
-          <Input
-            type="text"
-            name="name_copany"
-            value={nameCompany}
-            onChange={(val) => {
-              setNameCompany(String(val));
-            }}
-          /></div>
-           <div className="form-group w-full">
-          <Label label="Alias (opcjonalne)" />
-          <Input
-            type="text"
-            name="alias"
-            value={alias}
-            onChange={(val) => {
-              setAlias(String(val));
-            }}
-          />
-          {error && <p className="text-red-500 text-sm mt-1">{error}</p>} </div>
+          <div className="form-group w-full">
+            <Label label="Nazwa firmy" />
+            <Input
+              type="text"
+              name="name_copany"
+              value={nameCompany}
+              onChange={(val) => {
+                setNameCompany(String(val));
+              }}
+            />
+          </div>
+          <div className="form-group w-full">
+            <Label label="Alias (opcjonalne)" />
+            <Input
+              type="text"
+              name="alias"
+              value={alias}
+              onChange={(val) => {
+                setAlias(String(val));
+              }}
+            />
+            {error && <p className="text-red-500 text-sm mt-1">{error}</p>}{" "}
+          </div>
           <div className="mt-2 text-right">
             <Button
               type="submit"

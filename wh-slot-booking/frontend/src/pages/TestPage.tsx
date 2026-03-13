@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Lang } from "../Helper/i18n";
-import CreateNewCompany from "../components/Forms/CreateNewCompany";
-import AdminCompaniesTable from "../components/Admin/AdminCompaniesTable";
 import { getCompanies } from "../API/serviceCopany";
-import { Company } from "../Types/types";
 import { CompanyResponse } from "../Types/apiType";
+import { getUsers } from "../API/serviceUser";
+import {UserOut} from '../Types/types'
+import AdminCreateUser from "../components/Forms/AdminCreateUser";
 
 export default function TestPage({ lang }: { lang: Lang }) {
   const now = new Date().toISOString().split("T")[0];
-  const [companies, setCompanies] = useState<CompanyResponse[]>([]);
+  const [users, setCompanies] = useState<UserOut[]>([]);
 
   const load = async () => {
     try {
-      const rs = await getCompanies();
+      const rs = await getUsers();
       setCompanies(rs);
     } catch (err) {
       console.error("Błąd ładowania firm:", err);
@@ -26,16 +26,13 @@ export default function TestPage({ lang }: { lang: Lang }) {
   return (
     <>
       <div className="overflow-x-auto shadow-sm rounded-lg border border-gray-200 pt-2">
-        <CreateNewCompany serverError={null} />
+        <AdminCreateUser  />
       </div>
       <div className="overflow-x-auto shadow-sm rounded-lg border border-gray-200 pt-4">
 
       </div>
       <div className="overflow-x-auto shadow-sm rounded-lg border border-gray-200">
-        <AdminCompaniesTable
-          rows={companies}
-          columns={["Nazwa", "Alias", "Aktywne"]}
-        />
+       {/* tabela */}
       </div>
     </>
   );
