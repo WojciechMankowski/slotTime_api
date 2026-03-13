@@ -10,11 +10,8 @@ export default function Table({
   className = "",
 }: TableProps) {
   
-  // Osobna funkcja dla czytelności (opcjonalnie, ale zalecane)
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>, rowId:  number) => {
     const selectedAlias = e.target.value;
-       
-    // Znajdujemy wybrany dock po aliasie
     const selectedDock = docks.find((dock) => dock.alias === selectedAlias);
     if (onDockChange && selectedDock) {
       onDockChange(rowId, selectedDock.id);
@@ -43,8 +40,8 @@ export default function Table({
             
             return (
               <tr key={rowId}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.start_dt}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.end_dt}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(row.start_dt).toLocaleString("pl-PL")}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(row.end_dt).toLocaleString("pl-PL")}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.slot_type}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.status}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">

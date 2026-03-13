@@ -1,5 +1,6 @@
 import { Slot } from "./SlotType";
 import { DokTyp } from "./DokType";
+import { Company } from "./types";
 
 type InputType =
   | "text"
@@ -35,7 +36,7 @@ export interface ButtonProps {
 }
 
 export interface SelectProps {
-  options: string[];
+  options: string[] | number[]; // Możemy mieć zarówno stringi, jak i liczby jako opcje
   onChange: (value: string) => void;
   className?: string;
   disabled?: boolean;
@@ -63,17 +64,19 @@ export interface SlotFormData {
   endTime: string; // String w formacie 'HH:mm'
   slotType: "INBOUND" | "OUTBOUND" | "ANY"; // Zmieniona nazwa na bardziej czytelną
   quantity: number; // Zmieniona nazwa z howSlot na standardowe quantity
+  interval: number; // Nowe pole dla interwału w minutach
 }
 
 export interface FormProps {
-  onSubmit: (data: SlotFormData) => void;
-  isLoading: boolean;
   serverError: string | null;
   initialValues?: Partial<SlotFormData>;
 }
-export interface TableProps {
+
+export interface FormCompanyProps {
+  serverError: string | null;
+  initialValues?: Partial<SlotFormData>;
+}
+export interface AdminCompaniesTableProps {
   columns: string[];
-  rows: string[][];
-  className?: string;
-  id: string | number;
+  rows: Company[]; className?: string
 }

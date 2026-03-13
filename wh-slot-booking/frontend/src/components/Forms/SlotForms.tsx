@@ -1,27 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Input from "../Input";
 import Select from "../Select";
 import Button from "../Button";
 import Label from "../Label";
 import { FormProps, SlotFormData } from "../../Types/Props";
+import { createSlot } from "../../API/serviceSlot";
 
 const SlotForm: React.FC<FormProps> = ({
-  onSubmit,
-  isLoading,
   serverError,
 }) => {
   const defaultData: SlotFormData = {
-    date: new Date().toISOString().split("T")[0], // Format YYYY-MM-DD dla input type="date"
+    date: new Date().toISOString().split("T")[0],
     startTime: "09:00",
     endTime: "10:00",
     slotType: "INBOUND",
     quantity: 1,
+    interval: 30,
   };
 
   const [dataForm, setFormData] = useState<SlotFormData>(defaultData);
   const [errors, setErrors] = useState<{
     [key in keyof SlotFormData]?: string;
   }>({});
+  
   const handleValueChange = (value: string | number, name?: string) => {
     if (!name) return;
 
@@ -38,7 +39,7 @@ const SlotForm: React.FC<FormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     const newErrors: { [key in keyof SlotFormData]?: string } = {};
 
     if (!dataForm.date) {
@@ -51,32 +52,26 @@ const SlotForm: React.FC<FormProps> = ({
 
     if (!dataForm.endTime) {
       newErrors.endTime = "Godzina zakończenia jest wymagana.";
-    } else if (dataForm.startTime && dataForm.startTime >= dataForm.endTime) {
-      newErrors.endTime =
-        "Godzina zakończenia musi być późniejsza niż godzina rozpoczęcia.";
-    }
-
+    } 
     if (!dataForm.slotType) {
       newErrors.slotType = "Typ slotu jest wymagany.";
     }
-
     if (!dataForm.quantity || dataForm.quantity < 1) {
       newErrors.quantity = "Liczba slotów musi być większa niż 0.";
     }
-
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-
+    console.log(newErrors)
     setErrors({});
-    onSubmit(dataForm);
+    createSlot(dataForm.date, dataForm.startTime, dataForm.endTime, dataForm.slotType, dataForm.quantity, 1)
   };
 
   return (
     <div className="bg-white p-6 rounded-md shadow-sm slot-form-card">
       <h2 className="text-xl font-bold mb-6 text-gray-800">
-        Dodaj slot (pojedynczy)
+       Dodawanie nowych slotów
       </h2>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
@@ -117,7 +112,7 @@ const SlotForm: React.FC<FormProps> = ({
             </div>
 
             <div className="form-group w-full">
-            <Label label="Typ slotu" />
+            <Label label="Typ" />
             <Select
                 name="slotType"
                 options={["INBOUND", "OUTBOUND", "ANY"]}
@@ -136,6 +131,15 @@ const SlotForm: React.FC<FormProps> = ({
             />
             {errors.quantity && <p className="text-red-500 text-sm mt-1">{errors.quantity}</p>}
             </div>
+             <div className="form-group w-full">
+            <Label label="Interwał (minuty)" />
+            <Select
+                name="interval"
+                options={[30, 60, 90, 120]}
+                onChange={(val) => handleValueChange(val, "interval")}
+            />
+            {errors.interval && <p className="text-red-500 text-sm mt-1">{errors.interval}</p>}
+            </div>
         </div>
 
         {serverError && (
@@ -143,7 +147,8 @@ const SlotForm: React.FC<FormProps> = ({
         )}
 
         <div className="mt-2 text-right">
-          <Button type="submit" className="w-[100%] md:w-[150px] primary" text="Utwórz slot" onClick={() => {}} />
+          <Button type="submit" className="w-[100%] md:w-[150px] primary" 
+          text="Utwórz sloty" onClick={() => {handleSubmit}} />
         </div>
       </form>
     </div>

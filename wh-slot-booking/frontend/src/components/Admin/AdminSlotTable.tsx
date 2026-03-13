@@ -43,10 +43,10 @@ export default function TableAdminSlot({
             return (
               <tr key={rowId}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {row.start_dt}
+                  {new Date(row.start_dt).toLocaleString("pl-PL")}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {row.end_dt}
+                  {new Date(row.end_dt).toLocaleString("pl-PL")}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {row.slot_type}
@@ -56,11 +56,9 @@ export default function TableAdminSlot({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <select
-                    value={row.dock_alias ?? "--"}
+                    value={row.dock_alias ?? ""}
                     onChange={(e) => handleSelectChange(e, rowId)}
-                    className="block w-full min-w-[160px] rounded-md border border-gray-300 
-             shadow-sm text-sm py-2 px-3
-             focus:border-blue-500 focus:ring-blue-500"
+                    className="block w-full min-w-[160px] rounded-md border border-gray-300 shadow-sm text-sm py-2 px-3 focus:border-blue-500 focus:ring-blue-500"
                   >
                     <option value="">--</option>
                     {docks.map((dock) => (

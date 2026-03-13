@@ -1,3 +1,5 @@
+export type SlotType = "INBOUND" | "OUTBOUND" | "ANY";
+
 export interface Slot {
   id: number;
   start_dt: string;
