@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Lang } from "../Helper/i18n";
+import { Lang, t } from "../Helper/i18n";
 import Input from "./Input";
 import Button from "./Button";
 import Label from "./Label";
@@ -28,28 +28,28 @@ function FilterSlotAdmin({
 }: Props) {
   return (
     <div className="flex gap-4 justify-center  items-center">
-      <Label label="Od" />
+      <Label label={t('date_from', lang)} />
       <Input
         type="date"
         name="date"
         value={startOd}
         onChange={(val) => setStartOd(String(val))}
       />
-      <Label label="Do" />
+      <Label label={t('date_to', lang)} />
       <Input
         type="date"
         name="date"
         value={endDo}
         onChange={(val) => setEndDo(String(val))}
       />
-      <Label label="Typ" />
+      <Label label={t('type', lang)} />
       <Select
         options={["--", "OUTBOUND", "INBOUND ", "ANY"]}
         onChange={(val) => {
           setTypeSlot(val);
         }}
       />
-      <Label label="Status" />
+      <Label label={t('status', lang)} />
       <Select
         options={[
           "--",
@@ -64,7 +64,7 @@ function FilterSlotAdmin({
           setStatus(val);
         }}
       />
-      <Button text="Filtruj" onClick={() => onChange(startOd, endDo)} />
+      <Button text={t('filter_slots', lang)} onClick={() => onChange(startOd, endDo)} />
     </div>
   );
 }

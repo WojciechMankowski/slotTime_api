@@ -59,7 +59,7 @@ export default function Slots({ lang, me }: { lang: Lang; me: Me }) {
 
     const interval = minutesBetween(startTime, endTime);
     if (interval <= 0) {
-      setErr("Koniec musi być po starcie");
+      setErr(t('end_after_start', lang));
       return;
     }
 

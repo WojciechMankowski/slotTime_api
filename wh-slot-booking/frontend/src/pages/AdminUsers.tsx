@@ -29,7 +29,7 @@ export default function AdminUsers({ lang }: { lang: Lang }) {
       <div className="overflow-x-auto shadow-sm rounded-lg border border-gray-200 pt-4"></div>
       <div className="overflow-x-auto shadow-sm rounded-lg border border-gray-200">
         <AdminUsersTable
-          columns={["Nazwa użytkownika", "Alias", "Rola", "Firma", "Magazyn"]}
+          columns={[t('user_name', lang), t('alias', lang), t('role', lang), t('company', lang), t('warehouse', lang)]}
           rows={users}
         />
       </div>

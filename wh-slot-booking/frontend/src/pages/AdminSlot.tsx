@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Lang } from "../Helper/i18n";
+import { Lang, t } from "../Helper/i18n";
 import SlotForm from "../components/Forms/SlotForms";
 import FilterSlotAdmin from "../components/FilertSlotAdmin";
 import TableAdminSlot from "../components/Admin/AdminSlotTable";
@@ -143,7 +143,7 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
       <div className="w-[80%] mx-auto bg-white p-6 rounded-md shadow-sm mt-4">
         {errorDock && <p className="text-red-600 text-sm mb-2">{errorDock}</p>}
         <TableAdminSlot
-          columns={["Start", "Koniec",  "Typ", "Status","DOK", "Rezerwacja"]}
+          columns={[t('start', lang), t('end', lang), t('type', lang), t('status', lang), t('dock', lang), t('reservation', lang)]}
           rows={slotsAdmin}
           docks={dockAdmin}
           onDockChange={onDockChange}

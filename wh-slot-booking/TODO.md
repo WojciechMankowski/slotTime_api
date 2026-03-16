@@ -12,3 +12,4 @@
 - [ ] dodanie możliwości zmiany hasła dla użytkownika
 - [ ] dodanie możliwości edycji użytkownika
 - [ ] dodanie możliwości edycji firmy
+- [ ] przeklikanie czy wszędzie zmienia się język 

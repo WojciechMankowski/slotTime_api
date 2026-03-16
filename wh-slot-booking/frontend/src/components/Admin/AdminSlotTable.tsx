@@ -1,6 +1,7 @@
 import React from "react";
 import { TablePropsAdmin } from "../../Types/Props";
 import { Slot } from "../../Types/SlotType";
+import { t, getLang } from "../../Helper/i18n";
 
 export default function TableAdminSlot({
   columns,
@@ -72,7 +73,7 @@ export default function TableAdminSlot({
                   {row.reserved_by_alias}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 cursor-pointer hover:underline">
-                  Akcja
+                  {t('action', getLang())}
                 </td>
               </tr>
             );

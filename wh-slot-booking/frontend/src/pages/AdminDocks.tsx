@@ -34,7 +34,7 @@ export default function AdminDocks({ lang }: { lang: Lang }) {
       </div>
       <div className="overflow-x-auto shadow-sm rounded-lg border border-gray-200">
       <AdminDocksTable  
-      columns={['Nazwa', 'Alias', 'Aktywne']}
+      columns={[t('name', lang), t('alias', lang), t('active', lang)]}
       rows={doks}
       />
       

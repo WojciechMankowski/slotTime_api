@@ -1,5 +1,6 @@
 import { AdminCompaniesTableProps } from "../../Types/Props";
 import { Company } from "../../Types/types";
+import { t, getLang } from "../../Helper/i18n";
 
 const AdminCompaniesTable = ({
   columns,
@@ -35,7 +36,7 @@ const AdminCompaniesTable = ({
                   {row.alias}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {row.is_active ? "Aktywny" : "Nieaktywny"}
+                  {row.is_active ? t('active_male', getLang()) : t('inactive_male', getLang())}
                 </td>
               </tr>
             );

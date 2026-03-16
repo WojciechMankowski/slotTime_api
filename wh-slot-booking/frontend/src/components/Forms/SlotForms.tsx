@@ -5,6 +5,7 @@ import Button from "../Button";
 import Label from "../Label";
 import { FormProps, SlotFormData } from "../../Types/Props";
 import { createSlot } from "../../API/serviceSlot";
+import { t, getLang } from "../../Helper/i18n";
 
 const SlotForm: React.FC<FormProps> = ({
   serverError,
@@ -43,21 +44,21 @@ const SlotForm: React.FC<FormProps> = ({
     const newErrors: { [key in keyof SlotFormData]?: string } = {};
 
     if (!dataForm.date) {
-      newErrors.date = "Data jest wymagana.";
+      newErrors.date = t('date_required', getLang());
     }
 
     if (!dataForm.startTime) {
-      newErrors.startTime = "Godzina rozpoczęcia jest wymagana.";
+      newErrors.startTime = t('start_time_required', getLang());
     }
 
     if (!dataForm.endTime) {
-      newErrors.endTime = "Godzina zakończenia jest wymagana.";
+      newErrors.endTime = t('end_time_required', getLang());
     } 
     if (!dataForm.slotType) {
-      newErrors.slotType = "Typ slotu jest wymagany.";
+      newErrors.slotType = t('slot_type_required', getLang());
     }
     if (!dataForm.quantity || dataForm.quantity < 1) {
-      newErrors.quantity = "Liczba slotów musi być większa niż 0.";
+      newErrors.quantity = t('slot_quantity_required', getLang());
     }
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -71,13 +72,13 @@ const SlotForm: React.FC<FormProps> = ({
   return (
     <div className="bg-white p-6 rounded-md shadow-sm slot-form-card">
       <h2 className="text-xl font-bold mb-6 text-gray-800">
-       Dodawanie nowych slotów
+       {t('add_new_slots', getLang())}
       </h2>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
             <div className="form-group col-span-1 md:col-span-2">
-            <Label label="Data" />
+            <Label label={t('date', getLang())} />
             <Input
                 type="date"
                 name="date"
@@ -88,7 +89,7 @@ const SlotForm: React.FC<FormProps> = ({
             </div>
 
             <div className="form-group w-full">
-            <Label label="Godzina rozpoczęcia" />
+            <Label label={t('start_time', getLang())} />
             <Input
                 type="time"
                 name="startTime"
@@ -101,7 +102,7 @@ const SlotForm: React.FC<FormProps> = ({
             </div>
 
             <div className="form-group w-full">
-            <Label label="Godzina zakończenia" />
+            <Label label={t('end_time', getLang())} />
             <Input
                 type="time"
                 name="endTime"
@@ -112,7 +113,7 @@ const SlotForm: React.FC<FormProps> = ({
             </div>
 
             <div className="form-group w-full">
-            <Label label="Typ" />
+            <Label label={t('type', getLang())} />
             <Select
                 name="slotType"
                 options={["INBOUND", "OUTBOUND", "ANY"]}
@@ -122,7 +123,7 @@ const SlotForm: React.FC<FormProps> = ({
             </div>
 
             <div className="form-group w-full">
-            <Label label="Liczba slotów" />
+            <Label label={t('slot_count', getLang())} />
             <Input
                 type="number"
                 name="quantity"
@@ -132,7 +133,7 @@ const SlotForm: React.FC<FormProps> = ({
             {errors.quantity && <p className="text-red-500 text-sm mt-1">{errors.quantity}</p>}
             </div>
              <div className="form-group w-full">
-            <Label label="Interwał (minuty)" />
+            <Label label={t('interval_minutes', getLang())} />
             <Select
                 name="interval"
                 options={[30, 60, 90, 120]}
@@ -148,7 +149,7 @@ const SlotForm: React.FC<FormProps> = ({
 
         <div className="mt-2 text-right">
           <Button type="submit" className="w-[100%] md:w-[150px] primary" 
-          text="Utwórz sloty" onClick={() => {handleSubmit}} />
+          text={t('create_slots', getLang())} onClick={() => {handleSubmit}} />
         </div>
       </form>
     </div>

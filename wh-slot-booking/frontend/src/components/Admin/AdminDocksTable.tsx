@@ -1,5 +1,6 @@
 import { AdminDocksTableProps } from "../../Types/Props";
 import { DokTyp } from "../../Types/DokType";
+import { t, getLang } from "../../Helper/i18n";
 
 const AdminDocksTable = ({
   columns,
@@ -35,11 +36,11 @@ const AdminDocksTable = ({
                         : "bg-red-50 text-red-800 border-red-200"
                     }`}
                   >
-                    {row.is_active ? "Aktywne" : "Nie aktywne"}
+                    {row.is_active ? t('active_male', getLang()) : t('inactive_male', getLang())}
                   </span>
                 </td>
                 <td className="px-4 py-2.5 text-blue-600 cursor-pointer hover:underline">
-                  Edytuj
+                  {t('edit', getLang())}
                 </td>
               </tr>
             );

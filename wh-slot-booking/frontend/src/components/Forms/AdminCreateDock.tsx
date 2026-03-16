@@ -3,7 +3,7 @@ import Input from "../Input";
 import Button from "../Button";
 import Label from "../Label";
 import { createDock } from "../../API/serviceDok";
-
+import { t, getLang } from "../../Helper/i18n";
 
 const AdminCrareDock = () => {
   const [name, setName] = useState("");
@@ -23,7 +23,7 @@ const AdminCrareDock = () => {
   return (
     <div className="bg-white p-6 rounded-md shadow-sm slot-form-card">
       <h2 className="text-2xl font-bold mb-4">
-        Formularz dodawania nowych docków w magazynie
+        {t('form_add_dock', getLang())}
       </h2>
       <form
         className="flex flex-col gap-6"
@@ -31,7 +31,7 @@ const AdminCrareDock = () => {
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="form-group w-full">
-            <Label label="Nazwa docku" />
+            <Label label={t('dock_name', getLang())} />
             <Input
               type="text"
               name="nameDock"
@@ -40,7 +40,7 @@ const AdminCrareDock = () => {
             />
           </div>
           <div className="form-group w-full">
-            <Label label="Alias" />
+            <Label label={t('alias', getLang())} />
             <Input
               type="text"
               name="nameDock"
@@ -60,7 +60,7 @@ const AdminCrareDock = () => {
               htmlFor="moj-checkbox"
               className="ml-3 text-sm font-medium text-gray-700 cursor-pointer select-none"
             >
-              {isActive ? "Aktywny" : "Nie aktywny"}
+              {isActive ? t('active_male', getLang()) : t('inactive_male', getLang())}
             </label>
           </div>
         </div>
@@ -68,7 +68,7 @@ const AdminCrareDock = () => {
           <Button
             type="submit"
             className="w-full md:w-[200px] primary pt-5"
-            text="Dodaj nowy dock"
+            text={t('add_new_dock', getLang())}
             onClick={() => {}}
           />
         </div>

@@ -4,6 +4,7 @@ import Button from "../Button";
 import Label from "../Label";
 import Select from "../Select";
 import { createUser } from "../../API/serviceUser";
+import { t, getLang } from "../../Helper/i18n";
 
 const AdminCreateUser = () => {
   const [username, setUsername] = useState("");
@@ -31,12 +32,12 @@ const AdminCreateUser = () => {
   return (
     <div className="bg-white p-6 rounded-md shadow-sm slot-form-card">
       <h2 className="text-2xl font-bold mb-4">
-        Formularz dodawania nowych użytkowników
+        {t('form_add_user', getLang())}
       </h2>
       <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="form-group w-full">
-            <Label label="Nazwa użytkownika (Login)" />
+            <Label label={t('user_name_login', getLang())} />
             <Input
               type="text"
               name="username"
@@ -45,7 +46,7 @@ const AdminCreateUser = () => {
             />
           </div>
           <div className="form-group w-full">
-            <Label label="Hasło" />
+            <Label label={t('password', getLang())} />
             <Input
               type="password"
               name="password"
@@ -54,7 +55,7 @@ const AdminCreateUser = () => {
             />
           </div>
           <div className="form-group w-full">
-            <Label label="Alias" />
+            <Label label={t('alias', getLang())} />
             <Input
               type="text"
               name="alias"
@@ -63,7 +64,7 @@ const AdminCreateUser = () => {
             />
           </div>
           <div className="form-group w-full">
-            <Label label="Firma" />
+            <Label label={t('company', getLang())} />
             <Select
               name="company_select"
               options={exampleCompanies}
@@ -71,7 +72,7 @@ const AdminCreateUser = () => {
             />
           </div>
           <div className="form-group w-full">
-            <Label label="Rola" />
+            <Label label={t('role', getLang())} />
             <Select
               name="role_select"
               options={roles}
@@ -83,7 +84,7 @@ const AdminCreateUser = () => {
           <Button
             type="submit"
             className="w-full md:w-[200px] primary pt-5"
-            text="Dodaj użytkownika"
+            text={t('add_user', getLang())}
             onClick={() => {}}
           />
         </div>

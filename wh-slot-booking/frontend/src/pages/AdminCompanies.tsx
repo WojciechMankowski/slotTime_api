@@ -34,7 +34,7 @@ export default function AdminCompanies({ lang }: { lang: Lang }) {
       <div className="overflow-x-auto shadow-sm rounded-lg border border-gray-200">
         <AdminCompaniesTable
           rows={companies}
-          columns={["Nazwa", "Alias", "Aktywne"]}
+          columns={[t('name', lang), t('alias', lang), t('active', lang)]}
         />
       </div>
     </>

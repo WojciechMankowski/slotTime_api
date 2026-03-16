@@ -116,7 +116,7 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
   =============================== */
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-6">Generowanie slotów</h2>
+      <h2 className="text-2xl font-bold mb-6">{t('generate_slots', lang)}</h2>
 
       {/* ===============================
           TWO COLUMNS
@@ -126,10 +126,10 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
             LEFT – PARAMETERS
         =============================== */}
         <div className="bg-white rounded-xl border border-[var(--border)] shadow-sm p-6">
-          <h3 className="text-lg font-bold mt-0 mb-4">Parametry slotów</h3>
+          <h3 className="text-lg font-bold mt-0 mb-4">{t('slot_params', lang)}</h3>
 
           <div className="flex flex-col gap-1 mb-4">
-            <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">Szablon (opcjonalnie)</label>
+            <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">{t('template_optional', lang)}</label>
             <select
               className="w-full px-3 py-2 rounded-lg border border-[var(--border)] text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15"
               value={selectedTemplateId ?? ''}
@@ -137,7 +137,7 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
                 setSelectedTemplateId(e.target.value ? Number(e.target.value) : null)
               }
             >
-              <option value="">— brak —</option>
+              <option value="">{t('none', lang)}</option>
               {templates.map(t => (
                 <option key={t.id} value={t.id}>
                   {t.name}
@@ -150,27 +150,27 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
 
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="flex flex-col gap-1">
-              <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">Data od</label>
+              <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">{t('date_from', lang)}</label>
               <input type="date" className="w-full px-3 py-2 rounded-lg border border-[var(--border)] text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">Data do</label>
+              <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">{t('date_to', lang)}</label>
               <input type="date" className="w-full px-3 py-2 rounded-lg border border-[var(--border)] text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15" value={dateTo} onChange={e => setDateTo(e.target.value)} />
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">Start</label>
+              <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">{t('start', lang)}</label>
               <input type="time" className="w-full px-3 py-2 rounded-lg border border-[var(--border)] text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15" value={startTime} onChange={e => setStartTime(e.target.value)} />
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">Koniec</label>
+              <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">{t('end', lang)}</label>
               <input type="time" className="w-full px-3 py-2 rounded-lg border border-[var(--border)] text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15" value={endTime} onChange={e => setEndTime(e.target.value)} />
             </div>
             
             <div className="flex flex-col gap-1">
-              <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">Interwał (min)</label>
+              <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">{t('interval_minutes', lang)}</label>
               <input
                 type="number"
                 min={5}
@@ -181,7 +181,7 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
             </div>
             
             <div className="flex flex-col gap-1">
-              <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">Parallel slots</label>
+              <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">{t('parallel_slots', lang)}</label>
               <input
                 type="number"
                 min={1}
@@ -193,7 +193,7 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
           </div>
 
           <div className="flex flex-col gap-1 mb-6">
-            <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">Typ slotu</label>
+            <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">{t('type', lang)}</label>
             <select className="w-full px-3 py-2 rounded-lg border border-[var(--border)] text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15" value={slotType} onChange={e => setSlotType(e.target.value as SlotType)}>
               <option value="ANY">ANY</option>
               <option value="INBOUND">INBOUND</option>
@@ -206,7 +206,7 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
             onClick={generate} 
             disabled={loading}
           >
-            {loading ? 'Generowanie…' : 'Generuj sloty'}
+            {loading ? t('generating', lang) : t('generate_slots', lang)}
           </button>
 
           {error && (
@@ -220,9 +220,9 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
             RIGHT – INFO / PLACEHOLDER
         =============================== */}
         <div className="bg-white rounded-xl border border-[var(--border)] shadow-sm p-6">
-          <h3 className="text-lg font-bold mt-0 mb-2">Limity dzienne (Inbound / Outbound)</h3>
+          <h3 className="text-lg font-bold mt-0 mb-2">{t('daily_limits', lang)}</h3>
           <p className="opacity-70 text-sm m-0">
-            (tu w kolejnym kroku podepniemy DayCapacity – jak w starym narzędziu)
+            {t('daily_limits_desc', lang)}
           </p>
         </div>
       </div>
@@ -231,21 +231,21 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
           REPORT
       =============================== */}
       <div className="bg-white rounded-xl border border-[var(--border)] shadow-sm p-6 mt-6">
-        <h3 className="text-lg font-bold mt-0 mb-4">Raport (ostatnia operacja)</h3>
+        <h3 className="text-lg font-bold mt-0 mb-4">{t('report_latest', lang)}</h3>
 
         {report.length === 0 ? (
           <div className="opacity-60 text-sm py-4 italic text-center text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-            Brak danych (uruchom generowanie, aby zobaczyć wynik)
+            {t('no_data_generate', lang)}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-[0.85rem] text-left">
               <thead className="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500">
                 <tr>
-                  <th className="px-4 py-3 font-semibold">Data</th>
-                  <th className="px-4 py-3 font-semibold">Requested</th>
-                  <th className="px-4 py-3 font-semibold">Generated</th>
-                  <th className="px-4 py-3 font-semibold">Skipped</th>
+                  <th className="px-4 py-3 font-semibold">{t('date', lang)}</th>
+                  <th className="px-4 py-3 font-semibold">{t('requested', lang)}</th>
+                  <th className="px-4 py-3 font-semibold">{t('generated', lang)}</th>
+                  <th className="px-4 py-3 font-semibold">{t('skipped', lang)}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -262,7 +262,7 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
                   </tr>
                 ))}
                 <tr className="bg-gray-50 font-bold border-t-2 border-gray-200">
-                  <td className="px-4 py-3">SUMA</td>
+                  <td className="px-4 py-3">{t('sum', lang)}</td>
                   <td className="px-4 py-3">{total.requested}</td>
                   <td className="px-4 py-3 text-green-600">{total.generated}</td>
                   <td className="px-4 py-3 text-orange-500">{total.skipped}</td>

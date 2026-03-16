@@ -4,6 +4,7 @@ import Input from "../Input";
 import Button from "../Button";
 import Label from "../Label";
 import { createCompany } from "../../API/serviceCopany";
+import { t, getLang } from "../../Helper/i18n";
 
 const CreateNewCompany: React.FC<FormCompanyProps> = () => {
   const [nameCompany, setNameCompany] = useState("");
@@ -27,7 +28,7 @@ const CreateNewCompany: React.FC<FormCompanyProps> = () => {
     setError("");
 
     if (nameCompany === "") {
-      setError("Nazwa firmy jest potrzebna do utworzenia nowego klienta");
+      setError(t('company_name_required', getLang()));
       return;
     }
 
@@ -38,11 +39,11 @@ const CreateNewCompany: React.FC<FormCompanyProps> = () => {
 
   return (
     <div className="bg-white p-6 rounded-md shadow-sm slot-form-card">
-      <h2 className="text-2xl font-bold">Formularz tworzenie nowej firmy</h2>
+      <h2 className="text-2xl font-bold">{t('form_add_company', getLang())}</h2>
       <form className="flex flex-col gap-6" onSubmit={create_company}>
         <div className="form-group col-span-1 md:col-span-2 grid-3">
           <div className="form-group w-full">
-            <Label label="Nazwa firmy" />
+            <Label label={t('company_name', getLang())} />
             <Input
               type="text"
               name="name_copany"
@@ -53,7 +54,7 @@ const CreateNewCompany: React.FC<FormCompanyProps> = () => {
             />
           </div>
           <div className="form-group w-full">
-            <Label label="Alias (opcjonalne)" />
+            <Label label={t('alias_optional', getLang())} />
             <Input
               type="text"
               name="alias"
@@ -68,7 +69,7 @@ const CreateNewCompany: React.FC<FormCompanyProps> = () => {
             <Button
               type="submit"
               className="w-[100%] md:w-[150px] primary pt-5"
-              text="Utwórz nową firmę"
+              text={t('create_new_company', getLang())}
               onClick={() => {
                 create_company;
               }}

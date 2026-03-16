@@ -49,7 +49,7 @@ export default function Login({
               {t('login_title', lang)}
             </h2>
             <div className="text-[var(--text-muted)] text-[13px]">
-              System awizacji i slotów czasowych
+              {t('system_subtitle', lang)}
             </div>
           </div>
 
