@@ -37,12 +37,12 @@ export interface Me {
 //   reserved_by_company_alias: string | null
 // }
 
-// export interface Dock {
-//   id: number
-//   name: string
-//   alias: string
-//   is_active: boolean
-// }
+export interface Dock {
+  id: number
+  name: string
+  alias: string
+  is_active: boolean
+}
 
 export interface UserOut {
   id: number

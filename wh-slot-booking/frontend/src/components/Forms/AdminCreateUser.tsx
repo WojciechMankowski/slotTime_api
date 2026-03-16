@@ -3,26 +3,36 @@ import Input from "../Input";
 import Button from "../Button";
 import Label from "../Label";
 import Select from "../Select";
+import { createUser } from "../../API/serviceUser";
 
 const AdminCreateUser = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [alias, setAlias] = useState("");
   const [selectedCompany, setSelectedCompany] = useState("Firma A");
-  const [role, setRole] = useState("client");
+  const [role, setRole] = useState< "client" | "admin">("client");
 
   const exampleCompanies = ["Firma A", "Firma B", "Firma C (Przykładowa)"];
   const roles = ["client", "admin"];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log({ username, password, alias, company: selectedCompany, role });
-    // TODO: obsługa wysyłki do API
+    const res = createUser({
+      username: username,
+      password: password,
+      alias: alias,
+      role: role,
+      company_id: 1,
+      warehouse_id: 1,
+    });
   };
 
   return (
     <div className="bg-white p-6 rounded-md shadow-sm slot-form-card">
-      <h2 className="text-2xl font-bold mb-4">Formularz dodawania nowych użytkowników</h2>
+      <h2 className="text-2xl font-bold mb-4">
+        Formularz dodawania nowych użytkowników
+      </h2>
       <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="form-group w-full">
@@ -65,7 +75,7 @@ const AdminCreateUser = () => {
             <Select
               name="role_select"
               options={roles}
-              onChange={(val) => setRole(val)}
+              onChange={(val) => setRole(val as "client" | "admin")}
             />
           </div>
         </div>

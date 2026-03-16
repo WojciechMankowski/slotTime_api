@@ -1,6 +1,6 @@
 import { Slot } from "./SlotType";
 import { DokTyp } from "./DokType";
-import { Company } from "./types";
+import { Company, UserOut } from "./types";
 
 type InputType =
   | "text"
@@ -80,3 +80,16 @@ export interface AdminCompaniesTableProps {
   columns: string[];
   rows: Company[]; className?: string
 }
+
+export interface AdminUsersTableProps {
+  columns: string[];
+  rows: UserOut[];
+  className?: string;
+}
+
+export interface AdminDocksTableProps {
+  columns: string[];
+  rows: DokTyp[];
+  className?: string;
+}
+
