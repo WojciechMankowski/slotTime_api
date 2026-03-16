@@ -1,6 +1,19 @@
 import { api } from "./api";
-import {UserOut} from '../Types/types'
+import { UserOut } from "../Types/types";
 
-export const getUsers = async () => {}
+export const getUsers = async () => {
+  const res = await api.get("/api/users");
+  return res.data;
+};
 
-export const createUser = async () => {}
+export const createUser = async (payload: {
+  username: string;
+  password: string;
+  alias: string;
+  role: "client" | "admin";
+  company_id?: number | null;
+  warehouse_id?: number | null;
+}): Promise<UserOut> => {
+  const res = await api.post<UserOut>("/api/users", payload);
+  return res.data;
+};
