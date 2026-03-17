@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from ..db import get_db
 from .. import models
 from ..deps import get_current_user, require_role, get_context_warehouse
-from ..schemas import UserOut, UserCreate
+from ..schemas import UserOut, UserCreate, UserPatch
 from ..security import get_password_hash
 
 router = APIRouter(prefix="/api/users", tags=["users"])
@@ -114,4 +114,66 @@ def create_user(
         id=user.id, username=user.username, alias=user.alias, role=user.role,
         warehouse_id=user.warehouse_id, company_id=user.company_id,
         company_alias=company_alias, warehouse_alias=warehouse_alias
+    )
+
+
+
+@router.patch("/{user_id}", response_model=UserOut, dependencies=[Depends(require_role(models.Role.admin, models.Role.superadmin))])
+def patch_user(
+    user_id: int,
+    data: UserPatch,
+    actor: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    user = db.get(models.User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail={"error_code": "USER_NOT_FOUND"})
+
+    # admin może edytować tylko userów ze swojego warehouse
+    if actor.role == models.Role.admin:
+        wh_id = actor.warehouse_id
+        user_wh_id = user.warehouse_id
+        if user.company_id:
+            company = db.get(models.Company, user.company_id)
+            user_wh_id = company.warehouse_id if company else None
+        if user_wh_id != wh_id:
+            raise HTTPException(status_code=403, detail={"error_code": "FORBIDDEN"})
+
+    payload = data.model_dump(exclude_unset=True)
+
+    # zmiana hasła -> hashowanie
+    if "password" in payload:
+        payload["password_hash"] = get_password_hash(payload.pop("password"))
+
+    # zmiana company_id -> walidacja przynależności do warehouse
+    if "company_id" in payload and payload["company_id"] is not None:
+        company = db.get(models.Company, payload["company_id"])
+        if not company:
+            raise HTTPException(status_code=404, detail={"error_code": "COMPANY_NOT_FOUND"})
+        if actor.role == models.Role.admin and company.warehouse_id != actor.warehouse_id:
+            raise HTTPException(status_code=403, detail={"error_code": "FORBIDDEN"})
+
+    for k, v in payload.items():
+        setattr(user, k, v)
+
+    db.commit()
+    db.refresh(user)
+
+    # resolve aliasy do response
+    company_alias = None
+    warehouse_alias = None
+    if user.company_id:
+        c = db.get(models.Company, user.company_id)
+        if c:
+            company_alias = c.alias
+            w = db.get(models.Warehouse, c.warehouse_id)
+            warehouse_alias = w.alias if w else None
+    if user.warehouse_id:
+        w = db.get(models.Warehouse, user.warehouse_id)
+        warehouse_alias = w.alias if w else warehouse_alias
+
+    return UserOut(
+        id=user.id, username=user.username, alias=user.alias, role=user.role,
+        warehouse_id=user.warehouse_id, company_id=user.company_id,
+        company_alias=company_alias, warehouse_alias=warehouse_alias,
     )

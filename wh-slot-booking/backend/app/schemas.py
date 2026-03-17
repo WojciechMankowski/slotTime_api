@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 from datetime import datetime, date, time
 from typing import Optional, List, Literal
 from .models import Role, SlotType, SlotStatus
+from .db import Base
 
 class ErrorOut(BaseModel):
     error_code: str
@@ -179,3 +180,19 @@ class SlotTemplatePatch(BaseModel):
     slot_minutes: Optional[int] = Field(default=None, ge=5, le=240)
     slot_type: Optional[SlotType] = None
     is_active: Optional[bool] = None
+
+class CompanyPatch(BaseModel):
+    name: Optional[str] = None
+    alias: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class UserPatch(BaseModel):
+    alias: Optional[str] = None
+    password: Optional[str] = None
+    is_active: Optional[bool] = None
+    company_id: Optional[int] = None
+
+class SlotPatch(BaseModel):
+    slot_type: Optional[SlotType] = None
+    start_dt: Optional[datetime] = None
+    end_dt: Optional[datetime] = None

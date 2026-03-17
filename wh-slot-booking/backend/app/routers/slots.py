@@ -11,6 +11,7 @@ from .. import models
 from ..deps import get_current_user, require_role, get_context_warehouse
 from ..schemas import (
     SlotOut,
+    SlotPatch,
     SlotReserveIn,
     SlotAssignDockIn,
     SlotGenerateIn,
@@ -457,6 +458,44 @@ def cancel_slot(
         raise HTTPException(status_code=403, detail={"error_code": "FORBIDDEN"})
 
     slot.status = models.SlotStatus.CANCELLED
+    db.commit()
+    db.refresh(slot)
+    return slot_to_out(slot, db)
+
+
+
+@router.patch(
+    "/{slot_id}",
+    response_model=SlotOut,
+    dependencies=[Depends(require_role(models.Role.admin, models.Role.superadmin))],
+)
+def patch_slot(
+    slot_id: int,
+    data: SlotPatch,
+    wh: models.Warehouse = Depends(get_context_warehouse),
+    db: Session = Depends(get_db),
+):
+    slot = db.get(models.Slot, slot_id)
+    if not slot or slot.warehouse_id != wh.id:
+        raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
+
+    # tylko AVAILABLE sloty można edytować
+    if slot.status != models.SlotStatus.AVAILABLE:
+        raise HTTPException(status_code=409, detail={"error_code": "SLOT_NOT_EDITABLE"})
+
+    # tylko dzisiaj i w przyszłości
+    if slot.start_dt.date() < date.today():
+        raise HTTPException(status_code=409, detail={"error_code": "SLOT_IN_PAST"})
+
+    payload = data.model_dump(exclude_unset=True)
+
+    if "start_dt" in payload and "end_dt" in payload:
+        if payload["start_dt"] >= payload["end_dt"]:
+            raise HTTPException(status_code=400, detail={"error_code": "INVALID_TIME_RANGE"})
+
+    for k, v in payload.items():
+        setattr(slot, k, v)
+
     db.commit()
     db.refresh(slot)
     return slot_to_out(slot, db)
