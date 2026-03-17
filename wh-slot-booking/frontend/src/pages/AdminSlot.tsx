@@ -152,4 +152,4 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
     </>
   );
 }
-// TODO akcja anulowania rezerwacji
+
