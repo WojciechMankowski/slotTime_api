@@ -85,7 +85,7 @@ const AdminCreateUser = () => {
             type="submit"
             className="w-full md:w-[200px] primary pt-5"
             text={t('add_user', getLang())}
-            onClick={() => {}}
+            onClick={() => {handleSubmit}}
           />
         </div>
       </form>

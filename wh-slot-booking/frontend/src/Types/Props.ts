@@ -42,6 +42,7 @@ export interface SelectProps {
   disabled?: boolean;
   name?: string;
   id?: string | number;
+  defaultValue?: string | number
 }
 
 export interface TableProps {
@@ -85,11 +86,16 @@ export interface AdminUsersTableProps {
   columns: string[];
   rows: UserOut[];
   className?: string;
+  isEdit: boolean
+  setIsEdit: React.Dispatch<React.SetStateAction<boolean>>
+  setUser: React.Dispatch<React.SetStateAction<UserOut>>
+
 }
 
 export interface AdminDocksTableProps {
   columns: string[];
   rows: DokTyp[];
   className?: string;
+
 }
-
+

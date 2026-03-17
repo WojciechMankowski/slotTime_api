@@ -7,7 +7,13 @@ import Label from "../Label";
 import { UserOut } from "../../Types/types";
 import { getLang, t } from "../../Helper/i18n";
 
-const UpdateFormUser = ({ user }: { user: UserOut }) => {
+const UpdateFormUser = ({
+  user,
+  setIsEdit,
+}: {
+  user: UserOut;
+  setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
   const [userId, setUserId] = useState(user.id);
   const [username, setUsername] = useState(user.username);
   const [password, setPassword] = useState("");
@@ -19,16 +25,31 @@ const UpdateFormUser = ({ user }: { user: UserOut }) => {
 
   const update = (e: React.FormEvent) => {
     e.preventDefault();
+    const newData = {
+      id: userId,
+      username: username,
+      alias: alias,
+      role: role,
+      warehouse_id: user.warehouse_id,
+      company_id: user.company_id,
+      company_alias: selectedCompany,
+      warehouse_alias: user.warehouse_alias,
+    };
+    const res = patchUser(userId, newData);
   };
   return (
     <div className="bg-white p-6 rounded-md shadow-sm slot-form-card">
-      <h2 className="text-2xl font-bold mb-4">
-        {t("form_add_user", getLang())}
-      </h2>
-      <form
-        className="flex flex-col gap-6"
-        //   onSubmit={handleSubmit}
-      >
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-l font-bold mb-4">Edycja użytkownika {username}</h3>
+        <Button
+          text="X"
+          onClick={() => {
+            setIsEdit(false);
+          }}
+        />
+      </div>
+
+      <form className="flex flex-col gap-6" onSubmit={update}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="form-group w-full">
             <Label label={t("user_name_login", getLang())} />
@@ -71,6 +92,7 @@ const UpdateFormUser = ({ user }: { user: UserOut }) => {
               name="role_select"
               options={roles}
               onChange={(val) => setRole(val as "client" | "admin")}
+              defaultValue={role}
             />
           </div>
         </div>
@@ -78,8 +100,10 @@ const UpdateFormUser = ({ user }: { user: UserOut }) => {
           <Button
             type="submit"
             className="w-full md:w-[200px] primary pt-5"
-            text={t("add_user", getLang())}
-            onClick={() => {}}
+            text={t("save_user", getLang())}
+            onClick={() => {
+              update;
+            }}
           />
         </div>
       </form>

@@ -1,10 +1,11 @@
 import { AdminUsersTableProps } from "../../Types/Props";
 import { UserOut } from "../../Types/types";
+import Button from "../Button";
 
 const AdminUsersTable = ({
   columns,
   rows,
-  className = "",
+  className = "", isEdit, setIsEdit, setUser
 }: AdminUsersTableProps) => {
   return (
     <div className="overflow-x-auto shadow-sm rounded-lg border border-gray-200">
@@ -42,6 +43,11 @@ const AdminUsersTable = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {row.warehouse_alias || "-"}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <Button text="Edytuj" onClick={()=> {
+                    setUser(row)
+                    setIsEdit(true)}} />
                 </td>
               </tr>
             );
