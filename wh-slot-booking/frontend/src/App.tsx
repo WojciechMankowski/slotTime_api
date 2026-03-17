@@ -60,7 +60,7 @@ export default function App() {
         <Header me={me} lang={lang} onLang={onLang} onLogout={onLogout} />
 
         {/* container = max-width dla contentu (tabele, formularze itd.) */}
-        <div className="max-w-[1200px] mx-auto px-5 pb-8">
+        <div className="max-w-[1400px] mx-auto px-5 pb-8">
           <Routes>
             <Route path="/slots" element={<Slots lang={lang} me={me} />} />
 

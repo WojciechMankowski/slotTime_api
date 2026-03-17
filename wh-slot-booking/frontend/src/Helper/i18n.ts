@@ -7,8 +7,7 @@ export function getLang(): Lang {
   return (v === 'en' || v === 'pl') ? v : 'pl'
 }
 
-export function setLang(lang: Lang, key: string) {
-   if (!dict[key]) return key
+export function setLang(lang: Lang) {
   localStorage.setItem(KEY, lang)
 }
 
@@ -103,7 +102,9 @@ export const dict: Dict = {
   approved_waiting_details: { pl: 'Oczekuje na szczegóły', en: 'Awaiting details' },
   reserved_confirmed: { pl: 'Rezerwacja potwierdzona', en: 'Reservation confirmed' },
   completed: { pl: 'Zakończony', en: 'Completed' },
-  cancelled: { pl: 'Anulowany', en: 'Cancelled' }
+  cancelled: { pl: 'Anulowany', en: 'Cancelled' },
+  close_slot: { pl: 'Zamknij slot', en: 'Close slot' },
+  cancel_reservation: { pl: 'Anuluj rezerwację', en: 'Cancel reservation' }
 }
 
 export function t(key: keyof typeof dict, lang: Lang): string {

@@ -93,11 +93,22 @@ export default function TableAdminSlot({
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {row.reserved_by_company_name || "-"}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {row.reserved_by_alias}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 cursor-pointer hover:underline">
-                  {t('action', getLang())}
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  {row.status === "AVAILABLE" ? (
+                    <button
+                      onClick={() => onStatusChange && onStatusChange(rowId, "CANCELLED")}
+                      className="text-red-600 hover:text-red-900 font-medium"
+                    >
+                      {t("close_slot", getLang())}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => onStatusChange && onStatusChange(rowId, "AVAILABLE")}
+                      className="text-orange-600 hover:text-orange-900 font-medium"
+                    >
+                      {t("cancel_reservation", getLang())}
+                    </button>
+                  )}
                 </td>
               </tr>
             );

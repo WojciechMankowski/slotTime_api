@@ -75,7 +75,10 @@
   - Po udanej zmianie wyświetla potwierdzenie (nie wylogowuje)
 
 ---
-
+## ZADANIA na 18.03
+- [ ] podbięcie akcj w tabeli z slotami
+- [ ] test czy działa akcje
+- [ ] rozpoczęcie pracy nad panelem dla klienta na razie pokazywanie i rezerwacja slotów
 ## Etap 2: Rezerwacja i workflow slotów
 
 **Cel:** pełna ścieżka życia slotu od wyświetlenia po zatwierdzenie.

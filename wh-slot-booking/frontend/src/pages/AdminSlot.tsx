@@ -159,7 +159,7 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
         {errorDock && <p className="text-red-600 text-sm mb-2">{errorDock}</p>}
         {errorStatus && <p className="text-red-600 text-sm mb-2">{errorStatus}</p>}
         <TableAdminSlot
-          columns={[t('start', lang), t('end', lang), t('type', lang), t('status', lang), t('dock', lang), t('company', lang), t('reservation', lang)]}
+          columns={[t('start', lang), t('end', lang), t('type', lang), t('status', lang), t('dock', lang), t('company', lang)]}
           rows={slotsAdmin}
           docks={dockAdmin}
           onDockChange={onDockChange}

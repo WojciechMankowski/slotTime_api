@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../API/api";
 import { t, Lang, errorText } from "../Helper/i18n";
-import type { Me, Slot, Dock } from "../Types/types";
+import type { Me, Dock } from "../Types/types";
+import { Slot } from "../Types/SlotType";
 import AdminSlot from "./AdminSlot";
 
 function fmt(dt: string) {
@@ -86,7 +87,7 @@ export default function Slots({ lang, me }: { lang: Lang; me: Me }) {
     "border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm";
 
   return (
-    <div className="p-4 max-w-7xl mx-auto text-gray-800">
+    <div className="p-4 max-w-full mx-auto text-gray-800">
       <h2 className="text-2xl font-bold mb-6 text-gray-900">
         {t("slots", lang)}
       </h2>
