@@ -2,7 +2,7 @@
 
 ## Backedn
 - [ ] dodanie możliwości zmiany hasła dla użytkownika
-- [ ] endpoint aktualizacji danych firm, użytkownik, dok
+- [ ] endpoint aktualizacji danych firm, użytkownik, dok {cm:2026-03-17}
 - [ ] api/calendar/summary (endpoint agregacyjny)
 - [ ] AC-CO2: POST /api/companies bez alias działa (alias auto)
 - [ ] AC-CO1: GET /api/companies zwraca aliasy

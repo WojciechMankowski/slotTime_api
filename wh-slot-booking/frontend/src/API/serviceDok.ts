@@ -20,3 +20,8 @@ export const createDock = async (payload: {
   const res = await api.post<DokTyp>("/api/docks", payload);
   return res.data;
 };
+
+export const patchDock = async (dockId: number, payload: DokTyp): Promise<DokTyp> => {
+  const res = await api.patch<DokTyp>(`/api/docks/${dockId}`, payload)
+  return res.data
+}

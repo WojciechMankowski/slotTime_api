@@ -17,7 +17,7 @@
 
 ### Backend
 
-- [ ] **Endpoint aktualizacji danych firm, użytkowników, doków**
+- [x] **Endpoint aktualizacji danych firm, użytkowników, doków**
   - PATCH `/api/companies/{id}` aktualizuje tylko przesłane pola
   - PATCH `/api/users/{id}` aktualizuje tylko przesłane pola
   - PATCH `/api/docks/{id}` aktualizuje tylko przesłane pola

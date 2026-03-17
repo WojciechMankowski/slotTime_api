@@ -62,3 +62,24 @@ export const createSlot = async (
     throw error;
   }
 };
+
+export const patchSlot = async (slotId: number, payload: Slot): Promise<Slot> => {
+  const res = await api.patch<Slot>(`/api/slots/${slotId}`, payload)
+  return res.data
+}
+
+export const reserveSlot = async (slotId: number, payload: Slot): Promise<Slot> => {
+  const res = await api.post<Slot>(`/api/slots/${slotId}/reserve`, payload)
+  return res.data
+}
+
+export const approveSlot = async (slotId: number): Promise<Slot> => {
+  const res = await api.post<Slot>(`/api/slots/${slotId}/approve`)
+  return res.data
+}
+
+
+export const cancelSlot = async (slotId: number): Promise<Slot> => {
+  const res = await api.post<Slot>(`/api/slots/${slotId}/cancel`)
+  return res.data
+}

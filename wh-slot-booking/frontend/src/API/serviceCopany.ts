@@ -26,3 +26,8 @@ export const getCompanies = async (): Promise<CompanyResponse> => {
     throw error;
   }
 };
+
+export const patchCompany = async (companyId: number, payload: CompanyResponse): Promise<CompanyResponse> => {
+  const res = await api.patch<CompanyResponse>(`/api/companies/${companyId}`, payload)
+  return res.data
+}
