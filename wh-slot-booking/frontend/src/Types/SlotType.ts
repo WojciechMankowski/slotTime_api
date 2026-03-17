@@ -12,4 +12,5 @@ export interface Slot {
   reserved_by_user_id: number;
   reserved_by_alias: string;
   reserved_by_company_alias: string;
+  reserved_by_company_name: string;
 }

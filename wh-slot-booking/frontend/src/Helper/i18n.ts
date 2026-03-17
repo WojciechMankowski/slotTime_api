@@ -94,7 +94,16 @@ export const dict: Dict = {
   sum: { pl: 'SUMA', en: 'SUM' },
   generating: { pl: 'Generowanie…', en: 'Generating...' },
   end_after_start: { pl: 'Koniec musi być po starcie', en: 'End must be after start' },
-  system_subtitle: { pl: 'System awizacji i slotów czasowych', en: 'Notice and time slot system' }
+  system_subtitle: { pl: 'System awizacji i slotów czasowych', en: 'Notice and time slot system' },
+  inbound: { pl: 'Dostawa', en: 'Inbound' },
+  outbound: { pl: 'Odbiór', en: 'Outbound' },
+  any: { pl: 'Dowolny', en: 'Any' },
+  available: { pl: 'Dostępny', en: 'Available' },
+  booked: { pl: 'Zarezerwowany', en: 'Booked' },
+  approved_waiting_details: { pl: 'Oczekuje na szczegóły', en: 'Awaiting details' },
+  reserved_confirmed: { pl: 'Rezerwacja potwierdzona', en: 'Reservation confirmed' },
+  completed: { pl: 'Zakończony', en: 'Completed' },
+  cancelled: { pl: 'Anulowany', en: 'Cancelled' }
 }
 
 export function t(key: keyof typeof dict, lang: Lang): string {

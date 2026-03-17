@@ -3,7 +3,7 @@ import { Lang, t } from "../Helper/i18n";
 import SlotForm from "../components/Forms/SlotForms";
 import FilterSlotAdmin from "../components/FilertSlotAdmin";
 import TableAdminSlot from "../components/Admin/AdminSlotTable";
-import { getSlotsAdmin, assignDock, createSlot } from "../API/serviceSlot";
+import { getSlotsAdmin, assignDock, createSlot, patchSlot } from "../API/serviceSlot";
 import { Slot } from "../Types/SlotType";
 import { getDokAdmin } from "../API/serviceDok";
 import { DokTyp } from "../Types/DokType";
@@ -52,6 +52,7 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
   const [errorCreate, setErrorCreate] = useState<string | null>(null);
   const [errorLoad, setErrorLoad] = useState<string | null>(null);
   const [errorDock, setErrorDock] = useState<string | null>(null);
+  const [errorStatus, setErrorStatus] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
   const loadDataSlot = async (start: string, end: string) => {
@@ -64,13 +65,11 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
         getSlotsAdmin(start, end),
         getDokAdmin(),
       ]);
-      setSlotsAdmin([]);
       if (typeSlot !== "--") {
-        slots =  slots.filter((slot) => slot.slot_type === typeSlot);
+        slots = slots.filter((slot) => slot.slot_type === typeSlot);
       }
-      console.log(`Status: ${status}`)
       if (status !== "--") {
-        slots =  slots.filter((slot) => slot.status === status);
+        slots = slots.filter((slot) => slot.status === status);
       }
       setSlotsAdmin(slots);
       setDockAdmin(docks);
@@ -88,6 +87,22 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
       await loadDataSlot(startOd, endDo);
     } catch (error) {
       setErrorDock(getApiErrorMessage(error));
+    }
+  };
+
+  const onStatusChange = async (slotId: number, newStatus: string) => {
+    setErrorStatus(null);
+    try {
+      const slot = slotsAdmin.find((s) => s.id === slotId);
+      if (!slot) return;
+
+      await patchSlot(slotId, {
+        ...slot,
+        status: newStatus as any,
+      });
+      await loadDataSlot(startOd, endDo);
+    } catch (error) {
+      setErrorStatus(getApiErrorMessage(error));
     }
   };
 
@@ -122,11 +137,11 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
 
   return (
     <>
-      <div className="w-[80%] mx-auto bg-white p-6 rounded-md shadow-sm mt-4">
+      <div className="w-full bg-white p-6 rounded-md shadow-sm mt-4">
         <SlotForm serverError={errorCreate} />
       </div>
 
-      <div className="w-[80%] mx-auto bg-white p-6 rounded-md shadow-sm mt-4">
+      <div className="w-full bg-white p-6 rounded-md shadow-sm mt-4">
         <FilterSlotAdmin
           lang={lang}
           startOd={startOd}
@@ -140,13 +155,15 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
         {errorLoad && <p className="text-red-600 text-sm mt-2">{errorLoad}</p>}
       </div>
 
-      <div className="w-[80%] mx-auto bg-white p-6 rounded-md shadow-sm mt-4">
+      <div className="w-full bg-white p-6 rounded-md shadow-sm mt-4">
         {errorDock && <p className="text-red-600 text-sm mb-2">{errorDock}</p>}
+        {errorStatus && <p className="text-red-600 text-sm mb-2">{errorStatus}</p>}
         <TableAdminSlot
-          columns={[t('start', lang), t('end', lang), t('type', lang), t('status', lang), t('dock', lang), t('reservation', lang)]}
+          columns={[t('start', lang), t('end', lang), t('type', lang), t('status', lang), t('dock', lang), t('company', lang), t('reservation', lang)]}
           rows={slotsAdmin}
           docks={dockAdmin}
           onDockChange={onDockChange}
+          onStatusChange={onStatusChange}
         />
       </div>
     </>

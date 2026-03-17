@@ -6,7 +6,7 @@ import Select from "../Select";
 import { createUser } from "../../API/serviceUser";
 import { t, getLang } from "../../Helper/i18n";
 
-const AdminCreateUser = () => {
+const AdminCreateUser = ({ onSuccess }: { onSuccess?: () => void }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [alias, setAlias] = useState("");
@@ -18,15 +18,22 @@ const AdminCreateUser = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ username, password, alias, company: selectedCompany, role });
-    const res = createUser({
-      username: username,
-      password: password,
-      alias: alias,
-      role: role,
-      company_id: 1,
-      warehouse_id: 1,
-    });
+    try {
+      await createUser({
+        username: username,
+        password: password,
+        alias: alias,
+        role: role,
+        company_id: 1,
+        warehouse_id: 1,
+      });
+      setUsername("");
+      setPassword("");
+      setAlias("");
+      if (onSuccess) onSuccess();
+    } catch (err) {
+      console.error("Błąd tworzenia użytkownika:", err);
+    }
   };
 
   return (
@@ -85,7 +92,6 @@ const AdminCreateUser = () => {
             type="submit"
             className="w-full md:w-[200px] primary pt-5"
             text={t('add_user', getLang())}
-            onClick={() => {handleSubmit}}
           />
         </div>
       </form>

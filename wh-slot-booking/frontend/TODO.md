@@ -17,7 +17,7 @@
 
 ### Backend
 
-- [x] **Endpoint aktualizacji danych firm, użytkowników, doków**
+- [x] **Endpoint aktualizacji danych firm, użytkowników, doków** (done 17.03.2026)
   - PATCH `/api/companies/{id}` aktualizuje tylko przesłane pola
   - PATCH `/api/users/{id}` aktualizuje tylko przesłane pola
   - PATCH `/api/docks/{id}` aktualizuje tylko przesłane pola
@@ -51,7 +51,7 @@
   - Walidacja pól po stronie frontendu (wymagane pola, format)
   - Po zapisie lista doków odświeża się z aktualnymi danymi
   - Toast/komunikat o sukcesie lub błędzie
-- [ ] Odświeżenie danych dok, user
+- [X] Odświeżenie danych dok, user (done 17.03.2026)
 
 - [x] **Dodanie możliwości edycji użytkownika** (done 17.03.2026)
   - Admin widzi przycisk "Edytuj" przy każdym użytkowniku

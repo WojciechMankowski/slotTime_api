@@ -8,6 +8,7 @@ export default function TableAdminSlot({
   rows,
   docks = [],
   onDockChange,
+  onStatusChange,
   className = "",
 }: TablePropsAdmin) {
   const handleSelectChange = (
@@ -18,6 +19,15 @@ export default function TableAdminSlot({
     const selectedDock = docks.find((dock) => dock.alias === selectedAlias);
     if (onDockChange && selectedDock) {
       onDockChange(rowId, selectedDock.id);
+    }
+  };
+
+  const handleStatusChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+    rowId: number,
+  ) => {
+    if (onStatusChange) {
+      onStatusChange(rowId, e.target.value);
     }
   };
 
@@ -50,10 +60,21 @@ export default function TableAdminSlot({
                   {new Date(row.end_dt).toLocaleString("pl-PL")}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {row.slot_type}
+                  {t(row.slot_type.toLowerCase() as any, getLang())}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {row.status}
+                  <select
+                    value={row.status}
+                    onChange={(e) => handleStatusChange(e, rowId)}
+                    className="block w-full min-w-[120px] rounded-md border border-gray-300 shadow-sm text-sm py-2 px-3 focus:border-blue-500 focus:ring-blue-500"
+                  >
+                    <option value="AVAILABLE">{t("available", getLang())}</option>
+                    <option value="BOOKED">{t("booked", getLang())}</option>
+                    <option value="APPROVED_WAITING_DETAILS">{t("approved_waiting_details", getLang())}</option>
+                    <option value="RESERVED_CONFIRMED">{t("reserved_confirmed", getLang())}</option>
+                    <option value="COMPLETED">{t("completed", getLang())}</option>
+                    <option value="CANCELLED">{t("cancelled", getLang())}</option>
+                  </select>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <select
@@ -68,6 +89,9 @@ export default function TableAdminSlot({
                       </option>
                     ))}
                   </select>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {row.reserved_by_company_name || "-"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {row.reserved_by_alias}

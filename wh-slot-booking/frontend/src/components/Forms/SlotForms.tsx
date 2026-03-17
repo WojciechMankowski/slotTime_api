@@ -116,7 +116,11 @@ const SlotForm: React.FC<FormProps> = ({
             <Label label={t('type', getLang())} />
             <Select
                 name="slotType"
-                options={["INBOUND", "OUTBOUND", "ANY"]}
+                options={[
+                  { value: "INBOUND", label: t('inbound', getLang()) },
+                  { value: "OUTBOUND", label: t('outbound', getLang()) },
+                  { value: "ANY", label: t('any', getLang()) }
+                ]}
                 onChange={(val) => handleValueChange(val, "slotType")}
             />
             {errors.slotType && <p className="text-red-500 text-sm mt-1">{errors.slotType}</p>}
@@ -148,7 +152,7 @@ const SlotForm: React.FC<FormProps> = ({
         )}
 
         <div className="mt-2 text-right">
-          <Button type="submit" className="w-[100%] md:w-[150px] primary" 
+          <Button type="submit" className="w-full md:w-[150px] primary" 
           text={t('create_slots', getLang())} onClick={() => {handleSubmit}} />
         </div>
       </form>

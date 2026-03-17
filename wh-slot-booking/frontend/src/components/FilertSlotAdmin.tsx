@@ -44,7 +44,12 @@ function FilterSlotAdmin({
       />
       <Label label={t('type', lang)} />
       <Select
-        options={["--", "OUTBOUND", "INBOUND ", "ANY"]}
+        options={[
+          { value: "--", label: "--" },
+          { value: "OUTBOUND", label: t('outbound', lang) },
+          { value: "INBOUND", label: t('inbound', lang) },
+          { value: "ANY", label: t('any', lang) }
+        ]}
         onChange={(val) => {
           setTypeSlot(val);
         }}
@@ -52,13 +57,13 @@ function FilterSlotAdmin({
       <Label label={t('status', lang)} />
       <Select
         options={[
-          "--",
-          "AVAILABLE",
-          "BOOKED",
-          "APPROVED_WAITING_DETAILS",
-          "RESERVED_CONFIRMED",
-          "COMPLETED",
-          "CANCELLED",
+          { value: "--", label: "--" },
+          { value: "AVAILABLE", label: t('available', lang) },
+          { value: "BOOKED", label: t('booked', lang) },
+          { value: "APPROVED_WAITING_DETAILS", label: t('approved_waiting_details', lang) },
+          { value: "RESERVED_CONFIRMED", label: t('reserved_confirmed', lang) },
+          { value: "COMPLETED", label: t('completed', lang) },
+          { value: "CANCELLED", label: t('cancelled', lang) },
         ]}
         onChange={(val) => {
           setStatus(val);

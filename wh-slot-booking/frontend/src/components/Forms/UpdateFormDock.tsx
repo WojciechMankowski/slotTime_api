@@ -10,9 +10,11 @@ import { patchDock } from "../../API/serviceDok";
 const UpdateFormDock = ({
   setIsEdit,
   dock,
+  onSuccess,
 }: {
   setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
   dock: DokTyp;
+  onSuccess?: () => void;
 }) => {
   const [name, setName] = useState(dock.name);
   const [alias, setAlias] = useState(dock.alias);
@@ -20,13 +22,18 @@ const UpdateFormDock = ({
 
   const update = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await patchDock(dock.id, {
-      id: dock.id,
-      name: name,
-      alias: alias,
-      is_active: isActive,
-    });
-    console.log(res)
+    try {
+      await patchDock(dock.id, {
+        id: dock.id,
+        name: name,
+        alias: alias,
+        is_active: isActive,
+      });
+      if (onSuccess) onSuccess();
+      setIsEdit(false);
+    } catch (err) {
+      console.error("Błąd aktualizacji doku:", err);
+    }
   };
 
   const handleCheckboxChange = () => {
@@ -36,7 +43,7 @@ const UpdateFormDock = ({
   return (
     <div className="bg-white p-6 rounded-md shadow-sm slot-form-card">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-l font-bold mb-4">Edycja użytkownika {name}</h3>
+        <h3 className="text-l font-bold mb-4">Edycja doku {name}</h3>
         <Button
           text="X"
           onClick={() => {
@@ -45,10 +52,7 @@ const UpdateFormDock = ({
         />
       </div>
 
-      <form
-        className="flex flex-col gap-6"
-           onSubmit={update}
-      >
+      <form className="flex flex-col gap-6" onSubmit={update}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="form-group w-full">
             <Label label={t("dock_name", getLang())} />
@@ -91,7 +95,6 @@ const UpdateFormDock = ({
             type="submit"
             className="w-full md:w-[200px] primary pt-5"
             text={t("save_user", getLang())}
-            onClick={() => {}}
           />
         </div>
       </form>

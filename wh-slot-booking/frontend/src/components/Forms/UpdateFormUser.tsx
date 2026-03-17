@@ -10,9 +10,11 @@ import { getLang, t } from "../../Helper/i18n";
 const UpdateFormUser = ({
   user,
   setIsEdit,
+  onSuccess,
 }: {
   user: UserOut;
   setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
+  onSuccess?: () => void;
 }) => {
   const [userId, setUserId] = useState(user.id);
   const [username, setUsername] = useState(user.username);
@@ -23,7 +25,7 @@ const UpdateFormUser = ({
   const roles = ["client", "admin"];
   const exampleCompanies = ["Firma A", "Firma B", "Firma C (Przykładowa)"];
 
-  const update = (e: React.FormEvent) => {
+  const update = async (e: React.FormEvent) => {
     e.preventDefault();
     const newData = {
       id: userId,
@@ -35,7 +37,13 @@ const UpdateFormUser = ({
       company_alias: selectedCompany,
       warehouse_alias: user.warehouse_alias,
     };
-    const res = patchUser(userId, newData);
+    try {
+      await patchUser(userId, newData);
+      if (onSuccess) onSuccess();
+      setIsEdit(false);
+    } catch (err) {
+      console.error("Błąd aktualizacji użytkownika:", err);
+    }
   };
   return (
     <div className="bg-white p-6 rounded-md shadow-sm slot-form-card">
@@ -101,9 +109,6 @@ const UpdateFormUser = ({
             type="submit"
             className="w-full md:w-[200px] primary pt-5"
             text={t("save_user", getLang())}
-            onClick={() => {
-              update;
-            }}
           />
         </div>
       </form>

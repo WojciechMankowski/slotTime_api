@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { t, Lang, errorText } from "../Helper/i18n";
-import type { UserOut, Company } from "../Types/types";
+import { t, Lang} from "../Helper/i18n";
+import type { UserOut} from "../Types/types";
 import { getUsers } from "../API/serviceUser";
 import AdminCreateUser from "../components/Forms/AdminCreateUser";
 import AdminUsersTable from "../components/Admin/AdminUsersTable";
 import UpdateFormUser from "../components/Forms/UpdateFormUser";
 
 export default function AdminUsers({ lang }: { lang: Lang }) {
-  const [users, setCompanies] = useState<UserOut[]>([]);
+  const [users, setUsers] = useState<UserOut[]>([]);
   const [user, setUser] = useState<UserOut>({
     id: 0,
     username: "",
@@ -23,9 +23,9 @@ export default function AdminUsers({ lang }: { lang: Lang }) {
   const load = async () => {
     try {
       const rs = await getUsers();
-      setCompanies(rs);
+      setUsers(rs);
     } catch (err) {
-      console.error("Błąd ładowania firm:", err);
+      console.error("Błąd ładowania użytkowników:", err);
     }
   };
 
@@ -34,9 +34,9 @@ export default function AdminUsers({ lang }: { lang: Lang }) {
   }, []);
 
   return (
-    <div className="bg-white rounded-xl border border-[var(--border)] shadow-sm p-5 mb-6">
+    <div className="bg-white rounded-xl border border-(--border) shadow-sm p-5 mb-6">
       <div className="overflow-x-auto shadow-sm rounded-lg border border-gray-200 pt-2">
-        <AdminCreateUser />
+        <AdminCreateUser onSuccess={load} />
       </div>
 
       <div className="flex gap-6 mt-4">
@@ -59,7 +59,7 @@ export default function AdminUsers({ lang }: { lang: Lang }) {
 
         {isEdit && (
           <div className="w-96 overflow-x-auto shadow-sm rounded-lg border border-gray-200 pt-4">
-            <UpdateFormUser user={user} setIsEdit={setIsEdit} />
+            <UpdateFormUser user={user} setIsEdit={setIsEdit} onSuccess={load} />
           </div>
         )}
       </div>

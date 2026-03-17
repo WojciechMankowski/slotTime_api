@@ -2,17 +2,6 @@ import { Slot } from "./SlotType";
 import { DokTyp } from "./DokType";
 import { Company, UserOut } from "./types";
 
-type InputType =
-  | "text"
-  | "email"
-  | "password"
-  | "number"
-  | "search"
-  | "tel"
-  | "url"
-  | "date"
-  | "time";
-
 export interface InputProps {
   type?: React.HTMLInputTypeAttribute; // Lepiej użyć wbudowanego typu Reacta
   value: string | number;
@@ -27,7 +16,7 @@ export interface InputProps {
 }
 export interface ButtonProps {
   type?: "button" | "submit" | "reset";
-  onClick: () => void;
+  onClick?: () => void;
   className?: string;
   disabled?: boolean;
   name?: string;
@@ -36,7 +25,7 @@ export interface ButtonProps {
 }
 
 export interface SelectProps {
-  options: string[] | number[]; // Możemy mieć zarówno stringi, jak i liczby jako opcje
+  options: (string | number | { value: string | number; label: string })[]; // Możemy mieć wartości proste lub obiekty z etykietą
   onChange: (value: string) => void;
   className?: string;
   disabled?: boolean;
@@ -50,6 +39,7 @@ export interface TableProps {
   rows: Slot[];
   docks?: DokTyp[];
   onDockChange?: (slotId: number, newDock: number) => void;
+  onStatusChange?: (slotId: number, newStatus: string) => void;
   className?: string;
 }
 export interface TablePropsAdmin {
@@ -57,6 +47,7 @@ export interface TablePropsAdmin {
   rows: Slot[];
   docks?: DokTyp[];
   onDockChange?: (slotId: number, newDock: number) => void;
+  onStatusChange?: (slotId: number, newStatus: string) => void;
   className?: string;
 }
 export interface SlotFormData {

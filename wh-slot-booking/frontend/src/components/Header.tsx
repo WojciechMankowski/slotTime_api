@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { NavLink, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
-import { api, setToken } from '../API/api'
-import { getLang, setLang, t, Lang } from '../Helper/i18n'
+import React, {useState } from 'react'
+import {t, Lang } from '../Helper/i18n'
 import type { Me } from '../Types/types'
 import Menu from './Menu'
 
