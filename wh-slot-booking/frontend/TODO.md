@@ -45,12 +45,13 @@
 
 ### Frontend
 
-- [ ] **Dodanie formularza do edycji doku**
+- [x] **Dodanie formularza do edycji doku** (done 17.03.2026)
   - Admin widzi przycisk "Edytuj" przy każdym doku
   - Formularz wczytuje aktualne dane doku
   - Walidacja pól po stronie frontendu (wymagane pola, format)
   - Po zapisie lista doków odświeża się z aktualnymi danymi
   - Toast/komunikat o sukcesie lub błędzie
+- [ ] Odświeżenie danych dok, user
 
 - [x] **Dodanie możliwości edycji użytkownika** (done 17.03.2026)
   - Admin widzi przycisk "Edytuj" przy każdym użytkowniku

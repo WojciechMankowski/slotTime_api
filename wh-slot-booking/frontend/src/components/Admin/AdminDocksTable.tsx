@@ -1,13 +1,13 @@
 import { AdminDocksTableProps } from "../../Types/Props";
 import { DokTyp } from "../../Types/DokType";
 import { t, getLang } from "../../Helper/i18n";
+import Button from "../Button";
 
 const AdminDocksTable = ({
   columns,
   rows,
-  className = "",
+  className = "", setIsEdit, setDock
 }: AdminDocksTableProps) => {
-  console.table(rows)
   return (
     <div className={`overflow-x-auto ${className}`}>
       <table className="w-full border-collapse text-[0.85rem] text-left">
@@ -36,11 +36,13 @@ const AdminDocksTable = ({
                         : "bg-red-50 text-red-800 border-red-200"
                     }`}
                   >
-                    {row.is_active ? t('active_male', getLang()) : t('inactive_male', getLang())}
+                    {row.is_active
+                      ? t("active_male", getLang())
+                      : t("inactive_male", getLang())}
                   </span>
                 </td>
                 <td className="px-4 py-2.5 text-blue-600 cursor-pointer hover:underline">
-                  {t('edit', getLang())}
+                  <Button text={t("edit", getLang())} onClick={()=>{setIsEdit(true), setDock(row)}} />
                 </td>
               </tr>
             );

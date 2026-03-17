@@ -42,21 +42,21 @@ export interface SelectProps {
   disabled?: boolean;
   name?: string;
   id?: string | number;
-  defaultValue?: string | number
+  defaultValue?: string | number;
 }
 
 export interface TableProps {
   columns: string[];
   rows: Slot[];
   docks?: DokTyp[];
-  onDockChange?: (slotId: number,  newDock: number) => void;
+  onDockChange?: (slotId: number, newDock: number) => void;
   className?: string;
 }
 export interface TablePropsAdmin {
   columns: string[];
   rows: Slot[];
   docks?: DokTyp[];
-  onDockChange?: (slotId: number,  newDock: number) => void;
+  onDockChange?: (slotId: number, newDock: number) => void;
   className?: string;
 }
 export interface SlotFormData {
@@ -79,23 +79,23 @@ export interface FormCompanyProps {
 }
 export interface AdminCompaniesTableProps {
   columns: string[];
-  rows: Company[]; className?: string
+  rows: Company[];
+  className?: string;
 }
 
 export interface AdminUsersTableProps {
   columns: string[];
   rows: UserOut[];
   className?: string;
-  isEdit: boolean
-  setIsEdit: React.Dispatch<React.SetStateAction<boolean>>
-  setUser: React.Dispatch<React.SetStateAction<UserOut>>
-
+  isEdit: boolean;
+  setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
+  setUser: React.Dispatch<React.SetStateAction<UserOut>>;
 }
 
 export interface AdminDocksTableProps {
   columns: string[];
   rows: DokTyp[];
   className?: string;
-
+  setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
+  setDock: React.Dispatch<React.SetStateAction<DokTyp>>;
 }
-

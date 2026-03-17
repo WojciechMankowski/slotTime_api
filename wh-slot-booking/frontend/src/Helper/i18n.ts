@@ -7,7 +7,8 @@ export function getLang(): Lang {
   return (v === 'en' || v === 'pl') ? v : 'pl'
 }
 
-export function setLang(lang: Lang) {
+export function setLang(lang: Lang, key: string) {
+   if (!dict[key]) return key
   localStorage.setItem(KEY, lang)
 }
 
@@ -42,6 +43,7 @@ export const dict: Dict = {
   load: { pl: 'Pobierz', en: 'Load' },
   create: { pl: 'Utwórz', en: 'Create' },
   is_active: { pl: 'Aktywne', en: 'Active' },
+  dock_name: {pl: 'Nazwa doku', en: 'Dock name'},
   generate_slots: { pl: 'Generowanie slotów', en: 'Generate slots' }, // przeniesione z errorText
   test: { pl: 'Test', en: 'Test' },
   name: { pl: 'Nazwa', en: 'Name' },
@@ -51,7 +53,7 @@ export const dict: Dict = {
   inactive: { pl: 'Nieaktywny', en: 'Inactive' },
   add_new_dock: { pl: 'Dodaj nowy dock', en: 'Add new dock' },
   form_add_dock: { pl: 'Formularz dodawania nowych docków w magazynie', en: 'Form for adding new docks in the warehouse' },
-  dock_name: { pl: 'Nazwa docku', en: 'Dock name' },
+  active: {pl: 'Aktywne', en: 'Active'},
   user_name: { pl: 'Nazwa użytkownika', en: 'Username' },
   user_name_login: { pl: 'Nazwa użytkownika', en: 'Username' },
   save_user: {pl: "Zapisz zmiany", en: "Save changes"},
