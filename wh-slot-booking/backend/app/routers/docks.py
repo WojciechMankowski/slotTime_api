@@ -54,3 +54,28 @@ def patch_dock(
     db.commit()
     db.refresh(dock)
     return dock
+
+@router.patch("/{dock_id}", response_model=DockOut, dependencies=[Depends(require_role(models.Role.admin))])
+def patch_dock(
+    dock_id: int,
+    data: DockPatch,
+    wh: models.Warehouse = Depends(get_context_warehouse),
+    db: Session = Depends(get_db),
+):
+    dock = db.get(models.Dock, dock_id)
+    if not dock or dock.warehouse_id != wh.id:
+        raise HTTPException(status_code=404, detail={"error_code": "DOCK_NOT_FOUND"})
+    payload = data.model_dump(exclude_unset=True)
+    if "alias" in payload:
+        exists = db.query(models.Dock).filter(
+            models.Dock.warehouse_id == wh.id,
+            models.Dock.alias == payload["alias"],
+            models.Dock.id != dock.id
+        ).first()
+        if exists:
+            raise HTTPException(status_code=400, detail={"error_code": "ALIAS_TAKEN", "field": "alias"})
+    for k, v in payload.items():
+        setattr(dock, k, v)
+    db.commit()
+    db.refresh(dock)
+    return dock
