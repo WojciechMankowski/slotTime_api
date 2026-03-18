@@ -14,6 +14,7 @@ export function setLang(lang: Lang) {
 type Dict = Record<string, { pl: string; en: string }>
 
 export const dict: Dict = {
+  edit_dock: {pl: "Edytuj", en: "Edit"},
   login_title: { pl: 'Logowanie', en: 'Login' },
   username: { pl: 'Użytkownik', en: 'Username' },
   password: { pl: 'Hasło', en: 'Password' },

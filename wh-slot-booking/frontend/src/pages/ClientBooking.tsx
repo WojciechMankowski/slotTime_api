@@ -792,7 +792,7 @@ function TabBtn({
       {icon}
       {label}
       {badge && (
-        <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${active ? "bg-blue-100 text-blue-700" : "bg-gray-200 text-gray-500"}`}>
+        <span className={`text-[0.75rem] px-2 py-0.5 rounded-lg font-black shadow-xs ${active ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"}`}>
           {badge}
         </span>
       )}
@@ -839,9 +839,10 @@ function DayGroup({
             weekday: "long",
           })}
         </h2>
-        <span className="ml-auto text-xs text-gray-400 font-medium">
-          {count} {countLabel}
-        </span>
+        <div className="ml-auto px-3 py-1 bg-gray-100 rounded-full border border-gray-200 flex items-center gap-1.5 shadow-xs">
+          <span className="text-sm font-black text-blue-700">{count}</span>
+          <span className="text-[0.7rem] font-bold text-gray-500 uppercase tracking-tight">{countLabel}</span>
+        </div>
       </div>
       {children}
     </div>

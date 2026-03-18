@@ -17,12 +17,12 @@ export const createCompany = async (
     throw error;
   }
 };
-export const getCompanies = async (): Promise<CompanyResponse> => {
+export const getCompanies = async (): Promise<CompanyResponse[]> => {
   try {
     const res = await api.get("/api/companies");
     return res.data;
   } catch (error) {
-    console.error("Błąd generowania slotów:", error);
+    console.error("Błąd pobierania firm:", error);
     throw error;
   }
 };

@@ -34,13 +34,30 @@ export default function AdminUsers({ lang }: { lang: Lang }) {
   }, []);
 
   return (
-    <div className="bg-white rounded-xl border border-(--border) shadow-sm p-5 mb-6">
-      <div className="overflow-x-auto shadow-sm rounded-lg border border-gray-200 pt-2">
-        <AdminCreateUser onSuccess={load} />
+    <div className="p-4 max-w-7xl mx-auto space-y-6">
+      {/* ===== Page header ===== */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-1">
+          {t("users", lang)}
+        </h1>
+        <p className="text-gray-500 text-sm">{t("system_subtitle", lang)} (Admin)</p>
       </div>
 
-      <div className="flex gap-6 mt-4">
-        <div className="flex-1 overflow-x-auto shadow-sm rounded-lg border border-gray-200">
+      {/* ===== Create New User Form ===== */}
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-linear-to-br from-indigo-600 to-indigo-800 px-7 py-4">
+          <h2 className="text-lg font-bold text-white leading-none">
+            {t('add_user', lang)}
+          </h2>
+        </div>
+        <div className="p-7">
+          <AdminCreateUser onSuccess={load} />
+        </div>
+      </div>
+
+      {/* ===== Main Section: Table + Optional Edit Sidebar ===== */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 overflow-hidden italic-none">
           <AdminUsersTable
             columns={[
               t("user_name", lang),
@@ -58,7 +75,8 @@ export default function AdminUsers({ lang }: { lang: Lang }) {
         </div>
 
         {isEdit && (
-          <div className="w-96 overflow-x-auto shadow-sm rounded-lg border border-gray-200 pt-4">
+          <div className="w-full lg:w-96 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 h-fit shrink-0 overflow-hidden">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">{t('edit', lang)}</h3>
             <UpdateFormUser user={user} setIsEdit={setIsEdit} onSuccess={load} />
           </div>
         )}

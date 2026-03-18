@@ -76,9 +76,11 @@
 
 ---
 ## ZADANIA na 18.03
-- [ ] podbięcie akcj w tabeli z slotami
+- [x] podbięcie akcj w tabeli z slotami (done 18.03.2026)
 - [ ] test czy działa akcje
-- [ ] rozpoczęcie pracy nad panelem dla klienta na razie pokazywanie i rezerwacja slotów
+- [x] rozpoczęcie pracy nad panelem dla klienta na razie pokazywanie i rezerwacja slotów (done 18.03.2026)
+
+
 ## Etap 2: Rezerwacja i workflow slotów
 
 **Cel:** pełna ścieżka życia slotu od wyświetlenia po zatwierdzenie.
