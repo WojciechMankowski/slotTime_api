@@ -1,4 +1,4 @@
-export type SlotType = "INBOUND" | "OUTBOUND" | "ANY";
+export type SlotType = "INBOUND" | "OUTBOUND" | "ANY" | "ALL";
 
 export interface Slot {
   id: number;
@@ -14,3 +14,7 @@ export interface Slot {
   reserved_by_company_alias: string | null;
   reserved_by_company_name: string | null;
 }
+
+
+type SlotTypeFilter = "ALL" | "INBOUND" | "OUTBOUND" | "ANY";
+export type Tab = "available" | "my";

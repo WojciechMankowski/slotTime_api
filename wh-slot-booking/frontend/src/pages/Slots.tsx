@@ -5,9 +5,6 @@ import type { Me, Dock } from "../Types/types";
 import { Slot } from "../Types/SlotType";
 import AdminSlot from "./AdminSlot";
 
-function fmt(dt: string) {
-  return new Date(dt).toLocaleString();
-}
 
 function minutesBetween(start: string, end: string) {
   const [sh, sm] = start.split(":").map(Number);
@@ -88,10 +85,7 @@ export default function Slots({ lang, me }: { lang: Lang; me: Me }) {
 
   return (
     <div className="p-4 max-w-full mx-auto text-gray-800">
-      <h2 className="text-2xl font-bold mb-6 text-gray-900">
-        {t("slots", lang)}
-      </h2>
-      {me.role !== "client" && <AdminSlot lang={lang} />}
+       <AdminSlot lang={lang} />
     </div>
   );
 }
