@@ -48,8 +48,10 @@ export interface TablePropsAdmin {
   docks?: DokTyp[];
   onDockChange?: (slotId: number, newDock: number) => void;
   onStatusChange?: (slotId: number, newStatus: string) => void;
+  onApprove?: (slotId: number) => void;
   className?: string;
 }
+
 export interface SlotFormData {
   date: string; // Najlepiej trzymać jako string 'YYYY-MM-DD' dla <input type="date">
   startTime: string; // String w formacie 'HH:mm' dla <input type="time">

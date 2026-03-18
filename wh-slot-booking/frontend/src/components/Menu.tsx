@@ -11,7 +11,7 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
     return (
         <>
             <button 
-                className="bg-transparent border-none rounded-lg cursor-pointer text-[var(--text-main)] p-1.5 flex items-center justify-center transition-all duration-200 mr-1 hover:bg-blue-600/10 hover:text-[var(--accent)]" 
+                className="bg-transparent border-none rounded-lg cursor-pointer text-(--text-main) p-1.5 flex items-center justify-center transition-all duration-200 mr-1 hover:bg-blue-600/10 hover:text-(--accent)" 
                 onClick={toggleMenu} 
                 aria-label="Toggle menu"
             >
@@ -29,16 +29,16 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
                 )}
             </button>
             <div 
-                className={`fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[999] transition-opacity duration-350 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} 
+                className={`fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-999 transition-opacity duration-350 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} 
                 onClick={closeMenu} 
             />
             <aside 
-                className={`fixed top-0 w-[300px] h-screen bg-[var(--card-bg)] shadow-[4px_0_25px_rgba(15,23,42,0.15)] z-[1000] p-6 flex flex-col gap-1 overflow-y-auto transition-[left] duration-350 ease-in-out ${isOpen ? 'left-0' : '-left-[320px]'}`}
+                className={`fixed top-0 w-[300px] h-screen bg-(--card-bg) shadow-[4px_0_25px_rgba(15,23,42,0.15)] z-1000 p-6 flex flex-col gap-1 overflow-y-auto transition-[left] duration-350 ease-in-out ${isOpen ? 'left-0' : '-left-[320px]'}`}
             >
-                <div className="flex justify-between items-center mb-8 pb-4 border-b border-[var(--border)]">
-                    <h4 className="text-[0.85rem] uppercase font-bold tracking-wider text-[var(--text-muted)] m-0">Menu</h4>
+                <div className="flex justify-between items-center mb-8 pb-4 border-b border-(--border)">
+                    <h4 className="text-[0.85rem] uppercase font-bold tracking-wider text-(--text-muted) m-0">Menu</h4>
                     <button 
-                        className="bg-transparent border-none rounded-full w-11 h-11 flex items-center justify-center text-[var(--text-muted)] cursor-pointer transition-all duration-200 hover:bg-red-600/10 hover:text-[var(--danger)] hover:rotate-90" 
+                        className="bg-transparent border-none rounded-full w-11 h-11 flex items-center justify-center text-(--text-muted) cursor-pointer transition-all duration-200 hover:bg-red-600/10 hover:text-(--danger) hover:rotate-90" 
                         onClick={closeMenu} 
                         aria-label="Close menu"
                     >
@@ -49,20 +49,22 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
                     </button>
                 </div>
 
-                <div className="bg-[var(--bg)] p-4 rounded-xl mb-8 border border-[var(--border)]">
-                    <div className="font-bold text-base text-[var(--text-main)] mb-2 break-all">{me.username} ({me.alias})</div>
-                    <div className="text-[0.8rem] text-[var(--text-muted)] flex flex-col gap-1">
-                        <div><strong className="text-[var(--text-main)] font-semibold">{t('role', lang)}:</strong> {me.role}</div>
-                        <div><strong className="text-[var(--text-main)] font-semibold">{t('warehouse', lang)}:</strong> {me.warehouse.alias}</div>
-                        <div><strong className="text-[var(--text-main)] font-semibold">{t('company', lang)}:</strong> {me.company?.alias ?? '-'}</div>
+                <div className="bg-(--bg) p-4 rounded-xl mb-8 border border-(--border)">
+                    <div className="font-bold text-base text-(--text-main) mb-2 break-all">{me.username} ({me.alias})</div>
+                    <div className="text-[0.8rem] text-(--text-muted) flex flex-col gap-1">
+                        <div><strong className="text-(--text-main) font-semibold">{t('role', lang)}:</strong> {me.role}</div>
+                        <div><strong className="text-(--text-main) font-semibold">{t('warehouse', lang)}:</strong> {me.warehouse.alias}</div>
+                        <div><strong className="text-(--text-main) font-semibold">{t('company', lang)}:</strong> {me.company?.alias ?? '-'}</div>
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-1 [&>a]:flex [&>a]:items-center [&>a]:py-3 [&>a]:px-4 [&>a]:rounded-xl [&>a]:text-[0.95rem] [&>a]:font-medium [&>a]:text-[var(--text-main)] [&>a]:no-underline [&>a]:transition-all [&>a]:duration-200 hover:[&>a]:bg-[var(--accent-soft)] hover:[&>a]:text-[var(--accent-dark)] hover:[&>a]:translate-x-1 [&>a.active]:bg-gradient-to-br [&>a.active]:from-[var(--accent)] [&>a.active]:to-[var(--accent-dark)] [&>a.active]:text-white [&>a.active]:shadow-lg [&>a.active]:shadow-blue-600/25 [&>a.active]:translate-x-1">
-                    <NavLink to="/slots" onClick={closeMenu}>{t('slots', lang)}</NavLink>
+                <div className="flex flex-col gap-1 [&>a]:flex [&>a]:items-center [&>a]:py-3 [&>a]:px-4 [&>a]:rounded-xl [&>a]:text-[0.95rem] [&>a]:font-medium [&>a]:text-(--text-main) [&>a]:no-underline [&>a]:transition-all [&>a]:duration-200 hover:[&>a]:bg-(--accent-soft) hover:[&>a]:text-(--accent-dark) hover:[&>a]:translate-x-1 [&>a.active]:bg-linear-to-br [&>a.active]:from-(--accent) [&>a.active]:to-(--accent-dark) [&>a.active]:text-white [&>a.active]:shadow-lg [&>a.active]:shadow-blue-600/25 [&>a.active]:translate-x-1">
+                    {/* Widok rezerwacji: dostępny dla wszystkich */}
+                    <NavLink to="/" onClick={closeMenu} end>{t('book_slot', lang)}</NavLink>
 
                     {me.role !== 'client' && (
                         <>
+                            <NavLink to="/slots" onClick={closeMenu}>{t('slots', lang)}</NavLink>
                             <NavLink to="/generate" onClick={closeMenu}>{t('generate_slots', lang)}</NavLink>
                             <NavLink to="/admin/companies" onClick={closeMenu}>{t('companies', lang)}</NavLink>
                             <NavLink to="/admin/users" onClick={closeMenu}>{t('users', lang)}</NavLink>
@@ -71,6 +73,7 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
                         </>
                     )}
                 </div>
+
             </aside>
         </>
     )

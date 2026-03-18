@@ -23,13 +23,13 @@ const Input = ({
 
   return (
     <div className="flex flex-col gap-1 w-full">
-      {label && <label htmlFor={id?.toString() ?? name} className="text-[0.85rem] text-[var(--text-muted)] font-medium mb-0.5 block">{label}</label>}
+      {label && <label htmlFor={id?.toString() ?? name} className="text-[0.85rem] text-(--text-muted) font-medium mb-0.5 block">{label}</label>}
       <input
         min={1}
         type={type}
         value={value}
         onChange={handleChange} // Tutaj przekazujemy naszą funkcję pośredniczącą
-        className={`w-full px-3 py-2 rounded-lg border border-[var(--border)] text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15 disabled:opacity-70 disabled:bg-gray-100 ${className || ''}`}
+        className={`w-full px-3 py-2 rounded-lg border border-(--border) text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15 disabled:opacity-70 disabled:bg-gray-100 ${className || ''}`}
         placeholder={placeholder}
         disabled={disabled}
         name={name}

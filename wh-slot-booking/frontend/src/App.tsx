@@ -12,6 +12,7 @@ import AdminUsers from './pages/AdminUsers'
 import AdminDocks from './pages/AdminDocks'
 import GenerateSlots from './pages/GenerateSlots'
 import TestPage from './pages/TestPage'
+import ClientBooking from './pages/ClientBooking'
 import Header from './components/Header'
 
 
@@ -55,7 +56,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[var(--bg)] text-[var(--text-main)] font-sans text-sm">
+    <div className="flex min-h-screen bg-(--bg) text-(--text-main) font-sans text-sm">
       <div className="flex-1 pt-0">
         <Header me={me} lang={lang} onLang={onLang} onLogout={onLogout} />
 
@@ -64,10 +65,14 @@ export default function App() {
           <Routes>
             <Route path="/slots" element={<Slots lang={lang} me={me} />} />
 
+            {/* widok klienta: wolne sloty + rezerwacja — strona główna */}
+            <Route path="/" element={<ClientBooking lang={lang} me={me} />} />
+            <Route path="/book" element={<ClientBooking lang={lang} me={me} />} />
+
             {/* główny route (zgodnie z ustaleniami: /generate) */}
             <Route
               path="/generate"
-              element={me.role !== 'client' ? <GenerateSlots lang={lang} /> : <Navigate to="/slots" replace />}
+              element={me.role !== 'client' ? <GenerateSlots lang={lang} /> : <Navigate to="/" replace />}
             />
 
             {/* kompatybilność wstecz: stare ścieżki */}
@@ -76,22 +81,23 @@ export default function App() {
 
             <Route
               path="/admin/companies"
-              element={me.role !== 'client' ? <AdminCompanies lang={lang} /> : <Navigate to="/slots" replace />}
+              element={me.role !== 'client' ? <AdminCompanies lang={lang} /> : <Navigate to="/" replace />}
             />
 
             <Route
               path="/admin/users"
-              element={me.role !== 'client' ? <AdminUsers lang={lang} /> : <Navigate to="/slots" replace />}
+              element={me.role !== 'client' ? <AdminUsers lang={lang} /> : <Navigate to="/" replace />}
             />
 
             <Route
               path="/admin/docks"
-              element={me.role !== 'client' ? <AdminDocks lang={lang} /> : <Navigate to="/slots" replace />}
+              element={me.role !== 'client' ? <AdminDocks lang={lang} /> : <Navigate to="/" replace />}
             />
 
             <Route path="/test" element={<TestPage lang={lang} />} />
 
-            <Route path="*" element={<Navigate to="/slots" replace />} />
+            <Route path="*" element={<Navigate to={me.role === 'client' ? '/' : '/slots'} replace />} />
+
           </Routes>
         </div>
       </div>

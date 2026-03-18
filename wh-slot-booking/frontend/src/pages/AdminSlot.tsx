@@ -3,7 +3,7 @@ import { Lang, t } from "../Helper/i18n";
 import SlotForm from "../components/Forms/SlotForms";
 import FilterSlotAdmin from "../components/FilertSlotAdmin";
 import TableAdminSlot from "../components/Admin/AdminSlotTable";
-import { getSlotsAdmin, assignDock, createSlot, patchSlot } from "../API/serviceSlot";
+import { getSlotsAdmin, assignDock, createSlot, patchSlot, approveSlot } from "../API/serviceSlot";
 import { Slot } from "../Types/SlotType";
 import { getDokAdmin } from "../API/serviceDok";
 import { DokTyp } from "../Types/DokType";
@@ -53,6 +53,7 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
   const [errorLoad, setErrorLoad] = useState<string | null>(null);
   const [errorDock, setErrorDock] = useState<string | null>(null);
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
+  const [errorApprove, setErrorApprove] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
   const loadDataSlot = async (start: string, end: string) => {
@@ -106,6 +107,16 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
     }
   };
 
+  const onApprove = async (slotId: number) => {
+    setErrorApprove(null);
+    try {
+      await approveSlot(slotId);
+      await loadDataSlot(startOd, endDo);
+    } catch (error) {
+      setErrorApprove(getApiErrorMessage(error));
+    }
+  };
+
   const handleCreateSlot = async (formData: {
     dateFrom: string;
     timeFrom: string;
@@ -136,12 +147,29 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
   };
 
   return (
-    <>
-      <div className="w-full bg-white p-6 rounded-md shadow-sm mt-4">
-        <SlotForm serverError={errorCreate} />
+    <div className="p-4 max-w-7xl mx-auto space-y-6">
+      {/* ===== Page header ===== */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-1">
+          {t("slots", lang)}
+        </h1>
+        <p className="text-gray-500 text-sm">{t("system_subtitle", lang)} (Admin)</p>
       </div>
 
-      <div className="w-full bg-white p-6 rounded-md shadow-sm mt-4">
+      {/* ===== Slot Creation Form ===== */}
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-linear-to-br from-indigo-600 to-indigo-800 px-7 py-4">
+          <h2 className="text-lg font-bold text-white leading-none">
+            {t('add_new_slots', lang)}
+          </h2>
+        </div>
+        <div className="p-7">
+          <SlotForm serverError={errorCreate} />
+        </div>
+      </div>
+
+      {/* ===== Filters ===== */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col gap-4">
         <FilterSlotAdmin
           lang={lang}
           startOd={startOd}
@@ -152,21 +180,42 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
           setStatus={setStatus}
           setTypeSlot={setTypeSlot}
         />
-        {errorLoad && <p className="text-red-600 text-sm mt-2">{errorLoad}</p>}
+        {errorLoad && <ErrorBanner msg={errorLoad} />}
       </div>
 
-      <div className="w-full bg-white p-6 rounded-md shadow-sm mt-4">
-        {errorDock && <p className="text-red-600 text-sm mb-2">{errorDock}</p>}
-        {errorStatus && <p className="text-red-600 text-sm mb-2">{errorStatus}</p>}
+      {/* ===== Main Table Section ===== */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 overflow-hidden">
+        {errorDock && <ErrorBanner msg={errorDock} compact />}
+        {errorStatus && <ErrorBanner msg={errorStatus} compact />}
+        {errorApprove && <ErrorBanner msg={errorApprove} compact />}
+        
         <TableAdminSlot
-          columns={[t('start', lang), t('end', lang), t('type', lang), t('status', lang), t('dock', lang), t('company', lang)]}
+          columns={[t('start', lang), t('end', lang), t('type', lang), t('status', lang), t('dock', lang), t('company', lang), t('action', lang)]}
           rows={slotsAdmin}
           docks={dockAdmin}
           onDockChange={onDockChange}
           onStatusChange={onStatusChange}
+          onApprove={onApprove}
         />
       </div>
-    </>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Shared UI Components (matching ClientBooking)                        */
+/* ------------------------------------------------------------------ */
+
+function ErrorBanner({ msg, compact }: { msg: string; compact?: boolean }) {
+  return (
+    <div className={`flex items-center gap-3 bg-red-50 border border-red-300 text-red-700 rounded-xl px-5 py-3 shadow-sm ${compact ? "text-sm mb-4" : "mt-2"}`}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      {msg}
+    </div>
   );
 }
 

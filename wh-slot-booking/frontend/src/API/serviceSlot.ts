@@ -83,3 +83,24 @@ export const cancelSlot = async (slotId: number): Promise<Slot> => {
   const res = await api.post<Slot>(`/api/slots/${slotId}/cancel`)
   return res.data
 }
+
+export interface NoticePayload {
+  numer_zlecenia: string;
+  referencja: string;
+  rejestracja_auta: string;
+  rejestracja_naczepy: string;
+  ilosc_palet: number;
+  kierowca_imie_nazwisko?: string;
+  kierowca_tel?: string;
+  uwagi?: string;
+}
+
+export const postNotice = async (slotId: number, payload: NoticePayload): Promise<NoticePayload> => {
+  const res = await api.post<NoticePayload>(`/api/slots/${slotId}/notice`, payload)
+  return res.data
+}
+
+export const getNotice = async (slotId: number): Promise<NoticePayload> => {
+  const res = await api.get<NoticePayload>(`/api/slots/${slotId}/notice`)
+  return res.data
+}

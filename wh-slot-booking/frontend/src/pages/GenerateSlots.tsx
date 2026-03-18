@@ -125,13 +125,13 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
         {/* ===============================
             LEFT – PARAMETERS
         =============================== */}
-        <div className="bg-white rounded-xl border border-[var(--border)] shadow-sm p-6">
+        <div className="bg-white rounded-xl border border-(--border) shadow-sm p-6">
           <h3 className="text-lg font-bold mt-0 mb-4">{t('slot_params', lang)}</h3>
 
           <div className="flex flex-col gap-1 mb-4">
-            <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">{t('template_optional', lang)}</label>
+            <label className="text-[0.85rem] text-(--text-muted) font-medium">{t('template_optional', lang)}</label>
             <select
-              className="w-full px-3 py-2 rounded-lg border border-[var(--border)] text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15"
+              className="w-full px-3 py-2 rounded-lg border border-(--border) text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15"
               value={selectedTemplateId ?? ''}
               onChange={e =>
                 setSelectedTemplateId(e.target.value ? Number(e.target.value) : null)
@@ -146,46 +146,46 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
             </select>
           </div>
 
-          <hr className="border-t border-[var(--border)] my-5" />
+          <hr className="border-t border-(--border) my-5" />
 
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="flex flex-col gap-1">
-              <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">{t('date_from', lang)}</label>
-              <input type="date" className="w-full px-3 py-2 rounded-lg border border-[var(--border)] text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
+              <label className="text-[0.85rem] text-(--text-muted) font-medium">{t('date_from', lang)}</label>
+              <input type="date" className="w-full px-3 py-2 rounded-lg border border-(--border) text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">{t('date_to', lang)}</label>
-              <input type="date" className="w-full px-3 py-2 rounded-lg border border-[var(--border)] text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15" value={dateTo} onChange={e => setDateTo(e.target.value)} />
+              <label className="text-[0.85rem] text-(--text-muted) font-medium">{t('date_to', lang)}</label>
+              <input type="date" className="w-full px-3 py-2 rounded-lg border border-(--border) text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15" value={dateTo} onChange={e => setDateTo(e.target.value)} />
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">{t('start', lang)}</label>
-              <input type="time" className="w-full px-3 py-2 rounded-lg border border-[var(--border)] text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15" value={startTime} onChange={e => setStartTime(e.target.value)} />
+              <label className="text-[0.85rem] text-(--text-muted) font-medium">{t('start', lang)}</label>
+              <input type="time" className="w-full px-3 py-2 rounded-lg border border-(--border) text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15" value={startTime} onChange={e => setStartTime(e.target.value)} />
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">{t('end', lang)}</label>
-              <input type="time" className="w-full px-3 py-2 rounded-lg border border-[var(--border)] text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15" value={endTime} onChange={e => setEndTime(e.target.value)} />
+              <label className="text-[0.85rem] text-(--text-muted) font-medium">{t('end', lang)}</label>
+              <input type="time" className="w-full px-3 py-2 rounded-lg border border-(--border) text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15" value={endTime} onChange={e => setEndTime(e.target.value)} />
             </div>
             
             <div className="flex flex-col gap-1">
-              <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">{t('interval_minutes', lang)}</label>
+              <label className="text-[0.85rem] text-(--text-muted) font-medium">{t('interval_minutes', lang)}</label>
               <input
                 type="number"
                 min={5}
-                className="w-full px-3 py-2 rounded-lg border border-[var(--border)] text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15"
+                className="w-full px-3 py-2 rounded-lg border border-(--border) text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15"
                 value={interval}
                 onChange={e => setInterval(Number(e.target.value))}
               />
             </div>
             
             <div className="flex flex-col gap-1">
-              <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">{t('parallel_slots', lang)}</label>
+              <label className="text-[0.85rem] text-(--text-muted) font-medium">{t('parallel_slots', lang)}</label>
               <input
                 type="number"
                 min={1}
-                className="w-full px-3 py-2 rounded-lg border border-[var(--border)] text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15"
+                className="w-full px-3 py-2 rounded-lg border border-(--border) text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15"
                 value={parallelSlots}
                 onChange={e => setParallelSlots(Number(e.target.value))}
               />
@@ -193,8 +193,8 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
           </div>
 
           <div className="flex flex-col gap-1 mb-6">
-            <label className="text-[0.85rem] text-[var(--text-muted)] font-medium">{t('type', lang)}</label>
-            <select className="w-full px-3 py-2 rounded-lg border border-[var(--border)] text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15" value={slotType} onChange={e => setSlotType(e.target.value as SlotType)}>
+            <label className="text-[0.85rem] text-(--text-muted) font-medium">{t('type', lang)}</label>
+            <select className="w-full px-3 py-2 rounded-lg border border-(--border) text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-1 focus:ring-blue-600/15" value={slotType} onChange={e => setSlotType(e.target.value as SlotType)}>
               <option value="ANY">ANY</option>
               <option value="INBOUND">INBOUND</option>
               <option value="OUTBOUND">OUTBOUND</option>
@@ -202,7 +202,7 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
           </div>
 
           <button 
-            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white border-none rounded-lg px-4 py-2.5 text-sm font-medium cursor-pointer transition-all duration-200 shadow-md shadow-blue-600/30 hover:-translate-y-[1px] active:translate-y-0 disabled:opacity-70" 
+            className="w-full bg-linear-to-r from-blue-600 to-blue-700 text-white border-none rounded-lg px-4 py-2.5 text-sm font-medium cursor-pointer transition-all duration-200 shadow-md shadow-blue-600/30 hover:-translate-y-px active:translate-y-0 disabled:opacity-70" 
             onClick={generate} 
             disabled={loading}
           >
@@ -219,7 +219,7 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
         {/* ===============================
             RIGHT – INFO / PLACEHOLDER
         =============================== */}
-        <div className="bg-white rounded-xl border border-[var(--border)] shadow-sm p-6">
+        <div className="bg-white rounded-xl border border-(--border) shadow-sm p-6">
           <h3 className="text-lg font-bold mt-0 mb-2">{t('daily_limits', lang)}</h3>
           <p className="opacity-70 text-sm m-0">
             {t('daily_limits_desc', lang)}
@@ -230,7 +230,7 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
       {/* ===============================
           REPORT
       =============================== */}
-      <div className="bg-white rounded-xl border border-[var(--border)] shadow-sm p-6 mt-6">
+      <div className="bg-white rounded-xl border border-(--border) shadow-sm p-6 mt-6">
         <h3 className="text-lg font-bold mt-0 mb-4">{t('report_latest', lang)}</h3>
 
         {report.length === 0 ? (
