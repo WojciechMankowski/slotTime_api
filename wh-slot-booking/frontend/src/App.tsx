@@ -65,7 +65,7 @@ export default function App() {
         <div className="max-w-1400px mx-auto px-5 pb-8">
           <Routes>
             <Route path="/slots" element={<Slots lang={lang} me={me} />} />
-            <Route path="/notices" element={<Notices lang={lang} />}/>
+            <Route path="/book_slot" element={<Notices lang={lang} />}/>
             {/* widok klienta: wolne sloty + rezerwacja — strona główna */}
             <Route path="/" element={<ClientBooking lang={lang} me={me} />} />
             <Route path="/book" element={<ClientBooking lang={lang} me={me} />} />

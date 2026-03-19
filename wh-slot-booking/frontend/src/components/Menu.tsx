@@ -13,6 +13,9 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
   const linkActive =
     "bg-linear-to-br from-(--accent) to-(--accent-dark) text-white shadow-lg shadow-blue-600/25 translate-x-1";
 
+  const sectionLabel =
+    "text-[0.7rem] uppercase font-bold tracking-widest text-(--text-muted) mt-5 mb-1 px-4";
+
   return (
     <>
       <button
@@ -21,30 +24,12 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
         aria-label="Toggle menu"
       >
         {isOpen ? (
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         ) : (
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="3" y1="12" x2="21" y2="12" />
             <line x1="3" y1="6" x2="21" y2="6" />
             <line x1="3" y1="18" x2="21" y2="18" />
@@ -55,16 +40,14 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
       {/* overlay */}
       <div
         className={`fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-20000 transition-opacity duration-300 ${
-          isOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
+          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
         onClick={closeMenu}
       />
 
       {/* sidebar */}
       <aside
-        className={`fixed top-0 w-[300px] h-screen bg-(--card-bg) shadow-[4px_0_25px_rgba(15,23,42,0.15)] z-20001 p-6 flex flex-col gap-1 overflow-y-auto transition-[left,opacity,visibility] duration-300 ease-in-out ${
+        className={`fixed top-0 w-[300px] h-screen bg-(--card-bg) shadow-[4px_0_25px_rgba(15,23,42,0.15)] z-20001 p-6 flex flex-col gap-0 overflow-y-auto transition-[left,opacity,visibility] duration-300 ease-in-out ${
           isOpen ? "left-0 opacity-100 visible" : "-left-[320px] opacity-0 invisible"
         }`}
       >
@@ -78,16 +61,7 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
             onClick={closeMenu}
             aria-label="Close menu"
           >
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -95,27 +69,21 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
         </div>
 
         {/* user info */}
-        <div className="bg-(--bg) p-4 rounded-xl mb-8 border border-(--border)">
+        <div className="bg-(--bg) p-4 rounded-xl mb-6 border border-(--border)">
           <div className="font-bold text-base text-(--text-main) mb-2 break-all">
             {me.username} ({me.alias})
           </div>
           <div className="text-[0.8rem] text-(--text-muted) flex flex-col gap-1">
             <div>
-              <strong className="text-(--text-main) font-semibold">
-                {t("role", lang)}:
-              </strong>{" "}
+              <strong className="text-(--text-main) font-semibold">{t("role", lang)}:</strong>{" "}
               {me.role}
             </div>
             <div>
-              <strong className="text-(--text-main) font-semibold">
-                {t("warehouse", lang)}:
-              </strong>{" "}
+              <strong className="text-(--text-main) font-semibold">{t("warehouse", lang)}:</strong>{" "}
               {me.warehouse.alias}
             </div>
             <div>
-              <strong className="text-(--text-main) font-semibold">
-                {t("company", lang)}:
-              </strong>{" "}
+              <strong className="text-(--text-main) font-semibold">{t("company", lang)}:</strong>{" "}
               {me.company?.alias ?? "-"}
             </div>
           </div>
@@ -123,83 +91,61 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
 
         {/* navigation */}
         <div className="flex flex-col gap-1">
+
+          {/* === OPERACJE === */}
+          <div className={sectionLabel}>{t("slots", lang)}</div>
+
           <NavLink
-            to="/"
+            to="/slots"
             onClick={closeMenu}
-            end
-            className={({ isActive }) =>
-              `${linkBase} ${isActive ? linkActive : ""}`
-            }
+            className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}
           >
-            {t("book_slot", lang)}
+            {t("slots", lang)}
+          </NavLink>
+
+          <NavLink
+            to="/notices"
+            onClick={closeMenu}
+            className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}
+          >
+            {t("notices_title", lang)}
           </NavLink>
 
           {me.role !== "client" && (
             <>
               <NavLink
-                to="/slots"
-                onClick={closeMenu}
-                className={({ isActive }) =>
-                  `${linkBase} ${isActive ? linkActive : ""}`
-                }
-              >
-                {t("slots", lang)}
-              </NavLink>
-              
-              <NavLink
                 to="/generate"
                 onClick={closeMenu}
-                className={({ isActive }) =>
-                  `${linkBase} ${isActive ? linkActive : ""}`
-                }
+                className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}
               >
                 {t("generate_slots", lang)}
               </NavLink>
+
+              {/* === ADMINISTRACJA === */}
+              <div className={sectionLabel}>{t("admin_section", lang)}</div>
+
               <NavLink
                 to="/admin/companies"
                 onClick={closeMenu}
-                className={({ isActive }) =>
-                  `${linkBase} ${isActive ? linkActive : ""}`
-                }
+                className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}
               >
                 {t("companies", lang)}
               </NavLink>
+
               <NavLink
                 to="/admin/users"
                 onClick={closeMenu}
-                className={({ isActive }) =>
-                  `${linkBase} ${isActive ? linkActive : ""}`
-                }
+                className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}
               >
                 {t("users", lang)}
               </NavLink>
+
               <NavLink
                 to="/admin/docks"
                 onClick={closeMenu}
-                className={({ isActive }) =>
-                  `${linkBase} ${isActive ? linkActive : ""}`
-                }
+                className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}
               >
                 {t("docks", lang)}
-              </NavLink>
-              <NavLink
-                to="/notices"
-                onClick={closeMenu}
-                className={({ isActive }) =>
-                  `${linkBase} ${isActive ? linkActive : ""}`
-                }
-              >
-               Zestawienie awizacji
-              </NavLink>
-
-              <NavLink
-                to="/test"
-                onClick={closeMenu}
-                className={({ isActive }) =>
-                  `${linkBase} ${isActive ? linkActive : ""}`
-                }
-              >
-                {t("test", lang)}
               </NavLink>
             </>
           )}
