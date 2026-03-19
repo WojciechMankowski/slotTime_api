@@ -25,21 +25,22 @@ export default function AdminDocks({ lang }: { lang: Lang }) {
           <span className="text-sm font-medium">{t("loading", lang)}</span>
         </div>
       ) : (
-        <AdminDocksTable
-          rows={doks}
-          lang={lang}
-          setIsEdit={setIsEdit}
-          setDock={setDock}
-        />
-      )}
+        <div className="flex gap-6 mt-4">
+          <div className="flex-1">
+            <AdminDocksTable
+              rows={doks}
+              lang={lang}
+              setIsEdit={setIsEdit}
+              setDock={setDock}
+            />
+          </div>
 
-      {isEdit && (
-        <UpdateFormDock
-          dock={dok}
-          lang={lang}
-          onClose={() => setIsEdit(false)}
-          onSuccess={reload}
-        />
+          {isEdit && (
+            <div className="w-96 bg-white rounded-2xl shadow-sm border border-gray-200 p-5 self-start">
+              <UpdateFormDock setIsEdit={setIsEdit} dock={dok} onSuccess={reload} />
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

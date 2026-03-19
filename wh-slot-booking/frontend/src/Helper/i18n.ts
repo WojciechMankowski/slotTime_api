@@ -44,7 +44,7 @@ export const dict: Dict = {
   create: { pl: 'Utwórz', en: 'Create' },
   is_active: { pl: 'Aktywne', en: 'Active' },
   dock_name: {pl: 'Nazwa doku', en: 'Dock name'},
-  generate_slots: { pl: 'Generowanie slotów', en: 'Generate slots' }, // przeniesione z errorText
+  generate_slots: { pl: 'Generowanie slotów', en: 'Generate slots' },
   test: { pl: 'Test', en: 'Test' },
   name: { pl: 'Nazwa', en: 'Name' },
   alias: { pl: 'Alias', en: 'Alias' },
@@ -56,7 +56,10 @@ export const dict: Dict = {
   active: {pl: 'Aktywne', en: 'Active'},
   user_name: { pl: 'Nazwa użytkownika', en: 'Username' },
   user_name_login: { pl: 'Nazwa użytkownika', en: 'Username' },
-  save_user: {pl: "Zapisz zmiany", en: "Save changes"},
+  save_changes: {pl: "Zapisz zmiany", en: "Save changes"},
+  save_user: { pl: 'Zapisz', en: 'Save' },
+  edit_user: { pl: 'Edytuj użytkownika', en: 'Edit user' },
+  leave_empty_to_keep: { pl: 'zostaw puste, aby nie zmieniać', en: 'leave empty to keep current' },
   add_user: { pl: 'Dodaj użytkownika', en: 'Add user' },
   form_add_user: { pl: 'Formularz dodawania nowych użytkowników', en: 'Form for adding new users' },
   form_add_company: { pl: 'Formularz tworzenie nowej firmy', en: 'Form for creating a new company' },
@@ -148,6 +151,10 @@ export const dict: Dict = {
   notice_action_btn: { pl: 'Wypełnij awizację', en: 'Fill notice' },
   notice_required_field: { pl: 'To pole jest wymagane', en: 'This field is required' },
   notice_pallets_positive: { pl: 'Ilość palet musi być większa niż 0', en: 'Pallet count must be greater than 0' },
+  all_statuses: { pl: 'Wszystkie statusy', en: 'All statuses' },
+  no_docks: { pl: 'Brak doków', en: 'No docks' },
+  add_remarks: { pl: 'Dodaj uwagi…', en: 'Add remarks…' },
+  saving: { pl: 'Zapisywanie…', en: 'Saving…' },
 }
 
 export function t(key: keyof typeof dict, lang: Lang): string {
@@ -164,5 +171,9 @@ export const errorText: Dict = {
   COMPANY_INACTIVE: { pl: 'Firma nieaktywna: brak dostępu.', en: 'Company inactive: access blocked.' },
   SLOT_NOT_AVAILABLE: { pl: 'Slot jest już zajęty.', en: 'Slot is not available.' },
   INVALID_STATUS: { pl: 'Nieprawidłowy status operacji.', en: 'Invalid status for operation.' },
+  NOT_FOUND: { pl: 'Nie znaleziono zasobu.', en: 'Resource not found.' },
+  DATA_CONFLICT: { pl: 'Konflikt danych - odśwież i spróbuj ponownie.', en: 'Data conflict - please refresh and try again.' },
+  CONNECTION_ERROR: { pl: 'Błąd połączenia z serwerem.', en: 'Server connection error.' },
+  UNEXPECTED_ERROR: { pl: 'Wystąpił nieoczekiwany błąd.', en: 'An unexpected error occurred.' },
   test: { pl: 'Test', en: 'Test' },
 }

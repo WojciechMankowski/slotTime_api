@@ -37,25 +37,25 @@ export default function Login({
       className="min-h-screen bg-cover bg-center"
       style={{ backgroundImage: 'url(/logo-MCG-background.png)' }}   // ← TU PODMIENIASZ ZDJĘCIE
     >
-      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-100/75 backdrop-blur-[2px]">
-        <div className="w-full max-w-[420px] mx-auto bg-white rounded-xl border border-(--border) shadow-lg p-6">
+      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-100/75 backdrop-blur-2px">
+        <div className="w-full max-w-420px mx-auto bg-white rounded-xl border border-(--border) shadow-lg p-6">
           <div className="text-center mb-4">
             <img
               src="/static/MCG-logo.png"
               alt="Logo"
-              className="h-[52px] mx-auto mb-2"
+              className="h-52px mx-auto mb-2"
             />
             <h2 className="m-0 mb-1 text-2xl font-bold text-(--text-main)">
               {t('login_title', lang)}
             </h2>
-            <div className="text-(--text-muted) text-[13px]">
+            <div className="text-(--text-muted) text-13px">
               {t('system_subtitle', lang)}
             </div>
           </div>
 
           <form onSubmit={submit} className="grid gap-3">
             <div className="flex flex-col gap-1">
-              <label htmlFor="username" className="text-[0.85rem] text-(--text-muted) block">
+              <label htmlFor="username" className="text-0.85rem text-(--text-muted) block">
                 {t('username', lang)}
               </label>
               <input

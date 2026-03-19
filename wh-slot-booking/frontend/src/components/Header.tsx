@@ -17,7 +17,7 @@ function Header({
     const [isLangOpen, setIsLangOpen] = useState(false);
 
     return (
-    <header className="flex items-center gap-4 py-5 px-6 mb-8 bg-white/65 backdrop-blur-md">
+    <header className="flex items-center gap-4 py-5 px-6 mb-8 bg-white/65 backdrop-blur-md relative z-30000">
             {/* container = max-width jak w starym index.html */}
             <div className="max-w-[1200px] mx-auto px-5 w-full flex items-center gap-4">
                 <div className="flex items-center gap-1">

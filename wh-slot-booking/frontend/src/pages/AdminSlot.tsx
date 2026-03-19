@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Lang, t } from "../Helper/i18n";
+import { Lang, t, errorText } from "../Helper/i18n";
 import SlotForm from "../components/Forms/SlotForms";
 import FilterSlotAdmin from "../components/FilertSlotAdmin";
 import TableAdminSlot from "../components/Admin/AdminSlotTable";
@@ -9,14 +9,15 @@ import { getDokAdmin } from "../API/serviceDok";
 import { DokTyp } from "../Types/DokType";
 import axios from "axios";
 
-function getApiErrorMessage(error: unknown): string {
+function getApiErrorMessage(error: unknown, lang: Lang): string {
   if (axios.isAxiosError(error)) {
     const detail = error.response?.data?.detail;
 
     // FastAPI zwraca { error_code: "...", field?: "..." }
     if (detail?.error_code) {
       const field = detail.field ? ` (${detail.field})` : "";
-      return `${detail.error_code}${field}`;
+      const msg = errorText[detail.error_code] ? errorText[detail.error_code][lang] : detail.error_code;
+      return `${msg}${field}`;
     }
 
     // Czasem detail to po prostu string
@@ -24,15 +25,15 @@ function getApiErrorMessage(error: unknown): string {
 
     // Standardowe kody HTTP
     const status = error.response?.status;
-    if (status === 401) return "Sesja wygasła - zaloguj się ponownie";
-    if (status === 403) return "Brak uprawnień do tej operacji";
-    if (status === 404) return "Nie znaleziono zasobu";
-    if (status === 409) return "Konflikt danych - odśwież i spróbuj ponownie";
+    if (status === 401) return errorText.INVALID_TOKEN[lang];
+    if (status === 403) return errorText.FORBIDDEN[lang];
+    if (status === 404) return errorText.NOT_FOUND[lang];
+    if (status === 409) return errorText.DATA_CONFLICT[lang];
 
-    return error.message || "Błąd połączenia z serwerem";
+    return error.message || errorText.CONNECTION_ERROR[lang];
   }
 
-  return "Wystąpił nieoczekiwany błąd";
+  return errorText.UNEXPECTED_ERROR[lang];
 }
 
 // ============================================================
@@ -75,7 +76,7 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
       setSlotsAdmin(slots);
       setDockAdmin(docks);
     } catch (error) {
-      setErrorLoad(getApiErrorMessage(error));
+      setErrorLoad(getApiErrorMessage(error, lang));
     }
   };
 
@@ -87,7 +88,7 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
       // odśwież tabelę po udanym przypisaniu
       await loadDataSlot(startOd, endDo);
     } catch (error) {
-      setErrorDock(getApiErrorMessage(error));
+      setErrorDock(getApiErrorMessage(error, lang));
     }
   };
 
@@ -103,7 +104,7 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
       });
       await loadDataSlot(startOd, endDo);
     } catch (error) {
-      setErrorStatus(getApiErrorMessage(error));
+      setErrorStatus(getApiErrorMessage(error, lang));
     }
   };
 
@@ -113,7 +114,7 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
       await approveSlot(slotId);
       await loadDataSlot(startOd, endDo);
     } catch (error) {
-      setErrorApprove(getApiErrorMessage(error));
+      setErrorApprove(getApiErrorMessage(error, lang));
     }
   };
 
@@ -140,7 +141,7 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
       // odśwież listę po udanym generowaniu
       await loadDataSlot(startOd, endDo);
     } catch (error) {
-      setErrorCreate(getApiErrorMessage(error));
+      setErrorCreate(getApiErrorMessage(error, lang));
     } finally {
       setIsCreating(false);
     }

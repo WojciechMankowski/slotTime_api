@@ -1,4 +1,4 @@
-import { SelectProps } from "../Types/Props";
+import { SelectProps } from "../../Types/Props";
 import React, { useState } from "react";
 
 const Select = ({

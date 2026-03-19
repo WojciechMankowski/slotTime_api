@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import Input from "../Input";
-import Button from "../Button";
-import Label from "../Label";
-import Select from "../Select";
+import Input from "../UI/Input";
+import Button from "../UI/Button";
+import Label from "../UI/Label";
+import Select from "../UI/Select";
 import { createUser } from "../../API/serviceUser";
 import { t, getLang } from "../../Helper/i18n";
 
@@ -58,7 +58,7 @@ const AdminCreateUser = ({ onSuccess }: { onSuccess?: () => void }) => {
               type="password"
               name="password"
               value={password}
-              onChange={(val) => setPassword(String(val))}
+              onChange={(val)=> setPassword(String(val))}
             />
           </div>
           <div className="form-group w-full">
@@ -67,7 +67,7 @@ const AdminCreateUser = ({ onSuccess }: { onSuccess?: () => void }) => {
               type="text"
               name="alias"
               value={alias}
-              onChange={(val) => setAlias(String(val))}
+              onChange={(val)  => setAlias(String(val))}
             />
           </div>
           <div className="form-group w-full">
@@ -75,7 +75,7 @@ const AdminCreateUser = ({ onSuccess }: { onSuccess?: () => void }) => {
             <Select
               name="company_select"
               options={exampleCompanies}
-              onChange={(val) => setSelectedCompany(val)}
+              onChange={(val)  => setSelectedCompany(val)}
             />
           </div>
           <div className="form-group w-full">
@@ -83,7 +83,7 @@ const AdminCreateUser = ({ onSuccess }: { onSuccess?: () => void }) => {
             <Select
               name="role_select"
               options={roles}
-              onChange={(val) => setRole(val as "client" | "admin")}
+              onChange={(val)  => setRole(val as "client" | "admin")}
             />
           </div>
         </div>

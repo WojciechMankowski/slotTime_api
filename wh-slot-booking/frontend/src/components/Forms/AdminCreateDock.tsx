@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import Input from "../Input";
-import Button from "../Button";
-import Label from "../Label";
+import Input from "../UI/Input";
+import Button from "../UI/Button";
+import Label from "../UI/Label";
 import { createDock } from "../../API/serviceDok";
 import { t, getLang } from "../../Helper/i18n";
 
@@ -43,7 +43,7 @@ const AdminCreateDock = ({ onSuccess }: { onSuccess?: () => void }) => {
               type="text"
               name="nameDock"
               value={name}
-              onChange={(val) => setName(String(val))}
+              onChange={(val)  => setName(String(val))}
             />
           </div>
           <div className="form-group w-full">
@@ -52,7 +52,7 @@ const AdminCreateDock = ({ onSuccess }: { onSuccess?: () => void }) => {
               type="text"
               name="nameDock"
               value={alias}
-              onChange={(val) => setAlias(String(val))}
+              onChange={(val)  => setAlias(String(val))}
             />
           </div>
           <div className="form-group w-full">

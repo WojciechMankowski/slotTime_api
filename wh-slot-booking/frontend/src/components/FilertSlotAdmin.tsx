@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Lang, t } from "../Helper/i18n";
 import Input from "./Input";
-import Button from "./Button";
-import Label from "./Label";
-import Select from "./Select";
+import Button from "./UI/Button";
+import Label from "./UI/Label";
+import Select from "./UI/Select";
 
 interface Props {
   lang: Lang;
