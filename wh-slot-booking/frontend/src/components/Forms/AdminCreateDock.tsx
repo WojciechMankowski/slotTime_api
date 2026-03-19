@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Input from "../UI/Input";
 import Button from "../UI/Button";
 import Label from "../UI/Label";
+import Checkbox from "../UI/Checkbox";
 import { createDock } from "../../API/serviceDok";
 import { t, getLang } from "../../Helper/i18n";
 
@@ -56,21 +57,12 @@ const AdminCreateDock = ({ onSuccess }: { onSuccess?: () => void }) => {
             />
           </div>
           <div className="form-group w-full">
-            <input
-              type="checkbox"
+            <Checkbox
               id="moj-checkbox"
               checked={isActive}
-              onChange={handleCheckboxChange}
-              className="w-5 h-5 text-blue-600 bg-white border-gray-300 rounded cursor-pointer focus:ring-blue-500 focus:ring-2 transition-colors duration-200"
+              onChange={setIstActive}
+              label={isActive ? t("active_male", getLang()) : t("inactive_male", getLang())}
             />
-            <label
-              htmlFor="moj-checkbox"
-              className="ml-3 text-sm font-medium text-gray-700 cursor-pointer select-none"
-            >
-              {isActive
-                ? t("active_male", getLang())
-                : t("inactive_male", getLang())}
-            </label>
           </div>
         </div>
         <div className="mt-4 text-right">

@@ -1,39 +1,43 @@
 import React from "react";
-import { t, Lang } from "../../Helper/i18n";
+import { t } from "../../Helper/i18n";
+import { AdminCompaniesTableProps } from "../../Types/Props";
 import type { Company } from "../../Types/types";
-
-interface AdminCompaniesTableProps {
-  rows: Company[];
-  lang: Lang;
-  className?: string;
-}
+import Button from "../UI/Button";
+import EmptyState from "../UI/EmptyState";
 
 export default function AdminCompaniesTable({
   rows,
   lang,
   className = "",
+  setIsEdit,
+  setCompany,
 }: AdminCompaniesTableProps) {
+  const handleEdit = (row: Company) => {
+    setCompany(row);
+    setIsEdit(true);
+  };
+
   if (!rows || rows.length === 0) {
     return (
-      <div className="text-center py-16 text-gray-400">
-        <svg
-          width="48"
-          height="48"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="mx-auto mb-3 opacity-30"
-        >
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-          <polyline points="9 22 9 12 15 12 15 22" />
-        </svg>
-        <p className="text-lg font-medium">
-          {lang === "pl" ? "Brak firm" : "No companies"}
-        </p>
-      </div>
+      <EmptyState
+        icon={
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+        }
+        title={lang === "pl" ? "Brak firm" : "No companies"}
+        desc=""
+      />
     );
   }
 
@@ -42,7 +46,7 @@ export default function AdminCompaniesTable({
       {rows.map((row, index) => (
         <div
           key={row.id ?? index}
-          className="relative bg-white border border-gray-200 rounded-2xl p-5 shadow-sm"
+          className="relative bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-blue-400 hover:-translate-y-0.5 transition-all duration-200"
         >
           {/* Status dot */}
           <div
@@ -80,10 +84,18 @@ export default function AdminCompaniesTable({
                 : "bg-red-50 text-red-800 border-red-200"
             }`}
           >
-            {row.is_active
-              ? t("active_male", lang)
-              : t("inactive_male", lang)}
+            {row.is_active ? t("active_male", lang) : t("inactive_male", lang)}
           </span>
+
+          {/* Edit button */}
+          <div className="mt-3">
+            <Button
+              type="button"
+              onClick={() => handleEdit(row)}
+              className="outline"
+              text={t("edit", lang)}
+            />
+          </div>
         </div>
       ))}
     </div>

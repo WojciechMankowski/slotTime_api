@@ -1,50 +1,39 @@
 import React, { useState } from "react";
-import { patchUser } from "../../API/serviceUser";
-import { UserOut } from "../../Types/types";
-import { Lang, t, errorText } from "../../Helper/i18n";
+import { t, errorText } from "../../Helper/i18n";
+import { patchCompany } from "../../API/serviceCopany";
 import { getApiError } from "../../Helper/helper";
 import Overlay from "../UI/Overlay";
 import Spinner from "../UI/Spinner";
 import ErrorBanner from "../UI/ErrorBanner";
 import Input from "../UI/Input";
 import Button from "../UI/Button";
-import Select from "../UI/Select";
-import Label from "../UI/Label";
+import Checkbox from "../UI/Checkbox";
+import { UpdateFormCompanyProps } from "../../Types/Props";
 
-interface UpdateFormUserProps {
-  user: UserOut;
-  lang: Lang;
-  onClose: () => void;
-  onSuccess?: () => void;
-}
-
-export default function UpdateFormUser({
-  user,
+export default function UpdateFormCompany({
+  company,
   lang,
   onClose,
   onSuccess,
-}: UpdateFormUserProps) {
-  const [username, setUsername] = useState(user.username);
-  const [password, setPassword] = useState("");
-  const [alias, setAlias] = useState(user.alias);
-  const [role, setRole] = useState(user.role);
+}: UpdateFormCompanyProps) {
+  const [name, setName] = useState(company.name);
+  const [alias, setAlias] = useState(company.alias);
+  const [isActive, setIsActive] = useState(company.is_active);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const roles = ["client", "admin"];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setUpdating(true);
     try {
-      await patchUser(user.id, {
-        ...user,
-        username,
+      await patchCompany(company.id, {
+        id: company.id,
+        name,
         alias,
-        role: role as any,
+        is_active: isActive,
       });
-      if (onSuccess) onSuccess();
+      onSuccess();
       onClose();
     } catch (err) {
       setError(getApiError(err));
@@ -57,46 +46,35 @@ export default function UpdateFormUser({
     <Overlay onClose={onClose}>
       <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden">
         {/* Header */}
-        <div className="bg-linear-to-br from-indigo-600 to-indigo-800 px-7 py-5">
+        <div className="bg-linear-to-br from-blue-600 to-blue-800 px-7 py-5">
           <h3 className="text-xl font-bold text-white mb-0.5">
-            {t("edit_user", lang)}
+            {t("edit_company", lang)}
           </h3>
-          <p className="text-indigo-200 text-sm">{user.username}</p>
+          <p className="text-blue-200 text-sm">{company.alias}</p>
         </div>
 
         {/* Body */}
         <form className="px-7 py-6" onSubmit={handleSubmit}>
           <div className="space-y-4 mb-5">
             <Input
-              label={t("user_name_login", lang)}
+              label={t("company_name", lang)}
               type="text"
-              name="username"
-              value={username}
-              onChange={(val) => setUsername(String(val))}
+              name="nameCompany"
+              value={name}
+              onChange={(val) => setName(String(val))}
             />
             <Input
               label={t("alias", lang)}
               type="text"
-              name="alias"
+              name="aliasCompany"
               value={alias}
               onChange={(val) => setAlias(String(val))}
             />
-            <div className="flex flex-col gap-1">
-              <Label label={t("role", lang)} />
-              <Select
-                name="role_select"
-                options={roles}
-                defaultValue={role}
-                onChange={(val) => setRole(val as any)}
-              />
-            </div>
-            <Input
-              label={`${t("password", lang)} (${t("leave_empty_to_keep", lang)})`}
-              type="password"
-              name="password"
-              value={password}
-              onChange={(val) => setPassword(String(val))}
-              placeholder="••••••••"
+            <Checkbox
+              id="companyIsActive"
+              checked={isActive}
+              onChange={setIsActive}
+              label={isActive ? t("active_male", lang) : t("inactive_male", lang)}
             />
           </div>
 

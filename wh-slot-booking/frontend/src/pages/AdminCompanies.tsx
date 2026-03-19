@@ -5,9 +5,10 @@ import ErrorBanner from "../components/UI/ErrorBanner";
 import Spinner from "../components/UI/Spinner";
 import CreateNewCompany from "../components/Forms/CreateNewCompany";
 import AdminCompaniesTable from "../components/Admin/AdminCompaniesTable";
+import UpdateFormCompany from "../components/Forms/UpdateFormCompany";
 
 export default function AdminCompanies({ lang }: { lang: Lang }) {
-  const { companies, loading, loadErr, reload } = useAdminCompanies();
+  const { companies, loading, loadErr, reload, isEdit, company, setIsEdit, setCompany } = useAdminCompanies();
 
   return (
     <div className="p-4 max-w-5xl mx-auto">
@@ -47,6 +48,17 @@ export default function AdminCompanies({ lang }: { lang: Lang }) {
         <AdminCompaniesTable
           rows={companies}
           lang={lang}
+          setIsEdit={setIsEdit}
+          setCompany={setCompany}
+        />
+      )}
+
+      {isEdit && (
+        <UpdateFormCompany
+          company={company}
+          lang={lang}
+          onClose={() => setIsEdit(false)}
+          onSuccess={reload}
         />
       )}
     </div>

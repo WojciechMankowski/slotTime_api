@@ -15,5 +15,5 @@ export interface CompanyResponse {
   id: number;
   name: string;
   alias: string;
-  is_active: true;
+  is_active: boolean;
 }

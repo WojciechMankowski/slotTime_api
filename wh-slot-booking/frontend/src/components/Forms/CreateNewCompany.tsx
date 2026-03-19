@@ -39,7 +39,7 @@ const CreateNewCompany: React.FC<FormCompanyProps> = () => {
 
   return (
     <div className="bg-white p-6 rounded-md shadow-sm slot-form-card">
-      <h2 className="text-2xl font-bold">{t('form_add_company', getLang())}</h2>
+      {/* <h2 className="text-2xl font-bold">{t('form_add_company', getLang())}</h2> */}
       <form className="flex flex-col gap-6" onSubmit={create_company}>
         <div className="form-group col-span-1 md:col-span-2 grid-3">
           <div className="form-group w-full">

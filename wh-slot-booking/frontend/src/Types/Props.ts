@@ -1,6 +1,7 @@
 import { Slot } from "./SlotType";
 import { DokTyp } from "./DokType";
 import { Company, UserOut } from "./types";
+import { Lang } from "../Helper/i18n";
 
 export interface InputProps {
   type?: React.HTMLInputTypeAttribute; // Lepiej użyć wbudowanego typu Reacta
@@ -21,7 +22,7 @@ export interface ButtonProps {
   disabled?: boolean;
   name?: string;
   id?: string | number;
-  text: string;
+  text: React.ReactNode;
 }
 
 export interface SelectProps {
@@ -71,9 +72,11 @@ export interface FormCompanyProps {
   initialValues?: Partial<SlotFormData>;
 }
 export interface AdminCompaniesTableProps {
-  columns: string[];
   rows: Company[];
+  lang: Lang;
   className?: string;
+  setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
+  setCompany: React.Dispatch<React.SetStateAction<Company>>;
 }
 
 export interface AdminUsersTableProps {
@@ -89,6 +92,15 @@ export interface AdminDocksTableProps {
   columns: string[];
   rows: DokTyp[];
   className?: string;
+  lang: Lang
   setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
   setDock: React.Dispatch<React.SetStateAction<DokTyp>>;
 }
+
+export interface UpdateFormCompanyProps {
+  company: Company;
+  lang: Lang;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+ 

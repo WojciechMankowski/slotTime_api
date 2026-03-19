@@ -36,15 +36,18 @@
   - GET `/api/companies/{id}` również zwraca `alias`
   - Alias jest widoczny w dokumentacji Swagger
 
-- [ ] **Dodanie możliwości zmiany hasła dla użytkownika**
-  - POST/PATCH `/api/users/me/password` przyjmuje `old_password` i `new_password`
-  - Przy złym starym haśle zwraca 400 z czytelnym komunikatem
-  - Nowe hasło musi spełniać wymagania (min. 8 znaków)
-  - Po zmianie hasła stary token nadal działa do wygaśnięcia (lub nie, jeśli decyzja projektowa)
-  - Hasło jest hashowane przed zapisem
-
-- [x]  Endpointy związane z awizacją (done 18.03.2026)
+- [x] Endpointy związane z awizacją (done 18.03.2026)
 - [x] zmiany statusóww (done 18.03.2026)
+
+- [ ] **Blokada lokowania dla użytkownika nie zalogowanego**
+      **Cel** weryfikuje tylko username + hasło. Klient z nieaktywną firmą
+      dostaje token i dopiero później wpada na błędy 403 przy operacjach.
+      - [ ] Klient z `company.is_active=false` nie otrzymuje tokena JWT
+      - [ ] Zwracany jest `403 {"error_code": "COMPANY_INACTIVE"}`
+      - [ ] Klient z `company.is_active=true` loguje się bez zmian
+      - [ ] Klient bez `company_id` (brak firmy) dostaje `403`
+      - [ ] Admin loguje się niezależnie od stanu firm
+      - [ ] Superadmin loguje się niezależnie od stanu firm
 
 ### Frontend
 
@@ -53,8 +56,7 @@
   - Formularz wczytuje aktualne dane doku
   - Walidacja pól po stronie frontendu (wymagane pola, format)
   - Po zapisie lista doków odświeża się z aktualnymi danymi
-  - Toast/komunikat o sukcesie lub błędzie
-- [X] Odświeżenie danych dok, user (done 17.03.2026)
+  - Toast/komunikat o sukcesie lub błędzie -[x] Odświeżenie danych dok, user (done 17.03.2026)
 
 - [x] **Dodanie możliwości edycji użytkownika** (done 17.03.2026)
   - Admin widzi przycisk "Edytuj" przy każdym użytkowniku
@@ -69,24 +71,24 @@
   - Zmiana nazwy firmy nie zmienia automatycznie aliasu (alias edytowalny osobno)
   - Walidacja unikalności nazwy i aliasu
   - Toast/komunikat o sukcesie lub błędzie
-
-- [ ] **Dodanie możliwości zmiany hasła dla użytkownika (frontend)**
-  - Użytkownik ma dostęp do formularza z menu profilu
-  - Formularz wymaga podania starego hasła, nowego hasła i potwierdzenia
-  - Walidacja po stronie frontendu: zgodność nowego hasła z potwierdzeniem, minimalna długość
-  - Przy błędnym starym haśle wyświetla komunikat z API
-  - Po udanej zmianie wyświetla potwierdzenie (nie wylogowuje)
+- [ ] **Blokada lokowania dla użytkownika nie zalogowanego**
+      **Cel** weryfikuje tylko username + hasło. Klient z nieaktywną firmą
+      dostaje token i dopiero później wpada na błędy 403 przy operacjach.
+      - [ ] Klient z nieaktywną firmą widzi komunikat "Firma nieaktywna: brak dostępu."
+      - [ ] Komunikat zmienia się z językiem (PL/EN)
+      - [ ] Formularz logowania nie blokuje się po błędzie (można spróbować ponownie)
+      - [ ] Klient z aktywną firmą loguje się bez zmian
 ---
 
 ### Awizacja panel admina
-- [ ] **stworzenie pod strony do sprawdzania awizacji** *(done 19.03.2026)*
+
+- [x] **stworzenie pod strony do sprawdzania awizacji** _(done 19.03.2026)_
+
 ---
 
 - [x] podbięcie akcj w tabeli z slotami (done 18.03.2026)
-- [x] test czy działa akcje 
+- [x] test czy działa akcje
 - [x] rozpoczęcie pracy nad panelem dla klienta na razie pokazywanie i rezerwacja slotów (done 18.03.2026)
-
-
 
 ## Etap 2: Rezerwacja i workflow slotów
 

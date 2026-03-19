@@ -16,6 +16,7 @@ type Dict = Record<string, { pl: string; en: string }>
 export const dict: Dict = {
   admin_section: { pl: 'Administracja', en: 'Administration' },
   edit_dock: {pl: "Edytuj", en: "Edit"},
+  edit_company: { pl: 'Edytuj firmę', en: 'Edit company' },
   login_title: { pl: 'Logowanie', en: 'Login' },
   username: { pl: 'Użytkownik', en: 'Username' },
   password: { pl: 'Hasło', en: 'Password' },
