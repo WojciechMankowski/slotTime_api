@@ -7,7 +7,7 @@ import useFlash from "../hooks/useFlash";
 import useAvailableSlots from "../hooks/useAvailableSlots";
 import useMySlots from "../hooks/useMySlots";
 import useReservation from "../hooks/useReservation";
-import useCancelSlot from "../hooks/useAdminSlots";
+import useCancelSlot from "../hooks/useCancelSlot";
 import useNotice from "../hooks/useNotice";
 
 import AvailableSlotsTab from "../components/booking/AvailableSlotsTab";

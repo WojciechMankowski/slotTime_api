@@ -25,13 +25,13 @@
   - Przy braku uprawnień zwraca 403
   - Przy nieistniejącym zasobie zwraca 404
 
-- [ ] ** POST /api/companies bez alias działa (alias auto)**
+- [x] ** POST /api/companies bez alias działa (alias auto)** (done 19.03.2026)
   - POST `/api/companies` z body bez pola `alias` zwraca 201 i wygenerowany alias
   - Alias jest tworzony jako slug z nazwy firmy (lowercase, bez spacji/znaków specjalnych)
   - Jeśli alias już istnieje, dodawany jest numeryczny sufiks (np. `firma-1`)
   - POST z jawnie podanym aliasem nadal działa bez zmian
 
-- [ ] **GET /api/companies zwraca aliasy**
+- [x] **GET /api/companies zwraca aliasy** (done 19.03.2026)
   - GET `/api/companies` zwraca listę firm, każda z polem `alias`
   - GET `/api/companies/{id}` również zwraca `alias`
   - Alias jest widoczny w dokumentacji Swagger
@@ -42,6 +42,9 @@
   - Nowe hasło musi spełniać wymagania (min. 8 znaków)
   - Po zmianie hasła stary token nadal działa do wygaśnięcia (lub nie, jeśli decyzja projektowa)
   - Hasło jest hashowane przed zapisem
+
+- [x]  Endpointy związane z awizacją (done 18.03.2026)
+- [x] zmiany statusóww (done 18.03.2026)
 
 ### Frontend
 
@@ -73,12 +76,16 @@
   - Walidacja po stronie frontendu: zgodność nowego hasła z potwierdzeniem, minimalna długość
   - Przy błędnym starym haśle wyświetla komunikat z API
   - Po udanej zmianie wyświetla potwierdzenie (nie wylogowuje)
-
 ---
-## ZADANIA na 18.03
+
+### Awizacja panel admina
+- [ ] **stworzenie pod strony do sprawdzania awizacji** *(done 19.03.2026)*
+---
+
 - [x] podbięcie akcj w tabeli z slotami (done 18.03.2026)
-- [ ] test czy działa akcje
+- [x] test czy działa akcje 
 - [x] rozpoczęcie pracy nad panelem dla klienta na razie pokazywanie i rezerwacja slotów (done 18.03.2026)
+
 
 
 ## Etap 2: Rezerwacja i workflow slotów

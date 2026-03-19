@@ -7,6 +7,7 @@ import type { Me } from './Types/types'
 import Login from './pages/Login'
 
 import Slots from './pages/Slots'
+import Notices from './pages/Notices'
 import AdminCompanies from './pages/AdminCompanies'
 import AdminUsers from './pages/AdminUsers'
 import AdminDocks from './pages/AdminDocks'
@@ -64,7 +65,7 @@ export default function App() {
         <div className="max-w-1400px mx-auto px-5 pb-8">
           <Routes>
             <Route path="/slots" element={<Slots lang={lang} me={me} />} />
-
+            <Route path="/notices" element={<Notices lang={lang} />}/>
             {/* widok klienta: wolne sloty + rezerwacja — strona główna */}
             <Route path="/" element={<ClientBooking lang={lang} me={me} />} />
             <Route path="/book" element={<ClientBooking lang={lang} me={me} />} />

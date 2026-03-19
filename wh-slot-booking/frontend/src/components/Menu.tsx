@@ -145,6 +145,7 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
               >
                 {t("slots", lang)}
               </NavLink>
+              
               <NavLink
                 to="/generate"
                 onClick={closeMenu}
@@ -181,6 +182,16 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
               >
                 {t("docks", lang)}
               </NavLink>
+              <NavLink
+                to="/notices"
+                onClick={closeMenu}
+                className={({ isActive }) =>
+                  `${linkBase} ${isActive ? linkActive : ""}`
+                }
+              >
+               Zestawienie awizacji
+              </NavLink>
+
               <NavLink
                 to="/test"
                 onClick={closeMenu}

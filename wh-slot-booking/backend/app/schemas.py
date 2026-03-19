@@ -116,6 +116,20 @@ class SlotOut(BaseModel):
     reserved_by_alias: Optional[str] = None
     reserved_by_company_alias: Optional[str] = None
 
+class SlotWithNoticeOut(BaseModel):
+    id: int
+    start_dt: datetime
+    end_dt: datetime
+    slot_type: SlotType
+    original_slot_type: SlotType
+    status: SlotStatus
+    dock_id: Optional[int] = None
+    dock_alias: Optional[str] = None
+    reserved_by_user_id: Optional[int] = None
+    reserved_by_alias: Optional[str] = None
+    reserved_by_company_alias: Optional[str] = None
+    notice: SlotNoticeOut
+
 class SlotReserveIn(BaseModel):
     requested_type: Optional[Literal["INBOUND","OUTBOUND"]] = None
 

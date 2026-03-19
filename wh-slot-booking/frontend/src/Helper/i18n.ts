@@ -44,7 +44,7 @@ export const dict: Dict = {
   create: { pl: 'Utwórz', en: 'Create' },
   is_active: { pl: 'Aktywne', en: 'Active' },
   dock_name: {pl: 'Nazwa doku', en: 'Dock name'},
-  generate_slots: { pl: 'Generowanie slotów', en: 'Generate slots' },
+  generate_slots: { pl: 'Generowanie slotów', en: 'Generate slots' }, // przeniesione z errorText
   test: { pl: 'Test', en: 'Test' },
   name: { pl: 'Nazwa', en: 'Name' },
   alias: { pl: 'Alias', en: 'Alias' },
@@ -57,9 +57,6 @@ export const dict: Dict = {
   user_name: { pl: 'Nazwa użytkownika', en: 'Username' },
   user_name_login: { pl: 'Nazwa użytkownika', en: 'Username' },
   save_changes: {pl: "Zapisz zmiany", en: "Save changes"},
-  save_user: { pl: 'Zapisz', en: 'Save' },
-  edit_user: { pl: 'Edytuj użytkownika', en: 'Edit user' },
-  leave_empty_to_keep: { pl: 'zostaw puste, aby nie zmieniać', en: 'leave empty to keep current' },
   add_user: { pl: 'Dodaj użytkownika', en: 'Add user' },
   form_add_user: { pl: 'Formularz dodawania nowych użytkowników', en: 'Form for adding new users' },
   form_add_company: { pl: 'Formularz tworzenie nowej firmy', en: 'Form for creating a new company' },
@@ -135,6 +132,7 @@ export const dict: Dict = {
   cancelling: { pl: 'Anulowanie…', en: 'Cancelling…' },
 
   // Notice / awizacja
+  notices_desc: { pl: 'Przegląd awizacji złożonych przez klientów', en: 'Overview of notices submitted by clients' },
   notice_form_title: { pl: 'Formularz awizacji', en: 'Notice Form' },
   notice_form_desc: { pl: 'Wypełnij szczegóły dostawy. Pola oznaczone * są wymagane.', en: 'Fill in delivery details. Fields marked * are required.' },
   notice_order_no: { pl: 'Numer zlecenia *', en: 'Order number *' },
@@ -155,6 +153,21 @@ export const dict: Dict = {
   no_docks: { pl: 'Brak doków', en: 'No docks' },
   add_remarks: { pl: 'Dodaj uwagi…', en: 'Add remarks…' },
   saving: { pl: 'Zapisywanie…', en: 'Saving…' },
+  // --- Strona awizacji ---
+notices_title:        { pl: 'Awizacje',                    en: 'Notices' },
+notices_count:        { pl: 'Znaleziono awizacji',         en: 'Notices found' },
+no_notices:           { pl: 'Brak awizacji w wybranym zakresie', en: 'No notices in selected range' },
+notice_details:       { pl: 'Szczegóły awizacji',          en: 'Notice details' },
+
+// --- Pola awizacji ---
+notice_order_number:  { pl: 'Numer zlecenia',              en: 'Order number' },
+// notice_reference:     { pl: 'Referencja',                  en: 'Reference' },
+notice_vehicle_reg:   { pl: 'Rejestracja auta',            en: 'Vehicle registration' },
+notice_trailer_reg:   { pl: 'Rejestracja naczepy',         en: 'Trailer registration' },
+notice_pallet_count:  { pl: 'Ilość palet',                 en: 'Pallet count' },
+// notice_driver_name:   { pl: 'Kierowca (imię i nazwisko)',  en: 'Driver (name)' },
+// notice_driver_phone:  { pl: 'Telefon kierowcy',            en: 'Driver phone' },
+notice_notes:         { pl: 'Uwagi',                       en: 'Notes' },
 }
 
 export function t(key: keyof typeof dict, lang: Lang): string {
