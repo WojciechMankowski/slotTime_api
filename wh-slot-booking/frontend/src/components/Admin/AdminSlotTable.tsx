@@ -1,11 +1,7 @@
 import React from "react";
-import { TablePropsAdmin } from "../../Types/Props";
 import { Slot } from "../../Types/SlotType";
-import { t, getLang } from "../../Helper/i18n";
-
-/* ------------------------------------------------------------------ */
-/* Status badge styling                                                 */
-/* ------------------------------------------------------------------ */
+import { DokTyp } from "../../Types/DokType";
+import { t, Lang } from "../../Helper/i18n";
 
 const STATUS_STYLE: Record<string, { bg: string; text: string }> = {
   AVAILABLE:                { bg: "bg-emerald-100", text: "text-emerald-800" },
@@ -16,40 +12,44 @@ const STATUS_STYLE: Record<string, { bg: string; text: string }> = {
   CANCELLED:                { bg: "bg-red-100",     text: "text-red-700"     },
 };
 
-/* ------------------------------------------------------------------ */
-/* Component                                                            */
-/* ------------------------------------------------------------------ */
+interface TableAdminSlotProps {
+  rows: Slot[];
+  docks: DokTyp[];
+  lang: Lang;
+  className?: string;
+  onDockChange: (slotId: number, dockId: number) => void;
+  onStatusChange: (slotId: number, newStatus: string) => void;
+  onApprove: (slotId: number) => void;
+}
 
 export default function TableAdminSlot({
-  columns,
   rows,
   docks = [],
+  lang,
   onDockChange,
   onStatusChange,
   onApprove,
   className = "",
-}: TablePropsAdmin) {
-  const lang = getLang();
-
+}: TableAdminSlotProps) {
   const handleDockChange = (
     e: React.ChangeEvent<HTMLSelectElement>,
-    rowId: number,
+    slotId: number,
   ) => {
-    const selectedAlias = e.target.value;
-    const selectedDock = docks.find((dock) => dock.alias === selectedAlias);
-    if (onDockChange && selectedDock) {
-      onDockChange(rowId, selectedDock.id);
+    const selectedDock = docks.find((dock) => dock.alias === e.target.value);
+    if (selectedDock) {
+      onDockChange(slotId, selectedDock.id);
     }
   };
 
-  const handleStatusChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-    rowId: number,
-  ) => {
-    if (onStatusChange) {
-      onStatusChange(rowId, e.target.value);
-    }
-  };
+  const columns = [
+    t("start", lang),
+    t("end", lang),
+    t("type", lang),
+    t("status", lang),
+    t("dock", lang),
+    t("company", lang),
+    t("action", lang),
+  ];
 
   return (
     <div className="overflow-x-auto rounded-xl border border-gray-100">
@@ -67,35 +67,35 @@ export default function TableAdminSlot({
             ))}
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-100 italic-none">
+        <tbody className="bg-white divide-y divide-gray-100">
           {rows?.map((row: Slot, index: number) => {
-            const rowId = row.id ?? index;
+            const slotId = row.id ?? index;
             const statusStyle = STATUS_STYLE[row.status] ?? { bg: "bg-gray-100", text: "text-gray-600" };
 
             return (
-              <tr key={rowId} className="hover:bg-blue-50/30 transition-colors group">
+              <tr key={slotId} className="hover:bg-blue-50/30 transition-colors group">
                 {/* Start */}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className="text-sm font-semibold text-gray-900">
-                    {new Date(row.start_dt).toLocaleDateString("pl-PL", { day: '2-digit', month: '2-digit' })}
+                    {new Date(row.start_dt).toLocaleDateString("pl-PL", { day: "2-digit", month: "2-digit" })}
                   </span>
                   <span className="text-sm font-bold text-blue-600 ml-2">
-                    {new Date(row.start_dt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {new Date(row.start_dt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </span>
                 </td>
 
                 {/* End */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500">
-                  {new Date(row.end_dt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(row.end_dt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </td>
 
                 {/* Type */}
                 <td className="px-6 py-4 whitespace-nowrap">
-                   <span className={`text-[0.65rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                     row.slot_type === 'INBOUND' ? 'bg-blue-100 text-blue-700' :
-                     row.slot_type === 'OUTBOUND' ? 'bg-emerald-100 text-emerald-700' :
-                     'bg-purple-100 text-purple-700'
-                   }`}>
+                  <span className={`text-[0.65rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                    row.slot_type === "INBOUND" ? "bg-blue-100 text-blue-700" :
+                    row.slot_type === "OUTBOUND" ? "bg-emerald-100 text-emerald-700" :
+                    "bg-purple-100 text-purple-700"
+                  }`}>
                     {t(row.slot_type.toLowerCase() as any, lang)}
                   </span>
                 </td>
@@ -104,7 +104,7 @@ export default function TableAdminSlot({
                 <td className="px-6 py-4 whitespace-nowrap">
                   <select
                     value={row.status}
-                    onChange={(e) => handleStatusChange(e, rowId)}
+                    onChange={(e) => onStatusChange(slotId, e.target.value)}
                     className={`block w-fit min-w-[160px] rounded-xl border-none shadow-sm text-xs font-bold py-1.5 px-3 focus:ring-2 focus:ring-blue-500 cursor-pointer transition-all ${statusStyle.bg} ${statusStyle.text}`}
                   >
                     <option value="AVAILABLE">{t("available", lang)}</option>
@@ -120,7 +120,7 @@ export default function TableAdminSlot({
                 <td className="px-6 py-4 whitespace-nowrap">
                   <select
                     value={row.dock_alias ?? ""}
-                    onChange={(e) => handleDockChange(e, rowId)}
+                    onChange={(e) => handleDockChange(e, slotId)}
                     className="block w-fit min-w-[120px] rounded-xl border border-gray-200 shadow-sm text-sm font-bold py-1.5 px-3 focus:ring-2 focus:ring-blue-500 bg-gray-50 hover:bg-white transition-all cursor-pointer"
                   >
                     <option value="">--</option>
@@ -149,10 +149,9 @@ export default function TableAdminSlot({
                 {/* Actions */}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-2">
-                    {/* Approve button — only for BOOKED slots */}
-                    {row.status === "BOOKED" && onApprove && (
+                    {row.status === "BOOKED" && (
                       <button
-                        onClick={() => onApprove(rowId)}
+                        onClick={() => onApprove(slotId)}
                         className="flex items-center gap-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 px-3 py-1.5 rounded-xl transition-all shadow-md hover:shadow-lg whitespace-nowrap"
                       >
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -162,10 +161,9 @@ export default function TableAdminSlot({
                       </button>
                     )}
 
-                    {/* Close / Reopen */}
                     {row.status === "AVAILABLE" ? (
                       <button
-                        onClick={() => onStatusChange && onStatusChange(rowId, "CANCELLED")}
+                        onClick={() => onStatusChange(slotId, "CANCELLED")}
                         className="p-2 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all group-hover:bg-gray-50"
                         title={t("close_slot", lang)}
                       >
@@ -175,7 +173,7 @@ export default function TableAdminSlot({
                       </button>
                     ) : row.status === "BOOKED" || row.status === "APPROVED_WAITING_DETAILS" ? (
                       <button
-                        onClick={() => onStatusChange && onStatusChange(rowId, "AVAILABLE")}
+                        onClick={() => onStatusChange(slotId, "AVAILABLE")}
                         className="p-2 rounded-xl text-gray-400 hover:text-orange-600 hover:bg-orange-50 transition-all group-hover:bg-gray-50"
                         title={t("cancel_reservation", lang)}
                       >
@@ -202,6 +200,5 @@ export default function TableAdminSlot({
         </div>
       )}
     </div>
-
   );
 }

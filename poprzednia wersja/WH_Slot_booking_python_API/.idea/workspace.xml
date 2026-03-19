@@ -5,28 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6d0cb7b5-39f4-4ef5-b351-51db5f53717b" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/_metadata.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/_metadata.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/axios.js" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/axios.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/axios.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/axios.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/chunk-DRWLMN53.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/chunk-DRWLMN53.js.map" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/chunk-G3PMV62Z.js" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/chunk-G3PMV62Z.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/chunk-G3PMV62Z.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/chunk-G3PMV62Z.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/chunk-NXESFFTV.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/chunk-NXESFFTV.js.map" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react-dom.js" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react-dom.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react-dom.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react-dom.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react-dom_client.js" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react-dom_client.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react-dom_client.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react-dom_client.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react-router-dom.js" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react-router-dom.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react-router-dom.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react-router-dom.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react.js" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react_jsx-dev-runtime.js" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react_jsx-dev-runtime.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react_jsx-dev-runtime.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react_jsx-dev-runtime.js.map" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react_jsx-runtime.js" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react_jsx-runtime.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react_jsx-runtime.js.map" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/node_modules/.vite/deps/react_jsx-runtime.js.map" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/backend/app.db" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/backend/app.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/src/API/serviceSlot.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/src/API/serviceSlot.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/src/components/Admin/AdminSlotTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/src/components/Admin/AdminSlotTable.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/src/hooks/useCancelSlot.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/src/pages/AdminSlot.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/src/pages/AdminSlot.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../wh-slot-booking/frontend/src/pages/ClientBooking.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../wh-slot-booking/frontend/src/pages/ClientBooking.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,24 +35,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "ai.playground.ignore.import.keys.banner.in.settings": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "C:/Users/Wojciech.M/OneDrive - MCG-Logistics sp. z o.o/Narzędzia/Time slot/poprzednia wersja/WH_Slot_booking_python_API",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;ai.playground.ignore.import.keys.banner.in.settings&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Wojciech.M/OneDrive - MCG-Logistics sp. z o.o/Narzędzia/Time slot/poprzednia wersja/WH_Slot_booking_python_API&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -86,6 +70,7 @@
       <updated>1773299282024</updated>
       <workItem from="1773299283919" duration="7733000" />
       <workItem from="1773734063594" duration="201000" />
+      <workItem from="1773910233581" duration="37000" />
     </task>
     <servers />
   </component>

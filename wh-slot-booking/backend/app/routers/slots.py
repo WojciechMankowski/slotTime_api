@@ -16,7 +16,7 @@ from ..schemas import (
     SlotAssignDockIn,
     SlotGenerateIn,
     SlotGenerateOut,
-    SlotGenerateDayReport,
+    SlotGenerateDayReport, SlotStatusPatch,
 )
 
 router = APIRouter(prefix="/api/slots", tags=["slots"])
@@ -495,6 +495,33 @@ def patch_slot(
 
     for k, v in payload.items():
         setattr(slot, k, v)
+
+    db.commit()
+    db.refresh(slot)
+    return slot_to_out(slot, db)
+
+@router.patch(
+    "/{slot_id}/status",
+    response_model=SlotOut,
+    dependencies=[Depends(require_role(models.Role.admin, models.Role.superadmin))],
+)
+def change_slot_status(
+    slot_id: int,
+    data: SlotStatusPatch,
+    wh: models.Warehouse = Depends(get_context_warehouse),
+    db: Session = Depends(get_db),
+):
+    slot = db.get(models.Slot, slot_id)
+    if not slot or slot.warehouse_id != wh.id:
+        raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
+
+    slot.status = data.status
+
+    # jeśli cofamy do AVAILABLE, czyścimy rezerwację
+    if data.status == models.SlotStatus.AVAILABLE:
+        slot.reserved_by_user_id = None
+        slot.reserved_by_company_id = None
+        slot.dock_id = None
 
     db.commit()
     db.refresh(slot)

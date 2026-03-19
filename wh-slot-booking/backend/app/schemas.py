@@ -1,9 +1,13 @@
-from __future__ import annotations
+
 from pydantic import BaseModel, Field
 from datetime import datetime, date, time
 from typing import Optional, List, Literal
 from .models import Role, SlotType, SlotStatus
-from .db import Base
+
+
+class SlotStatusPatch(BaseModel):
+    status: SlotStatus
+
 
 class ErrorOut(BaseModel):
     error_code: str
@@ -196,3 +200,5 @@ class SlotPatch(BaseModel):
     slot_type: Optional[SlotType] = None
     start_dt: Optional[datetime] = None
     end_dt: Optional[datetime] = None
+
+# SlotStatusPatch.model_rebuild()
