@@ -10,7 +10,7 @@ from .routers import auth, me, warehouses, companies, users, docks, slots, notic
 
 def create_app() -> FastAPI:
     app = FastAPI(title="WH Slot Booking API", version="2.1")
-
+    app.host("0.0.0.0")
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
