@@ -78,7 +78,7 @@ export default function TableAdminSlot({
             const statusStyle = STATUS_STYLE[row.status] ?? { bg: "bg-gray-100", text: "text-gray-600" };
 
             return (
-              <tr key={slotId} className="hover:bg-blue-50/30 transition-colors group">
+              <tr key={slotId} className={`transition-colors group ${row.status === "CANCEL_PENDING" ? "bg-orange-50 hover:bg-orange-100/70" : "hover:bg-blue-50/30"}`}>
                 {/* Start */}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className="text-sm font-semibold text-gray-900">
@@ -168,28 +168,26 @@ export default function TableAdminSlot({
                     )}
 
                     {row.status === "CANCEL_PENDING" && (
-                      <>
+                      <div className="flex flex-col gap-1.5">
                         <button
                           onClick={() => onApproveCancel(slotId)}
-                          className="flex items-center gap-1.5 text-xs font-bold text-white bg-red-600 hover:bg-red-700 active:bg-red-800 px-3 py-1.5 rounded-xl transition-all shadow-md hover:shadow-lg whitespace-nowrap"
-                          title={t("approve_cancel", lang)}
+                          className="flex items-center gap-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 active:bg-red-800 px-4 py-2 rounded-xl transition-all shadow-md hover:shadow-lg whitespace-nowrap ring-2 ring-red-300"
                         >
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                           </svg>
                           {t("approve_cancel", lang)}
                         </button>
                         <button
                           onClick={() => onRejectCancel(slotId)}
-                          className="flex items-center gap-1.5 text-xs font-bold text-orange-700 bg-orange-100 hover:bg-orange-200 active:bg-orange-300 px-3 py-1.5 rounded-xl transition-all whitespace-nowrap"
-                          title={t("reject_cancel", lang)}
+                          className="flex items-center gap-2 text-xs font-bold text-orange-800 bg-orange-200 hover:bg-orange-300 active:bg-orange-400 px-4 py-2 rounded-xl transition-all whitespace-nowrap"
                         >
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 .49-4.64" />
                           </svg>
                           {t("reject_cancel", lang)}
                         </button>
-                      </>
+                      </div>
                     )}
 
                     {row.status === "AVAILABLE" ? (

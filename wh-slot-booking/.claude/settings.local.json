@@ -4,7 +4,8 @@
       "Bash(grep:*)",
       "Bash(python seed.py)",
       "Bash(.venv/Scripts/python seed.py)",
-      "Bash(.venv/Scripts/python -c \":*)"
+      "Bash(.venv/Scripts/python -c \":*)",
+      "Bash(npm run:*)"
     ]
   }
 }

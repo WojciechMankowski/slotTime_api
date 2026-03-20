@@ -27,8 +27,8 @@
   - [x] `POST /api/slots/{id}/cancel` zatwierdza anulowanie (admin, czyści previous_status)
   - [x] Guard w `PATCH /status` — blokuje ustawienie `CANCEL_PENDING` przez ten endpoint
   - [x] Klucze i18n: `cancel_pending`, `request_cancel`, `reject_cancel`, `cancel_pending_desc`, `approve_cancel`
-  - [ ] UI: klient widzi "Poproś o anulowanie" zamiast bezpośredniego anulowania
-  - [ ] Admin widzi sloty `CANCEL_PENDING` z akcją zatwierdzenia/odrzucenia w tabeli
+  - [x] UI: klient widzi "Poproś o anulowanie" zamiast bezpośredniego anulowania
+  - [x] Admin widzi sloty `CANCEL_PENDING` z akcją zatwierdzenia/odrzucenia w tabeli
 
 - [ ] **D3. Filtr archiwum w widoku admina**
   - [ ] Dodać opcję "Pokaż zakończone/anulowane" w `FilertSlotAdmin.tsx`
