@@ -65,7 +65,7 @@
   - Nie można edytować superadmina z poziomu admina
   - Walidacja email (unikalność, format)
 
-- [ ] **Dodanie możliwości edycji firmy**
+- [x] **Dodanie możliwości edycji firmy** *done 19.03.2026*
   - Admin widzi przycisk "Edytuj" przy każdej firmie
   - Formularz wczytuje aktualne dane firmy (w tym alias)
   - Zmiana nazwy firmy nie zmienia automatycznie aliasu (alias edytowalny osobno)

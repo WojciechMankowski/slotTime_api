@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { patchUser } from "../../API/serviceUser";
+import { getCompanies } from "../../API/serviceCopany";
+import { CompanyResponse } from "../../Types/apiType";
 import { UserOut } from "../../Types/types";
 import { Lang, t, errorText } from "../../Helper/i18n";
 import { getApiError } from "../../Helper/helper";
@@ -28,10 +30,18 @@ export default function UpdateFormUser({
   const [password, setPassword] = useState("");
   const [alias, setAlias] = useState(user.alias);
   const [role, setRole] = useState(user.role);
+  const [companyId, setCompanyId] = useState<number | null>(user.company_id);
+  const [companies, setCompanies] = useState<CompanyResponse[]>([]);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const roles = ["client", "admin"];
+
+  useEffect(() => {
+    getCompanies()
+      .then(setCompanies)
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +53,7 @@ export default function UpdateFormUser({
         username,
         alias,
         role: role as any,
+        company_id: companyId,
       });
       if (onSuccess) onSuccess();
       onClose();
@@ -88,6 +99,18 @@ export default function UpdateFormUser({
                 options={roles}
                 defaultValue={role}
                 onChange={(val) => setRole(val as any)}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label label={t("company", lang)} />
+              <Select
+                name="company_select"
+                options={[
+                  { value: "", label: "—" },
+                  ...companies.map((c) => ({ value: String(c.id), label: c.name })),
+                ]}
+                defaultValue={companyId != null ? String(companyId) : ""}
+                onChange={(val) => setCompanyId(val ? Number(val) : null)}
               />
             </div>
             <Input

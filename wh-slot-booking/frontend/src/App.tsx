@@ -15,6 +15,7 @@ import GenerateSlots from './pages/GenerateSlots'
 import TestPage from './pages/TestPage'
 import ClientBooking from './pages/ClientBooking'
 import Header from './components/Header'
+import CompanyBlocked from './pages/CompanyBlocked'
 
 
 export default function App() {
@@ -54,6 +55,13 @@ export default function App() {
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     )
+  }
+
+  const isCompanyBlocked =
+    me.role === 'client' && (!me.company || !me.company.is_active)
+
+  if (isCompanyBlocked) {
+    return <CompanyBlocked lang={lang} onLogout={onLogout} />
   }
 
   return (
