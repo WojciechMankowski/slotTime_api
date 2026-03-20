@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 from datetime import datetime, date, timedelta, time as dtime
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 from ..db import get_db
 from .. import models
@@ -179,6 +179,63 @@ def list_slots(
         company = db.get(models.Company, user.company_id) if user.company_id else None
         if not company or not company.is_active:
             raise HTTPException(status_code=403, detail={"error_code": "COMPANY_INACTIVE"})
+
+    return [slot_to_out(s, db) for s in slots]
+
+
+# =========================================================
+# ARCHIVE (COMPLETED / CANCELLED)
+# =========================================================
+
+@router.get(
+    "/archive",
+    response_model=List[SlotOut],
+    dependencies=[Depends(require_role(models.Role.admin, models.Role.superadmin, models.Role.client))],
+)
+def list_archive(
+    date_from: Optional[date] = Query(None),
+    date_to: Optional[date] = Query(None),
+    status: Optional[str] = Query(None, description="COMPLETED | CANCELLED | ALL (domyślnie COMPLETED)"),
+    user: models.User = Depends(get_current_user),
+    wh: models.Warehouse = Depends(get_context_warehouse),
+    db: Session = Depends(get_db),
+):
+    # dozwolone statusy archiwum
+    ARCHIVE_STATUSES = {models.SlotStatus.COMPLETED, models.SlotStatus.CANCELLED}
+
+    if status and status.upper() == "ALL":
+        filter_statuses = list(ARCHIVE_STATUSES)
+    elif status:
+        try:
+            parsed = models.SlotStatus[status.upper()]
+        except KeyError:
+            raise HTTPException(status_code=400, detail={"error_code": "INVALID_STATUS"})
+        if parsed not in ARCHIVE_STATUSES:
+            raise HTTPException(status_code=400, detail={"error_code": "INVALID_STATUS"})
+        filter_statuses = [parsed]
+    else:
+        filter_statuses = [models.SlotStatus.COMPLETED]
+
+    filters = [
+        models.Slot.warehouse_id == wh.id,
+        models.Slot.status.in_(filter_statuses),
+    ]
+
+    if date_from:
+        filters.append(models.Slot.start_dt >= datetime.combine(date_from, dtime.min))
+    if date_to:
+        filters.append(models.Slot.start_dt <= datetime.combine(date_to, dtime.max))
+
+    # klient widzi tylko swoje sloty
+    if user.role == models.Role.client:
+        filters.append(models.Slot.reserved_by_user_id == user.id)
+
+    slots = (
+        db.query(models.Slot)
+        .filter(*filters)
+        .order_by(models.Slot.start_dt.desc())
+        .all()
+    )
 
     return [slot_to_out(s, db) for s in slots]
 
