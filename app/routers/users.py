@@ -118,6 +118,20 @@ def create_user(
 
 
 
+@router.delete("/{user_id}", status_code=204, dependencies=[Depends(require_role(models.Role.superadmin))])
+def delete_user(
+    user_id: int,
+    actor: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if user_id == actor.id:
+        raise HTTPException(status_code=400, detail={"error_code": "CANNOT_DELETE_SELF"})
+    user = db.get(models.User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail={"error_code": "USER_NOT_FOUND"})
+    db.delete(user)
+    db.commit()
+
 @router.patch("/{user_id}", response_model=UserOut, dependencies=[Depends(require_role(models.Role.admin, models.Role.superadmin))])
 def patch_user(
     user_id: int,

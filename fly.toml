@@ -6,6 +6,9 @@
 app = 'slottime-api'
 primary_region = 'ams'
 
+[deploy]
+  release_command = "python seed.py"
+
 [build]
 
 [http_service]

@@ -644,3 +644,22 @@ def change_slot_status(
     db.commit()
     db.refresh(slot)
     return slot_to_out(slot, db)
+
+
+@router.delete(
+    "/{slot_id}",
+    status_code=204,
+    dependencies=[Depends(require_role(models.Role.superadmin))],
+)
+def delete_slot(
+    slot_id: int,
+    wh: models.Warehouse = Depends(get_context_warehouse),
+    db: Session = Depends(get_db),
+):
+    slot = db.get(models.Slot, slot_id)
+    if not slot or slot.warehouse_id != wh.id:
+        raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
+    if slot.status != models.SlotStatus.AVAILABLE:
+        raise HTTPException(status_code=409, detail={"error_code": "SLOT_NOT_AVAILABLE"})
+    db.delete(slot)
+    db.commit()
