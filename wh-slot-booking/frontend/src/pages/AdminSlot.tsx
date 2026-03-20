@@ -17,6 +17,7 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
     errorDock,
     errorStatus,
     errorApprove,
+    errorCancelAction,
     setStartOd,
     setEndDo,
     setTypeSlot,
@@ -25,6 +26,8 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
     onDockChange,
     onStatusChange,
     onApprove,
+    onApproveCancel,
+    onRejectCancel,
     handleCreateSlot,
   } = useAdminSlots(lang);
 
@@ -72,6 +75,7 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
         {errorDock && <ErrorBanner msg={errorDock} compact />}
         {errorStatus && <ErrorBanner msg={errorStatus} compact />}
         {errorApprove && <ErrorBanner msg={errorApprove} compact />}
+        {errorCancelAction && <ErrorBanner msg={errorCancelAction} compact />}
 
         <TableAdminSlot
           rows={slotsAdmin}
@@ -80,6 +84,8 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
           onDockChange={onDockChange}
           onStatusChange={onStatusChange}
           onApprove={onApprove}
+          onApproveCancel={onApproveCancel}
+          onRejectCancel={onRejectCancel}
         />
       </div>
     </div>

@@ -6,7 +6,7 @@ export interface Slot {
   end_dt: string;
   slot_type: "INBOUND" | "OUTBOUND" | "ANY";
   original_slot_type: "INBOUND" | "OUTBOUND" | "ANY";
-  status: "AVAILABLE" | "BOOKED" | "APPROVED_WAITING_DETAILS" | "RESERVED_CONFIRMED" | "COMPLETED" | "CANCELLED";
+  status: "AVAILABLE" | "BOOKED" | "APPROVED_WAITING_DETAILS" | "RESERVED_CONFIRMED" | "COMPLETED" | "CANCELLED" | "CANCEL_PENDING";
   dock_id: number | null;
   dock_alias: string | null;
   reserved_by_user_id: number | null;

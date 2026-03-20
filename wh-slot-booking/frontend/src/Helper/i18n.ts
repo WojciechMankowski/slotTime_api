@@ -134,8 +134,8 @@ export const dict: Dict = {
   no_my_reservations_desc: { pl: 'Zarezerwuj slot w zakładce "Wolne sloty".', en: 'Reserve a slot in the "Available Slots" tab.' },
   reservations_count: { pl: 'rezerwacji', en: 'reservations' },
   cancel_success: { pl: 'Rezerwacja została anulowana.', en: 'Reservation cancelled successfully.' },
-  cancel_confirm_desc: { pl: 'Czy na pewno chcesz anulować tę rezerwację? Akcja jest nieodwracalna.', en: 'Are you sure you want to cancel this reservation? This cannot be undone.' },
-  yes_cancel: { pl: 'Tak, anuluj', en: 'Yes, cancel' },
+  cancel_confirm_desc: { pl: 'Wysłanie prośby wymaga zatwierdzenia przez administratora.', en: 'The cancellation request requires admin approval.' },
+  yes_cancel: { pl: 'Tak, wyślij prośbę', en: 'Yes, send request' },
   cancelling: { pl: 'Anulowanie…', en: 'Cancelling…' },
 
   // Notice / awizacja

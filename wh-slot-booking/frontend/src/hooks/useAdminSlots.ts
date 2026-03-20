@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getSlotsAdmin, assignDock, createSlot, patchSlot, approveSlot, patchSlotStatus } from "../API/serviceSlot";
+import { getSlotsAdmin, assignDock, createSlot, patchSlot, approveSlot, patchSlotStatus, cancelSlot, rejectCancelSlot } from "../API/serviceSlot";
 import { getDokAdmin } from "../API/serviceDok";
 import { errorText, Lang } from "../Helper/i18n";
 import type { Slot } from "../Types/SlotType";
@@ -42,6 +42,7 @@ export default function useAdminSlots(lang: Lang) {
   const [errorDock, setErrorDock] = useState<string | null>(null);
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
   const [errorApprove, setErrorApprove] = useState<string | null>(null);
+  const [errorCancelAction, setErrorCancelAction] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
   const loadDataSlot = async (start: string, end: string) => {
@@ -99,6 +100,26 @@ export default function useAdminSlots(lang: Lang) {
     }
   };
 
+  const onApproveCancel = async (slotId: number) => {
+    setErrorCancelAction(null);
+    try {
+      await cancelSlot(slotId);
+      await loadDataSlot(startOd, endDo);
+    } catch (error) {
+      setErrorCancelAction(getApiErrorMessage(error, lang));
+    }
+  };
+
+  const onRejectCancel = async (slotId: number) => {
+    setErrorCancelAction(null);
+    try {
+      await rejectCancelSlot(slotId);
+      await loadDataSlot(startOd, endDo);
+    } catch (error) {
+      setErrorCancelAction(getApiErrorMessage(error, lang));
+    }
+  };
+
   const handleCreateSlot = async (formData: {
     dateFrom: string;
     timeFrom: string;
@@ -138,6 +159,7 @@ export default function useAdminSlots(lang: Lang) {
     errorDock,
     errorStatus,
     errorApprove,
+    errorCancelAction,
     isCreating,
     setStartOd,
     setEndDo,
@@ -147,6 +169,8 @@ export default function useAdminSlots(lang: Lang) {
     onDockChange,
     onStatusChange,
     onApprove,
+    onApproveCancel,
+    onRejectCancel,
     handleCreateSlot,
   };
 }

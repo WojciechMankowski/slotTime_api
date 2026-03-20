@@ -10,6 +10,7 @@ const STATUS_STYLE: Record<string, { bg: string; text: string }> = {
   RESERVED_CONFIRMED:       { bg: "bg-indigo-100",  text: "text-indigo-800"  },
   COMPLETED:                { bg: "bg-gray-100",    text: "text-gray-600"    },
   CANCELLED:                { bg: "bg-red-100",     text: "text-red-700"     },
+  CANCEL_PENDING:           { bg: "bg-orange-100",  text: "text-orange-700"  },
 };
 
 interface TableAdminSlotProps {
@@ -20,6 +21,8 @@ interface TableAdminSlotProps {
   onDockChange: (slotId: number, dockId: number) => void;
   onStatusChange: (slotId: number, newStatus: string) => void;
   onApprove: (slotId: number) => void;
+  onApproveCancel: (slotId: number) => void;
+  onRejectCancel: (slotId: number) => void;
 }
 
 export default function TableAdminSlot({
@@ -29,6 +32,8 @@ export default function TableAdminSlot({
   onDockChange,
   onStatusChange,
   onApprove,
+  onApproveCancel,
+  onRejectCancel,
   className = "",
 }: TableAdminSlotProps) {
   const handleDockChange = (
@@ -113,6 +118,7 @@ export default function TableAdminSlot({
                     <option value="RESERVED_CONFIRMED">{t("reserved_confirmed", lang)}</option>
                     <option value="COMPLETED">{t("completed", lang)}</option>
                     <option value="CANCELLED">{t("cancelled", lang)}</option>
+                    <option value="CANCEL_PENDING">{t("cancel_pending", lang)}</option>
                   </select>
                 </td>
 
@@ -159,6 +165,31 @@ export default function TableAdminSlot({
                         </svg>
                         {t("approve", lang)}
                       </button>
+                    )}
+
+                    {row.status === "CANCEL_PENDING" && (
+                      <>
+                        <button
+                          onClick={() => onApproveCancel(slotId)}
+                          className="flex items-center gap-1.5 text-xs font-bold text-white bg-red-600 hover:bg-red-700 active:bg-red-800 px-3 py-1.5 rounded-xl transition-all shadow-md hover:shadow-lg whitespace-nowrap"
+                          title={t("approve_cancel", lang)}
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                          </svg>
+                          {t("approve_cancel", lang)}
+                        </button>
+                        <button
+                          onClick={() => onRejectCancel(slotId)}
+                          className="flex items-center gap-1.5 text-xs font-bold text-orange-700 bg-orange-100 hover:bg-orange-200 active:bg-orange-300 px-3 py-1.5 rounded-xl transition-all whitespace-nowrap"
+                          title={t("reject_cancel", lang)}
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 .49-4.64" />
+                          </svg>
+                          {t("reject_cancel", lang)}
+                        </button>
+                      </>
                     )}
 
                     {row.status === "AVAILABLE" ? (

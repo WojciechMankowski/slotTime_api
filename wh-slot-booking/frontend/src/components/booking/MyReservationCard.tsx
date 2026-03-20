@@ -22,7 +22,8 @@ export default function MyReservationCard({
     label_pl: slot.status,
     label_en: slot.status,
   };
-  const canCancel = slot.status === "BOOKED";
+  const canRequestCancel = ["BOOKED", "APPROVED_WAITING_DETAILS", "RESERVED_CONFIRMED"].includes(slot.status);
+  const isCancelPending = slot.status === "CANCEL_PENDING";
   const canNotice = slot.status === "APPROVED_WAITING_DETAILS";
 
   return (
@@ -104,11 +105,18 @@ export default function MyReservationCard({
         </button>
       )}
 
-      {/* Cancel button */}
-      {canCancel && (
+      {/* Cancel pending badge */}
+      {isCancelPending && (
+        <span className="text-xs font-semibold text-orange-700 bg-orange-100 px-3 py-1.5 rounded-xl shrink-0">
+          {t("cancel_pending_desc", lang)}
+        </span>
+      )}
+
+      {/* Request cancel button */}
+      {canRequestCancel && (
         <button
           onClick={onCancel}
-          title={t("cancel_reservation", lang)}
+          title={t("request_cancel", lang)}
           className="p-2 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all duration-150 shrink-0"
         >
           <svg

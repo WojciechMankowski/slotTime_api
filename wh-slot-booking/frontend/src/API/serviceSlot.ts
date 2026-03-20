@@ -85,6 +85,16 @@ export const cancelSlot = async (slotId: number): Promise<Slot> => {
   return res.data
 }
 
+export const requestCancelSlot = async (slotId: number): Promise<Slot> => {
+  const res = await api.post<Slot>(`/api/slots/${slotId}/request-cancel`)
+  return res.data
+}
+
+export const rejectCancelSlot = async (slotId: number): Promise<Slot> => {
+  const res = await api.post<Slot>(`/api/slots/${slotId}/reject-cancel`)
+  return res.data
+}
+
 export const patchSlotStatus = async (slotId: number, status: string): Promise<Slot> => {
   const res = await api.patch<Slot>(`/api/slots/${slotId}/status`, { status });
   return res.data;

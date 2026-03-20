@@ -24,7 +24,7 @@ export default function CancelModal({
       <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden">
         <div className="bg-linear-to-br from-red-500 to-red-700 px-7 py-5">
           <h3 className="text-xl font-bold text-white mb-0.5">
-            {t("cancel_reservation", lang)}
+            {t("request_cancel", lang)}
           </h3>
           <p className="text-red-200 text-sm">
             {t("cancel_confirm_desc", lang)}
