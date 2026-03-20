@@ -39,15 +39,15 @@
 - [x] Endpointy związane z awizacją (done 18.03.2026)
 - [x] zmiany statusóww (done 18.03.2026)
 
-- [ ] **Blokada lokowania dla użytkownika nie zalogowanego**
+- [x] **Blokada lokowania dla użytkownika nie zalogowanego** *(done 20.03.2026)*
       **Cel** weryfikuje tylko username + hasło. Klient z nieaktywną firmą
       dostaje token i dopiero później wpada na błędy 403 przy operacjach.
-      - [ ] Klient z `company.is_active=false` nie otrzymuje tokena JWT
-      - [ ] Zwracany jest `403 {"error_code": "COMPANY_INACTIVE"}`
-      - [ ] Klient z `company.is_active=true` loguje się bez zmian
-      - [ ] Klient bez `company_id` (brak firmy) dostaje `403`
-      - [ ] Admin loguje się niezależnie od stanu firm
-      - [ ] Superadmin loguje się niezależnie od stanu firm
+      - [x] Klient z `company.is_active=false` nie otrzymuje tokena JWT
+      - [x] Zwracany jest `403 {"error_code": "COMPANY_INACTIVE"}`
+      - [x] Klient z `company.is_active=true` loguje się bez zmian
+      - [x] Klient bez `company_id` (brak firmy) dostaje `403`
+      - [x] Admin loguje się niezależnie od stanu firm
+      - [x] Superadmin loguje się niezależnie od stanu firm
 
 ### Frontend
 
@@ -71,13 +71,13 @@
   - Zmiana nazwy firmy nie zmienia automatycznie aliasu (alias edytowalny osobno)
   - Walidacja unikalności nazwy i aliasu
   - Toast/komunikat o sukcesie lub błędzie
-- [ ] **Blokada lokowania dla użytkownika nie zalogowanego**
+- [ ] **Blokada lokowania dla użytkownika nie zalogowanego** *(done 20.03.2026)*
       **Cel** weryfikuje tylko username + hasło. Klient z nieaktywną firmą
       dostaje token i dopiero później wpada na błędy 403 przy operacjach.
-      - [ ] Klient z nieaktywną firmą widzi komunikat "Firma nieaktywna: brak dostępu."
-      - [ ] Komunikat zmienia się z językiem (PL/EN)
-      - [ ] Formularz logowania nie blokuje się po błędzie (można spróbować ponownie)
-      - [ ] Klient z aktywną firmą loguje się bez zmian
+      - [x] Klient z nieaktywną firmą widzi komunikat "Firma nieaktywna: brak dostępu."
+      - [x] Komunikat zmienia się z językiem (PL/EN)
+      - [x] Formularz logowania nie blokuje się po błędzie (można spróbować ponownie)
+      - [x] Klient z aktywną firmą loguje się bez zmian
 ---
 
 ### Awizacja panel admina
