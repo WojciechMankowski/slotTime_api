@@ -14,6 +14,7 @@ import AdminDocks from './pages/AdminDocks'
 import GenerateSlots from './pages/GenerateSlots'
 import TestPage from './pages/TestPage'
 import ClientBooking from './pages/ClientBooking'
+import AdminArchive from './pages/AdminArchive'
 import Header from './components/Header'
 import CompanyBlocked from './pages/CompanyBlocked'
 
@@ -101,6 +102,11 @@ export default function App() {
             <Route
               path="/admin/docks"
               element={me.role !== 'client' ? <AdminDocks lang={lang} /> : <Navigate to="/" replace />}
+            />
+
+            <Route
+              path="/admin/archive"
+              element={me.role !== 'client' ? <AdminArchive lang={lang} /> : <Navigate to="/" replace />}
             />
 
             <Route path="/test" element={<TestPage lang={lang} />} />

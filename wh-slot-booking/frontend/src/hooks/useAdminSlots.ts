@@ -59,6 +59,8 @@ export default function useAdminSlots(lang: Lang) {
       }
       if (statusFilter !== "--") {
         slots = slots.filter((slot) => slot.status === statusFilter);
+      } else {
+        slots = slots.filter((slot) => slot.status !== "COMPLETED" && slot.status !== "CANCELLED");
       }
       setSlotsAdmin(slots);
       setDockAdmin(docks);

@@ -147,6 +147,14 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
               >
                 {t("docks", lang)}
               </NavLink>
+
+              <NavLink
+                to="/admin/archive"
+                onClick={closeMenu}
+                className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}
+              >
+                {t("archive", lang)}
+              </NavLink>
             </>
           )}
         </div>

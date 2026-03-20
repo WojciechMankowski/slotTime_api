@@ -30,9 +30,9 @@
   - [x] UI: klient widzi "Poproś o anulowanie" zamiast bezpośredniego anulowania
   - [x] Admin widzi sloty `CANCEL_PENDING` z akcją zatwierdzenia/odrzucenia w tabeli
 
-- [ ] **D3. Filtr archiwum w widoku admina**
-  - [ ] Dodać opcję "Pokaż zakończone/anulowane" w `FilertSlotAdmin.tsx`
-  - [ ] Domyślnie ukrywać `COMPLETED` i `CANCELLED`
+- [x] **D3. Filtr archiwum w widoku admina**
+  - [x] Dodać opcję "Pokaż zakończone/anulowane" w `FilertSlotAdmin.tsx`
+  - [x] Domyślnie ukrywać `COMPLETED` i `CANCELLED`
 
 ---
 

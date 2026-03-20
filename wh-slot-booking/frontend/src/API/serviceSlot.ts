@@ -95,6 +95,15 @@ export const rejectCancelSlot = async (slotId: number): Promise<Slot> => {
   return res.data
 }
 
+export const getArchiveSlots = async (params: {
+  status?: string;
+  date_from?: string;
+  date_to?: string;
+}): Promise<Slot[]> => {
+  const res = await api.get<Slot[]>("/api/slots/archive", { params });
+  return res.data;
+}
+
 export const patchSlotStatus = async (slotId: number, status: string): Promise<Slot> => {
   const res = await api.patch<Slot>(`/api/slots/${slotId}/status`, { status });
   return res.data;
