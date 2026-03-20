@@ -1,17 +1,7 @@
 import { Slot } from "./SlotType";
 import { DokTyp } from "./DokType";
 import { Company, UserOut } from "./types";
-
-type InputType =
-  | "text"
-  | "email"
-  | "password"
-  | "number"
-  | "search"
-  | "tel"
-  | "url"
-  | "date"
-  | "time";
+import { Lang } from "../Helper/i18n";
 
 export interface InputProps {
   type?: React.HTMLInputTypeAttribute; // Lepiej użyć wbudowanego typu Reacta
@@ -27,37 +17,42 @@ export interface InputProps {
 }
 export interface ButtonProps {
   type?: "button" | "submit" | "reset";
-  onClick: () => void;
+  onClick?: () => void;
   className?: string;
   disabled?: boolean;
   name?: string;
   id?: string | number;
-  text: string;
+  text: React.ReactNode;
 }
 
 export interface SelectProps {
-  options: string[] | number[]; // Możemy mieć zarówno stringi, jak i liczby jako opcje
+  options: (string | number | { value: string | number; label: string })[]; // Możemy mieć wartości proste lub obiekty z etykietą
   onChange: (value: string) => void;
   className?: string;
   disabled?: boolean;
   name?: string;
   id?: string | number;
+  defaultValue?: string | number;
 }
 
 export interface TableProps {
   columns: string[];
   rows: Slot[];
   docks?: DokTyp[];
-  onDockChange?: (slotId: number,  newDock: number) => void;
+  onDockChange?: (slotId: number, newDock: number) => void;
+  onStatusChange?: (slotId: number, newStatus: string) => void;
   className?: string;
 }
 export interface TablePropsAdmin {
   columns: string[];
   rows: Slot[];
   docks?: DokTyp[];
-  onDockChange?: (slotId: number,  newDock: number) => void;
+  onDockChange?: (slotId: number, newDock: number) => void;
+  onStatusChange?: (slotId: number, newStatus: string) => void;
+  onApprove?: (slotId: number) => void;
   className?: string;
 }
+
 export interface SlotFormData {
   date: string; // Najlepiej trzymać jako string 'YYYY-MM-DD' dla <input type="date">
   startTime: string; // String w formacie 'HH:mm' dla <input type="time">
@@ -77,19 +72,35 @@ export interface FormCompanyProps {
   initialValues?: Partial<SlotFormData>;
 }
 export interface AdminCompaniesTableProps {
-  columns: string[];
-  rows: Company[]; className?: string
+  rows: Company[];
+  lang: Lang;
+  className?: string;
+  setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
+  setCompany: React.Dispatch<React.SetStateAction<Company>>;
 }
 
 export interface AdminUsersTableProps {
   columns: string[];
   rows: UserOut[];
   className?: string;
+  isEdit: boolean;
+  setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
+  setUser: React.Dispatch<React.SetStateAction<UserOut>>;
 }
 
 export interface AdminDocksTableProps {
   columns: string[];
   rows: DokTyp[];
   className?: string;
+  lang: Lang
+  setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
+  setDock: React.Dispatch<React.SetStateAction<DokTyp>>;
 }
-
+
+export interface UpdateFormCompanyProps {
+  company: Company;
+  lang: Lang;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+ 

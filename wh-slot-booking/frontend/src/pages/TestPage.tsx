@@ -3,9 +3,8 @@ import { Lang } from "../Helper/i18n";
 import { getUsers } from "../API/serviceUser";
 import {Me, UserOut} from '../Types/types'
 import {DokTyp} from '../Types/DokType'
-import AdminCrareDock from "../components/Forms/AdminCreateDock";
-import AdminDocksTable from "../components/Admin/AdminDocksTable";
 import { getDokAdmin } from "../API/serviceDok";
+import Notices from "./Notices";
 
 
 export default function TestPage({ lang, }: { lang: Lang}) {
@@ -38,6 +37,7 @@ export default function TestPage({ lang, }: { lang: Lang}) {
         {/* tabela */}
       
       </div>
+      <Notices lang="pl"/>
     </>
   );
 }

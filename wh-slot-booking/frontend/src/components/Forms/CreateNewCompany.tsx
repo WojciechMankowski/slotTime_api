@@ -1,8 +1,8 @@
 import { FormCompanyProps } from "../../Types/Props";
 import React, { useState, useEffect } from "react";
-import Input from "../Input";
-import Button from "../Button";
-import Label from "../Label";
+import Input from "../UI/Input";
+import Button from "../UI/Button";
+import Label from "../UI/Label";
 import { createCompany } from "../../API/serviceCopany";
 import { t, getLang } from "../../Helper/i18n";
 
@@ -39,7 +39,7 @@ const CreateNewCompany: React.FC<FormCompanyProps> = () => {
 
   return (
     <div className="bg-white p-6 rounded-md shadow-sm slot-form-card">
-      <h2 className="text-2xl font-bold">{t('form_add_company', getLang())}</h2>
+      {/* <h2 className="text-2xl font-bold">{t('form_add_company', getLang())}</h2> */}
       <form className="flex flex-col gap-6" onSubmit={create_company}>
         <div className="form-group col-span-1 md:col-span-2 grid-3">
           <div className="form-group w-full">
@@ -48,7 +48,7 @@ const CreateNewCompany: React.FC<FormCompanyProps> = () => {
               type="text"
               name="name_copany"
               value={nameCompany}
-              onChange={(val) => {
+              onChange={(val)  => {
                 setNameCompany(String(val));
               }}
             />
@@ -59,7 +59,7 @@ const CreateNewCompany: React.FC<FormCompanyProps> = () => {
               type="text"
               name="alias"
               value={alias}
-              onChange={(val) => {
+              onChange={(val)  => {
                 setAlias(String(val));
               }}
             />

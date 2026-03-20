@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { NavLink, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
-import { api, setToken } from '../API/api'
-import { getLang, setLang, t, Lang } from '../Helper/i18n'
+import React, {useState } from 'react'
+import {t, Lang } from '../Helper/i18n'
 import type { Me } from '../Types/types'
 import Menu from './Menu'
 
@@ -19,7 +17,7 @@ function Header({
     const [isLangOpen, setIsLangOpen] = useState(false);
 
     return (
-    <header className="flex items-center gap-4 py-5 px-6 mb-8 bg-white/65 backdrop-blur-md">
+    <header className="flex items-center gap-4 py-5 px-6 mb-8 bg-white/65 backdrop-blur-md relative z-30000">
             {/* container = max-width jak w starym index.html */}
             <div className="max-w-[1200px] mx-auto px-5 w-full flex items-center gap-4">
                 <div className="flex items-center gap-1">
@@ -37,7 +35,7 @@ function Header({
 
                 <div className="relative inline-block mr-2">
                     <button
-                        className="flex items-center gap-2 bg-white border border-[var(--border)] px-3 py-1.5 rounded-lg cursor-pointer font-medium text-[var(--text-main)] transition-colors duration-200 shadow-sm hover:border-blue-600"
+                        className="flex items-center gap-2 bg-white border border-(--border) px-3 py-1.5 rounded-lg cursor-pointer font-medium text-(--text-main) transition-colors duration-200 shadow-sm hover:border-blue-600"
                         onClick={() => setIsLangOpen(!isLangOpen)}
                     >
                         {lang === 'pl' ? (
@@ -52,9 +50,9 @@ function Header({
                     </button>
 
                     {isLangOpen && (
-                        <div className="absolute top-[calc(100%+0.4rem)] right-0 bg-white border border-[var(--border)] rounded-lg shadow-lg min-w-[120px] z-[1001] overflow-hidden">
+                        <div className="absolute top-[calc(100%+0.4rem)] right-0 bg-white border border-(--border) rounded-lg shadow-lg min-w-[120px] z-1001 overflow-hidden">
                             <div
-                                className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors duration-200 hover:bg-[var(--bg)] ${
+                                className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors duration-200 hover:bg-(--bg) ${
                                     lang === 'pl' ? 'bg-[#e0ecff] text-[#1d4ed8] font-semibold' : ''
                                 }`}
                                 onClick={() => {
@@ -66,7 +64,7 @@ function Header({
                                 <span>PL</span>
                             </div>
                             <div
-                                className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors duration-200 hover:bg-[var(--bg)] ${
+                                className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors duration-200 hover:bg-(--bg) ${
                                     lang === 'en' ? 'bg-[#e0ecff] text-[#1d4ed8] font-semibold' : ''
                                 }`}
                                 onClick={() => {
@@ -82,7 +80,7 @@ function Header({
                 </div>
 
                 <button 
-                  className="flex items-center gap-2 bg-white border border-[var(--border)] rounded-full px-4 py-2 text-sm cursor-pointer transition-all duration-200 hover:-translate-y-[1px] hover:border-gray-500 active:translate-y-0" 
+                  className="flex items-center gap-2 bg-white border border-(--border) rounded-full px-4 py-2 text-sm cursor-pointer transition-all duration-200 hover:-translate-y-px hover:border-gray-500 active:translate-y-0" 
                   onClick={onLogout}
                 >
                     {t('logout', lang)}

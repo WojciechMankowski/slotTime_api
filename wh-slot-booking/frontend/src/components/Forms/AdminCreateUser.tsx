@@ -1,32 +1,49 @@
-import React, { useState } from "react";
-import Input from "../Input";
-import Button from "../Button";
-import Label from "../Label";
-import Select from "../Select";
+import React, { useState, useEffect } from "react";
+import Input from "../UI/Input";
+import Button from "../UI/Button";
+import Label from "../UI/Label";
+import Select from "../UI/Select";
 import { createUser } from "../../API/serviceUser";
+import { getCompanies } from "../../API/serviceCopany";
+import { CompanyResponse } from "../../Types/apiType";
 import { t, getLang } from "../../Helper/i18n";
 
-const AdminCreateUser = () => {
+const AdminCreateUser = ({ onSuccess }: { onSuccess?: () => void }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [alias, setAlias] = useState("");
-  const [selectedCompany, setSelectedCompany] = useState("Firma A");
-  const [role, setRole] = useState< "client" | "admin">("client");
+  const [companyId, setCompanyId] = useState<number | null>(null);
+  const [role, setRole] = useState<"client" | "admin">("client");
+  const [companies, setCompanies] = useState<CompanyResponse[]>([]);
 
-  const exampleCompanies = ["Firma A", "Firma B", "Firma C (Przykładowa)"];
   const roles = ["client", "admin"];
+
+  useEffect(() => {
+    getCompanies()
+      .then((data) => {
+        setCompanies(data);
+        if (data.length > 0) setCompanyId(data[0].id);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ username, password, alias, company: selectedCompany, role });
-    const res = createUser({
-      username: username,
-      password: password,
-      alias: alias,
-      role: role,
-      company_id: 1,
-      warehouse_id: 1,
-    });
+    try {
+      await createUser({
+        username,
+        password,
+        alias,
+        role,
+        company_id: companyId,
+      });
+      setUsername("");
+      setPassword("");
+      setAlias("");
+      if (onSuccess) onSuccess();
+    } catch (err) {
+      console.error("Błąd tworzenia użytkownika:", err);
+    }
   };
 
   return (
@@ -67,8 +84,8 @@ const AdminCreateUser = () => {
             <Label label={t('company', getLang())} />
             <Select
               name="company_select"
-              options={exampleCompanies}
-              onChange={(val) => setSelectedCompany(val)}
+              options={companies.map((c) => ({ value: String(c.id), label: c.name }))}
+              onChange={(val) => setCompanyId(Number(val))}
             />
           </div>
           <div className="form-group w-full">
@@ -85,7 +102,6 @@ const AdminCreateUser = () => {
             type="submit"
             className="w-full md:w-[200px] primary pt-5"
             text={t('add_user', getLang())}
-            onClick={() => {}}
           />
         </div>
       </form>

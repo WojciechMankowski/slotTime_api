@@ -64,6 +64,7 @@ export const createSlot = async (
 };
 
 export const patchSlot = async (slotId: number, payload: Slot): Promise<Slot> => {
+  console.log(`Wywołanie api dla id: ${slotId}`)
   const res = await api.patch<Slot>(`/api/slots/${slotId}`, payload)
   return res.data
 }
@@ -81,5 +82,31 @@ export const approveSlot = async (slotId: number): Promise<Slot> => {
 
 export const cancelSlot = async (slotId: number): Promise<Slot> => {
   const res = await api.post<Slot>(`/api/slots/${slotId}/cancel`)
+  return res.data
+}
+
+export const patchSlotStatus = async (slotId: number, status: string): Promise<Slot> => {
+  const res = await api.patch<Slot>(`/api/slots/${slotId}/status`, { status });
+  return res.data;
+};
+
+export interface NoticePayload {
+  numer_zlecenia: string;
+  referencja: string;
+  rejestracja_auta: string;
+  rejestracja_naczepy: string;
+  ilosc_palet: number;
+  kierowca_imie_nazwisko?: string;
+  kierowca_tel?: string;
+  uwagi?: string;
+}
+
+export const postNotice = async (slotId: number, payload: NoticePayload): Promise<NoticePayload> => {
+  const res = await api.post<NoticePayload>(`/api/slots/${slotId}/notice`, payload)
+  return res.data
+}
+
+export const getNotice = async (slotId: number): Promise<NoticePayload> => {
+  const res = await api.get<NoticePayload>(`/api/slots/${slotId}/notice`)
   return res.data
 }

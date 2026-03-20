@@ -1,44 +1,46 @@
-import React, { useEffect, useState } from 'react'
-import { api } from '../API/api'
-import { t, Lang, errorText } from '../Helper/i18n'
-import type { Dock } from '../Types/types'
-import AdminDocksTable from '../components/Admin/AdminDocksTable'
-import { getDokAdmin } from '../API/serviceDok'
-import { DokTyp } from '../Types/DokType'
-import AdminCrareDock from '../components/Forms/AdminCreateDock'
+import React from "react";
+import { t, Lang } from "../Helper/i18n";
+import useAdminDocks from "../hooks/useAdminDocks";
+import AdminCreateDock from "../components/Forms/AdminCreateDock";
+import ErrorBanner from "../components/UI/ErrorBanner";
+import Spinner from "../components/UI/Spinner";
+import AdminDocksTable from "../components/Admin/AdminDocksTable";
+import UpdateFormDock from "../components/Forms/UpdateFormDock";
 
 export default function AdminDocks({ lang }: { lang: Lang }) {
-
-  const now = new Date().toISOString().split("T")[0];
-  const [doks, setDokcs] = useState<DokTyp[]>([]);
-
-  const load = async () => {
-    try {
-      const rs = await getDokAdmin();
-      setDokcs(rs);
-    } catch (err) {
-      console.error("Błąd ładowania firm:", err);
-    }
-  };
-   useEffect(() => {
-      load();
-    }, []);
+  const { doks, loading, loadErr, isEdit, dok, setIsEdit, setDock, reload } =
+    useAdminDocks();
 
   return (
-    <div className="bg-white rounded-xl border border-[var(--border)] shadow-sm p-5 mb-6">
-     <div className="overflow-x-auto shadow-sm rounded-lg border border-gray-200 pt-2">
-        <AdminCrareDock />
+    <div className="p-4 max-w-5xl mx-auto">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mb-6">
+        <AdminCreateDock onSuccess={reload} />
       </div>
-      <div className="overflow-x-auto shadow-sm rounded-lg border border-gray-200 pt-4">
 
-      </div>
-      <div className="overflow-x-auto shadow-sm rounded-lg border border-gray-200">
-      <AdminDocksTable  
-      columns={[t('name', lang), t('alias', lang), t('active', lang)]}
-      rows={doks}
-      />
-      
-      </div>
+      {loadErr && <ErrorBanner msg={loadErr} />}
+
+      {loading ? (
+        <div className="flex items-center justify-center gap-2 py-12 text-gray-400">
+          <Spinner />
+          <span className="text-sm font-medium">{t("loading", lang)}</span>
+        </div>
+      ) : (
+        <AdminDocksTable
+          rows={doks}
+          lang={lang}
+          setIsEdit={setIsEdit}
+          setDock={setDock}
+        />
+      )}
+
+      {isEdit && (
+        <UpdateFormDock
+          dock={dok}
+          lang={lang}
+          onClose={() => setIsEdit(false)}
+          onSuccess={reload}
+        />
+      )}
     </div>
-  )
+  );
 }

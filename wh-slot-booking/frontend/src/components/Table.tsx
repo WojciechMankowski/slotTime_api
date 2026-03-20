@@ -2,11 +2,14 @@ import React from "react";
 import { TableProps } from "../Types/Props";
 import { Slot } from "../Types/SlotType";
 
+import { t, getLang } from "../Helper/i18n";
+
 export default function Table({
   columns,
   rows,
   docks = [],
   onDockChange,
+  onStatusChange,
   className = "",
 }: TableProps) {
   
@@ -16,6 +19,15 @@ export default function Table({
     if (onDockChange && selectedDock) {
       onDockChange(rowId, selectedDock.id);
     } 
+  };
+
+  const handleStatusChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+    rowId: number,
+  ) => {
+    if (onStatusChange) {
+      onStatusChange(rowId, e.target.value);
+    }
   };
 
   return (
@@ -42,8 +54,21 @@ export default function Table({
               <tr key={rowId}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(row.start_dt).toLocaleString("pl-PL")}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(row.end_dt).toLocaleString("pl-PL")}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.slot_type}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.status}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{t(row.slot_type.toLowerCase() as any, getLang())}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <select
+                    value={row.status}
+                    onChange={(e) => handleStatusChange(e, rowId)}
+                    className="block w-full min-w-[120px] rounded-md border border-gray-300 shadow-sm text-sm py-2 px-3 focus:border-blue-500 focus:ring-blue-500"
+                  >
+                    <option value="AVAILABLE">{t("available", getLang())}</option>
+                    <option value="BOOKED">{t("booked", getLang())}</option>
+                    <option value="APPROVED_WAITING_DETAILS">{t("approved_waiting_details", getLang())}</option>
+                    <option value="RESERVED_CONFIRMED">{t("reserved_confirmed", getLang())}</option>
+                    <option value="COMPLETED">{t("completed", getLang())}</option>
+                    <option value="CANCELLED">{t("cancelled", getLang())}</option>
+                  </select>
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <select
                     value={row.dock_alias ?? "--"}
@@ -60,9 +85,23 @@ export default function Table({
                     ))}
                   </select>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.reserved_by_alias}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 cursor-pointer hover:underline">
-                  Akcja
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.reserved_by_company_name || "-"}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  {row.status === "AVAILABLE" ? (
+                    <button
+                      onClick={() => onStatusChange && onStatusChange(rowId, "CANCELLED")}
+                      className="text-red-600 hover:text-red-900 font-medium"
+                    >
+                      {t("close_slot", getLang())}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => onStatusChange && onStatusChange(rowId, "AVAILABLE")}
+                      className="text-orange-600 hover:text-orange-900 font-medium"
+                    >
+                      {t("cancel_reservation", getLang())}
+                    </button>
+                  )}
                 </td>
               </tr>
             );

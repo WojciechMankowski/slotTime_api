@@ -35,65 +35,76 @@ export default function Login({
   return (
     <div
       className="min-h-screen bg-cover bg-center"
-      style={{ backgroundImage: 'url(/logo-MCG-background.png)' }}   // ← TU PODMIENIASZ ZDJĘCIE
+      style={{ backgroundImage: 'url(/logo-MCG-background.png)' }}
     >
-      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-100/75 backdrop-blur-[2px]">
-        <div className="w-full max-w-[420px] mx-auto bg-white rounded-xl border border-[var(--border)] shadow-lg p-6">
-          <div className="text-center mb-4">
+      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-900/50 backdrop-blur-sm">
+        <div className="w-full max-w-sm mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+
+          {/* Nagłówek karty */}
+          <div className="bg-linear-to-br from-blue-600 to-blue-800 px-8 py-6 text-center">
             <img
               src="/static/MCG-logo.png"
               alt="Logo"
-              className="h-[52px] mx-auto mb-2"
+              className="h-8 mx-auto mb-3 brightness-0 invert"
             />
-            <h2 className="m-0 mb-1 text-2xl font-bold text-[var(--text-main)]">
+            <h2 className="text-lg font-bold text-white tracking-wide">
               {t('login_title', lang)}
             </h2>
-            <div className="text-[var(--text-muted)] text-[13px]">
+            <p className="text-blue-200 text-xs mt-0.5">
               {t('system_subtitle', lang)}
-            </div>
+            </p>
           </div>
 
-          <form onSubmit={submit} className="grid gap-3">
-            <div className="flex flex-col gap-1">
-              <label htmlFor="username" className="text-[0.85rem] text-[var(--text-muted)] block">
-                {t('username', lang)}
-              </label>
-              <input
-                id="username"
-                className="w-full px-2.5 py-2 rounded-lg border border-[var(--border)] text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600/15 focus:bg-white"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                autoFocus
-              />
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label htmlFor="password" className="text-[0.85rem] text-[var(--text-muted)] block">
-                {t('password', lang)}
-              </label>
-              <input
-                id="password"
-                type="password"
-                className="w-full px-2.5 py-2 rounded-lg border border-[var(--border)] text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600/15 focus:bg-white"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="bg-gradient-to-r from-blue-600 to-blue-700 text-white border-none rounded-full px-4 py-2 text-sm cursor-pointer transition-all duration-200 shadow-md shadow-blue-600/30 hover:-translate-y-[1px] active:translate-y-0 disabled:opacity-70 mt-1.5 font-medium"
-              disabled={loading}
-            >
-              {loading ? '...' : t('sign_in', lang)}
-            </button>
-
-            {err && (
-              <div className="text-red-600 text-[13px] text-center mt-1">
-                {err}
+          {/* Formularz */}
+          <div className="px-8 py-7">
+            <form onSubmit={submit} className="grid gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="username" className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  {t('username', lang)}
+                </label>
+                <input
+                  id="username"
+                  type="text"
+                  name="username"
+                  autoComplete="username"
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/15 focus:bg-white transition-colors"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  autoFocus
+                />
               </div>
-            )}
-          </form>
+
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="password" className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  {t('password', lang)}
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  name="password"
+                  autoComplete="current-password"
+                  className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-gray-50 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/15 focus:bg-white transition-colors"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-linear-to-r from-blue-600 to-blue-700 text-white border-none rounded-lg px-4 py-2.5 text-sm font-semibold cursor-pointer transition-all duration-200 shadow-md shadow-blue-600/25 hover:shadow-lg hover:shadow-blue-600/30 hover:-translate-y-px active:translate-y-0 disabled:opacity-60 mt-1"
+                disabled={loading}
+              >
+                {loading ? t('loading', lang) : t('sign_in', lang)}
+              </button>
+
+              {err && (
+                <div role="alert" className="text-red-600 text-[13px] text-center bg-red-50 border border-red-200 rounded-lg py-2 px-3">
+                  {err}
+                </div>
+              )}
+            </form>
+          </div>
+
         </div>
       </div>
     </div>
