@@ -5,7 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3f889869-2d87-421a-9942-feb6be4919ee" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../frontend/src/hooks/useAdminCalendar.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/src/hooks/useAdminCalendarWeek.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../frontend/src/pages/AdminCalendar.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../TODO_FAZA2.md" beforeDir="false" afterPath="$PROJECT_DIR$/../TODO_FAZA2.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.db" beforeDir="false" afterPath="$PROJECT_DIR$/app.db" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/src/API/serviceSlot.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/API/serviceSlot.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/App.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/src/Helper/i18n.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/Helper/i18n.ts" afterDir="false" />
@@ -74,7 +78,7 @@
       <updated>1773910271596</updated>
       <workItem from="1773910272674" duration="3642000" />
       <workItem from="1773992671464" duration="1408000" />
-      <workItem from="1773997045623" duration="2800000" />
+      <workItem from="1773997045623" duration="3406000" />
     </task>
     <servers />
   </component>
