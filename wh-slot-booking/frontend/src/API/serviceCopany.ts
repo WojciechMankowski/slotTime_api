@@ -31,3 +31,7 @@ export const patchCompany = async (companyId: number, payload: CompanyResponse):
   const res = await api.patch<CompanyResponse>(`/api/companies/${companyId}`, payload)
   return res.data
 }
+
+export const deleteCompany = async (companyId: number): Promise<void> => {
+  await api.delete(`/api/companies/${companyId}`)
+}

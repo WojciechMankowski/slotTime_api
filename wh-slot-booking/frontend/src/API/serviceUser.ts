@@ -22,3 +22,7 @@ export const patchUser = async (userId: number, payload: UserOut): Promise<UserO
   return res.data
 }
 
+export const deleteUser = async (userId: number): Promise<void> => {
+  await api.delete(`/api/users/${userId}`)
+}
+

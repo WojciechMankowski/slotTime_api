@@ -92,17 +92,17 @@ export default function App() {
 
             <Route
               path="/admin/companies"
-              element={me.role !== 'client' ? <AdminCompanies lang={lang} /> : <Navigate to="/" replace />}
+              element={me.role !== 'client' ? <AdminCompanies lang={lang} me={me} /> : <Navigate to="/" replace />}
             />
 
             <Route
               path="/admin/users"
-              element={me.role !== 'client' ? <AdminUsers lang={lang} /> : <Navigate to="/" replace />}
+              element={me.role !== 'client' ? <AdminUsers lang={lang} me={me} /> : <Navigate to="/" replace />}
             />
 
             <Route
               path="/admin/docks"
-              element={me.role !== 'client' ? <AdminDocks lang={lang} /> : <Navigate to="/" replace />}
+              element={me.role !== 'client' ? <AdminDocks lang={lang} me={me} /> : <Navigate to="/" replace />}
             />
 
             <Route

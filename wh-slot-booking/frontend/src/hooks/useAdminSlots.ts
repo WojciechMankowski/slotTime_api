@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getSlotsAdmin, assignDock, createSlot, patchSlot, approveSlot, patchSlotStatus, cancelSlot, rejectCancelSlot } from "../API/serviceSlot";
+import { getSlotsAdmin, assignDock, createSlot, patchSlot, approveSlot, patchSlotStatus, cancelSlot, rejectCancelSlot, deleteSlot } from "../API/serviceSlot";
 import { getDokAdmin } from "../API/serviceDok";
 import { errorText, Lang } from "../Helper/i18n";
 import type { Slot } from "../Types/SlotType";
@@ -43,6 +43,7 @@ export default function useAdminSlots(lang: Lang, initialDate?: string) {
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
   const [errorApprove, setErrorApprove] = useState<string | null>(null);
   const [errorCancelAction, setErrorCancelAction] = useState<string | null>(null);
+  const [errorDelete, setErrorDelete] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
@@ -127,6 +128,16 @@ export default function useAdminSlots(lang: Lang, initialDate?: string) {
     }
   };
 
+  const onDeleteSlot = async (slotId: number) => {
+    setErrorDelete(null);
+    try {
+      await deleteSlot(slotId);
+      await loadDataSlot(startOd, endDo);
+    } catch (error) {
+      setErrorDelete(getApiErrorMessage(error, lang));
+    }
+  };
+
   const handleCreateSlot = async (formData: {
     dateFrom: string;
     timeFrom: string;
@@ -167,6 +178,7 @@ export default function useAdminSlots(lang: Lang, initialDate?: string) {
     errorStatus,
     errorApprove,
     errorCancelAction,
+    errorDelete,
     isCreating,
     setStartOd,
     setEndDo,
@@ -178,6 +190,7 @@ export default function useAdminSlots(lang: Lang, initialDate?: string) {
     onApprove,
     onApproveCancel,
     onRejectCancel,
+    onDeleteSlot,
     handleCreateSlot,
   };
 }

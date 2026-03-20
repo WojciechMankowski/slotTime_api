@@ -11,6 +11,7 @@ export default function AdminDocksTable({
   className = "",
   setIsEdit,
   setDock,
+  onDelete,
 }: AdminDocksTableProps) {
   const handleEdit = (row: DokTyp) => {
     setDock(row);
@@ -86,14 +87,23 @@ export default function AdminDocksTable({
             {row.is_active ? t("active_male", lang) : t("inactive_male", lang)}
           </span>
 
-          {/* Edit button */}
-          <div className="mt-3">
+          {/* Actions */}
+          <div className="mt-3 flex gap-2">
             <Button
               type="button"
               onClick={() => handleEdit(row)}
               className="outline"
               text={t("edit", lang)}
             />
+            {onDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(row.id)}
+                className="px-3 py-1.5 rounded-full text-xs font-semibold text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 transition-all"
+              >
+                {t("delete_btn", lang)}
+              </button>
+            )}
           </div>
         </div>
       ))}

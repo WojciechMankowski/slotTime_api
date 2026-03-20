@@ -35,6 +35,20 @@ def create_company(
     db.refresh(company)
     return company
 
+@router.delete("/{company_id}", status_code=204, dependencies=[Depends(require_role(models.Role.superadmin))])
+def delete_company(
+    company_id: int,
+    db: Session = Depends(get_db),
+):
+    company = db.get(models.Company, company_id)
+    if not company:
+        raise HTTPException(status_code=404, detail={"error_code": "COMPANY_NOT_FOUND"})
+    has_users = db.query(models.User).filter(models.User.company_id == company_id).first()
+    if has_users:
+        raise HTTPException(status_code=409, detail={"error_code": "COMPANY_HAS_USERS"})
+    db.delete(company)
+    db.commit()
+
 @router.patch("/{company_id}", response_model=CompanyOut, dependencies=[Depends(require_role(models.Role.admin))])
 def patch_company(
     company_id: int,

@@ -1,13 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { t, Lang } from "../Helper/i18n";
+import { Me } from "../Types/types";
 import useAdminSlots from "../hooks/useAdminSlots";
 import ErrorBanner from "../components/UI/ErrorBanner";
 import SlotForm from "../components/Forms/SlotForms";
 import FilterSlotAdmin from "../components/FilertSlotAdmin";
 import TableAdminSlot from "../components/Admin/AdminSlotTable";
+import ConfirmDeleteModal from "../components/UI/ConfirmDeleteModal";
 
-export default function AdminSlot({ lang, initialDate }: { lang: Lang; initialDate?: string }) {
+export default function AdminSlot({ lang, me, initialDate }: { lang: Lang; me: Me; initialDate?: string }) {
   const nav = useNavigate();
   const {
     startOd,
@@ -20,6 +22,7 @@ export default function AdminSlot({ lang, initialDate }: { lang: Lang; initialDa
     errorStatus,
     errorApprove,
     errorCancelAction,
+    errorDelete,
     setStartOd,
     setEndDo,
     setTypeSlot,
@@ -30,8 +33,17 @@ export default function AdminSlot({ lang, initialDate }: { lang: Lang; initialDa
     onApprove,
     onApproveCancel,
     onRejectCancel,
+    onDeleteSlot,
     handleCreateSlot,
   } = useAdminSlots(lang, initialDate);
+
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; label: string } | null>(null);
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    await onDeleteSlot(deleteTarget.id);
+    setDeleteTarget(null);
+  };
 
   return (
     <div className="p-4 max-w-5xl mx-auto">
@@ -91,6 +103,7 @@ export default function AdminSlot({ lang, initialDate }: { lang: Lang; initialDa
         {errorStatus && <ErrorBanner msg={errorStatus} compact />}
         {errorApprove && <ErrorBanner msg={errorApprove} compact />}
         {errorCancelAction && <ErrorBanner msg={errorCancelAction} compact />}
+        {errorDelete && <ErrorBanner msg={errorDelete} compact />}
 
         <TableAdminSlot
           rows={slotsAdmin}
@@ -101,8 +114,25 @@ export default function AdminSlot({ lang, initialDate }: { lang: Lang; initialDa
           onApprove={onApprove}
           onApproveCancel={onApproveCancel}
           onRejectCancel={onRejectCancel}
+          onDelete={me.role === "superadmin" ? (id) => {
+            const slot = slotsAdmin.find(s => s.id === id);
+            const label = slot
+              ? new Date(slot.start_dt).toLocaleString("pl-PL", { dateStyle: "short", timeStyle: "short" })
+              : String(id);
+            setDeleteTarget({ id, label });
+          } : undefined}
         />
       </div>
+
+      {deleteTarget && (
+        <ConfirmDeleteModal
+          lang={lang}
+          title={deleteTarget.label}
+          isDeleting={false}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
     </div>
   );
 }

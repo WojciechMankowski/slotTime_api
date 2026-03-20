@@ -176,6 +176,10 @@ export const dict: Dict = {
   approve_cancel: { pl: 'Zatwierdź anulowanie', en: 'Approve cancellation' },
   add_remarks: { pl: 'Dodaj uwagi…', en: 'Add remarks…' },
   saving: { pl: 'Zapisywanie…', en: 'Saving…' },
+  delete_btn: { pl: 'Usuń', en: 'Delete' },
+  deleting: { pl: 'Usuwanie…', en: 'Deleting…' },
+  delete_confirm_title: { pl: 'Potwierdź usunięcie', en: 'Confirm deletion' },
+  delete_confirm_desc: { pl: 'Tej operacji nie można cofnąć.', en: 'This action cannot be undone.' },
   // --- Strona awizacji ---
 notices_title:        { pl: 'Awizacje',                    en: 'Notices' },
 notices_count:        { pl: 'Znaleziono awizacji',         en: 'Notices found' },
@@ -211,5 +215,8 @@ export const errorText: Dict = {
   DATA_CONFLICT: { pl: 'Konflikt danych - odśwież i spróbuj ponownie.', en: 'Data conflict - please refresh and try again.' },
   CONNECTION_ERROR: { pl: 'Błąd połączenia z serwerem.', en: 'Server connection error.' },
   UNEXPECTED_ERROR: { pl: 'Wystąpił nieoczekiwany błąd.', en: 'An unexpected error occurred.' },
+  COMPANY_HAS_USERS: { pl: 'Nie można usunąć firmy z przypisanymi użytkownikami.', en: 'Cannot delete a company with assigned users.' },
+  DOCK_HAS_ACTIVE_SLOTS: { pl: 'Nie można usunąć doku z aktywnymi slotami.', en: 'Cannot delete a dock with active slots.' },
+  CANNOT_DELETE_SELF: { pl: 'Nie możesz usunąć własnego konta.', en: 'You cannot delete your own account.' },
   test: { pl: 'Test', en: 'Test' },
 }

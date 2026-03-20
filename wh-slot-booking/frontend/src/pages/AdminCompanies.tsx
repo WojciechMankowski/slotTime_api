@@ -1,14 +1,37 @@
-import React from "react";
-import { t, Lang } from "../Helper/i18n";
+import React, { useState } from "react";
+import { t, Lang, errorText } from "../Helper/i18n";
+import { Me } from "../Types/types";
 import useAdminCompanies from "../hooks/useAdminCompanies";
+import { deleteCompany } from "../API/serviceCopany";
+import { getApiError } from "../Helper/helper";
 import ErrorBanner from "../components/UI/ErrorBanner";
 import Spinner from "../components/UI/Spinner";
 import CreateNewCompany from "../components/Forms/CreateNewCompany";
 import AdminCompaniesTable from "../components/Admin/AdminCompaniesTable";
 import UpdateFormCompany from "../components/Forms/UpdateFormCompany";
+import ConfirmDeleteModal from "../components/UI/ConfirmDeleteModal";
 
-export default function AdminCompanies({ lang }: { lang: Lang }) {
+export default function AdminCompanies({ lang, me }: { lang: Lang; me: Me }) {
   const { companies, loading, loadErr, reload, isEdit, company, setIsEdit, setCompany } = useAdminCompanies();
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
+  const [deleteErr, setDeleteErr] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleteErr(null);
+    setIsDeleting(true);
+    try {
+      await deleteCompany(deleteTarget.id);
+      setDeleteTarget(null);
+      reload();
+    } catch (err) {
+      const code = getApiError(err);
+      setDeleteErr(errorText[code] ? errorText[code][lang] : code);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="p-4 max-w-5xl mx-auto">
@@ -30,13 +53,12 @@ export default function AdminCompanies({ lang }: { lang: Lang }) {
           </h2>
         </div>
         <div className="p-7">
-          <CreateNewCompany serverError={null} 
-          // onSuccess={reload} 
-          />
+          <CreateNewCompany serverError={null} />
         </div>
       </div>
 
       {loadErr && <ErrorBanner msg={loadErr} />}
+      {deleteErr && <ErrorBanner msg={deleteErr} />}
 
       {/* Companies cards */}
       {loading ? (
@@ -50,6 +72,11 @@ export default function AdminCompanies({ lang }: { lang: Lang }) {
           lang={lang}
           setIsEdit={setIsEdit}
           setCompany={setCompany}
+          onDelete={me.role === "superadmin" ? (id) => {
+            const c = companies.find(c => c.id === id);
+            setDeleteTarget({ id, name: c?.name ?? String(id) });
+            setDeleteErr(null);
+          } : undefined}
         />
       )}
 
@@ -59,6 +86,16 @@ export default function AdminCompanies({ lang }: { lang: Lang }) {
           lang={lang}
           onClose={() => setIsEdit(false)}
           onSuccess={reload}
+        />
+      )}
+
+      {deleteTarget && (
+        <ConfirmDeleteModal
+          lang={lang}
+          title={deleteTarget.name}
+          isDeleting={isDeleting}
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteTarget(null)}
         />
       )}
     </div>

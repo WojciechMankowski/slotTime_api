@@ -125,6 +125,10 @@ export const patchSlotStatus = async (slotId: number, status: string): Promise<S
   return res.data;
 };
 
+export const deleteSlot = async (slotId: number): Promise<void> => {
+  await api.delete(`/api/slots/${slotId}`);
+};
+
 export interface NoticePayload {
   numer_zlecenia: string;
   referencja: string;

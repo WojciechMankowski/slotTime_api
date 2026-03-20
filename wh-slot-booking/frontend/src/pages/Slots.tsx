@@ -10,7 +10,7 @@ export default function Slots({ lang, me }: { lang: Lang; me: Me }) {
 
   return (
     <div className="p-4 max-w-full mx-auto text-gray-800">
-      <AdminSlot lang={lang} initialDate={initialDate} />
+      <AdminSlot lang={lang} me={me} initialDate={initialDate} />
     </div>
   );
 }

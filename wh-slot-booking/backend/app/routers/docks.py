@@ -34,6 +34,29 @@ def create_dock(
     db.refresh(dock)
     return dock
 
+@router.delete("/{dock_id}", status_code=204, dependencies=[Depends(require_role(models.Role.superadmin))])
+def delete_dock(
+    dock_id: int,
+    wh: models.Warehouse = Depends(get_context_warehouse),
+    db: Session = Depends(get_db),
+):
+    dock = db.get(models.Dock, dock_id)
+    if not dock or dock.warehouse_id != wh.id:
+        raise HTTPException(status_code=404, detail={"error_code": "DOCK_NOT_FOUND"})
+    active_statuses = [
+        models.SlotStatus.AVAILABLE, models.SlotStatus.BOOKED,
+        models.SlotStatus.APPROVED_WAITING_DETAILS, models.SlotStatus.RESERVED_CONFIRMED,
+        models.SlotStatus.CANCEL_PENDING,
+    ]
+    has_active = db.query(models.Slot).filter(
+        models.Slot.dock_id == dock_id,
+        models.Slot.status.in_(active_statuses),
+    ).first()
+    if has_active:
+        raise HTTPException(status_code=409, detail={"error_code": "DOCK_HAS_ACTIVE_SLOTS"})
+    db.delete(dock)
+    db.commit()
+
 @router.patch("/{dock_id}", response_model=DockOut, dependencies=[Depends(require_role(models.Role.admin))])
 def patch_dock(
     dock_id: int,
