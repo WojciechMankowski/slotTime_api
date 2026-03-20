@@ -141,6 +141,20 @@ def patch_user(
 
     payload = data.model_dump(exclude_unset=True)
 
+    # zmiana username -> sprawdzenie unikalności
+    if "username" in payload:
+        taken = db.query(models.User).filter(
+            models.User.username == payload["username"],
+            models.User.id != user_id
+        ).first()
+        if taken:
+            raise HTTPException(status_code=400, detail={"error_code": "USERNAME_TAKEN", "field": "username"})
+
+    # zmiana roli -> admin nie może ustawić superadmin
+    if "role" in payload:
+        if actor.role == models.Role.admin and payload["role"] == models.Role.superadmin:
+            raise HTTPException(status_code=403, detail={"error_code": "FORBIDDEN"})
+
     # zmiana hasła -> hashowanie
     if "password" in payload:
         payload["password_hash"] = get_password_hash(payload.pop("password"))

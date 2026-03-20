@@ -205,9 +205,10 @@ class CompanyPatch(BaseModel):
     is_active: Optional[bool] = None
 
 class UserPatch(BaseModel):
+    username: Optional[str] = None
     alias: Optional[str] = None
     password: Optional[str] = None
-    is_active: Optional[bool] = None
+    role: Optional[Role] = None
     company_id: Optional[int] = None
 
 class SlotPatch(BaseModel):
