@@ -1,13 +1,10 @@
-# fly.toml app configuration file generated for slottime-api on 2026-03-20T12:00:45Z
+# fly.toml app configuration file generated for slottime-api-akxpbw on 2026-03-20T13:03:59Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'slottime-api'
+app = 'slottime-api-akxpbw'
 primary_region = 'ams'
-
-[deploy]
-  release_command = "python seed.py"
 
 [build]
 
