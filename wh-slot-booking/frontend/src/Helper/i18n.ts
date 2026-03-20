@@ -161,6 +161,11 @@ export const dict: Dict = {
   no_users: { pl: 'Brak użytkowników', en: 'No users' },
   no_companies: { pl: 'Brak firm', en: 'No companies' },
   contact_admin: { pl: 'Skontaktuj się z administratorem systemu.', en: 'Please contact your system administrator.' },
+  cancel_pending: { pl: 'Oczekuje na anulowanie', en: 'Cancel pending' },
+  cancel_pending_desc: { pl: 'Prośba o anulowanie została wysłana. Oczekuje na zatwierdzenie administratora.', en: 'Cancel request has been sent. Waiting for admin approval.' },
+  request_cancel: { pl: 'Poproś o anulowanie', en: 'Request cancellation' },
+  reject_cancel: { pl: 'Odrzuć anulowanie', en: 'Reject cancellation' },
+  approve_cancel: { pl: 'Zatwierdź anulowanie', en: 'Approve cancellation' },
   add_remarks: { pl: 'Dodaj uwagi…', en: 'Add remarks…' },
   saving: { pl: 'Zapisywanie…', en: 'Saving…' },
   // --- Strona awizacji ---

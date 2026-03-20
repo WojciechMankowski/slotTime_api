@@ -113,13 +113,13 @@
 
 ### Frontend
 
-- [ ] **Wyświetlanie otwartych slotów dla klientów**
+- [x] **Wyświetlanie otwartych slotów dla klientów** *(done 20.03.2026)*
   - Klient widzi tylko sloty ze statusem OPEN przypisane do jego magazynu
   - Widoczne informacje: data, godzina, typ (INBOUND/OUTBOUND/ANY), dock (jeśli przypisany)
   - Lista odświeża się po rezerwacji
   - Pusty stan ("Brak dostępnych slotów") wyświetla się poprawnie
 
-- [ ] **Przycisk "Rezerwuj" dla klienta**
+- [x] **Przycisk "Rezerwuj" dla klienta** *(done 20.03.2026)*
   - Przycisk "Rezerwuj" widoczny przy każdym otwartym slocie
   - Po kliknięciu slot zmienia status na RESERVED i znika z listy otwartych
   - Jeśli ktoś inny zdążył zarezerwować (race condition), wyświetla komunikat o błędzie

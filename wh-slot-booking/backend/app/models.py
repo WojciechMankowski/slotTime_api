@@ -25,6 +25,7 @@ class SlotStatus(str, enum.Enum):
     RESERVED_CONFIRMED = "RESERVED_CONFIRMED"
     COMPLETED = "COMPLETED"
     CANCELLED = "CANCELLED"
+    CANCEL_PENDING = "CANCEL_PENDING"
 
 class Warehouse(Base):
     __tablename__ = "warehouses"
@@ -92,6 +93,7 @@ class Slot(Base):
     original_slot_type = Column(Enum(SlotType), nullable=False)
 
     status = Column(Enum(SlotStatus), nullable=False, default=SlotStatus.AVAILABLE)
+    previous_status = Column(Enum(SlotStatus), nullable=True)
     reserved_by_user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     warehouse = relationship("Warehouse", back_populates="slots")

@@ -5,9 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3f889869-2d87-421a-9942-feb6be4919ee" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.db" beforeDir="false" afterPath="$PROJECT_DIR$/app.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/routers/slots.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routers/slots.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/TODO.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/Types/Props.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/Types/Props.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/src/components/Admin/AdminDocksTable.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/components/Admin/AdminDocksTable.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/Helper/i18n.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/Helper/i18n.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,10 +27,10 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 4
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 4
+}</component>
   <component name="ProjectId" id="3B9nhF3NOfChdEPtICOAi5bo8F9" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -40,7 +43,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "ai.playground.ignore.import.keys.banner.in.settings": "true",
-    "git-widget-placeholder": "etap1/CRUD",
+    "git-widget-placeholder": "etap2/CRUD",
     "last_opened_file_path": "C:/Users/Wojciech.M/OneDrive - MCG-Logistics sp. z o.o/Narzędzia/Time slot/wh-slot-booking/backend",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -66,6 +69,7 @@
       <option name="presentableId" value="Default" />
       <updated>1773910271596</updated>
       <workItem from="1773910272674" duration="3642000" />
+      <workItem from="1773992671464" duration="1408000" />
     </task>
     <servers />
   </component>
