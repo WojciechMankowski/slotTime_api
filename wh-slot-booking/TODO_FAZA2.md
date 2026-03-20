@@ -38,17 +38,17 @@
 
 ## Blok E — Kalendarz admina
 
-- [ ] **E1. Backend — endpoint agregacyjny**
-  - [ ] `GET /api/calendar/summary?date_from&date_to`
-  - [ ] Zwraca: `{ date, total, available, booked, completed }[]`
+- [x] **E1. Backend — endpoint agregacyjny** *(done 20.03.2026)*
+  - [x] `GET /api/calendar/summary?date_from&date_to`
+  - [x] Zwraca: `{ date, total, available, booked, completed, cancelled }[]`
 
-- [ ] **E2. Frontend**
-  - [ ] Nowa strona `AdminCalendar.tsx`
-  - [ ] Widok miesięczny: siatka dni z kolorem/licznikiem per dzień
-  - [ ] Widok tygodniowy: kolumny dni, wiersze godzin, sloty jako bloki
-  - [ ] Klik w dzień → filtruje `AdminSlotTable` do wybranego dnia
-  - [ ] Route `/calendar` w `App.tsx` (admin/superadmin)
-  - [ ] Pozycja w Menu
-  - [ ] Klucze i18n: `calendar`, `week_view`, `month_view`, `no_slots_this_day`
+- [x] **E2. Frontend** *(done 20.03.2026)*
+  - [x] Nowa strona `AdminCalendar.tsx`
+  - [x] Widok miesięczny: siatka dni z kolorem/licznikiem per dzień
+  - [x] Widok tygodniowy: kolumny dni, wiersze godzin, sloty jako bloki
+  - [x] Klik w dzień → przekierowuje do `/slots?date=YYYY-MM-DD`
+  - [x] Route `/calendar` w `App.tsx` (admin/superadmin)
+  - [x] Pozycja w Menu
+  - [x] Klucze i18n: `calendar`, `week_view`, `month_view`, `no_slots_this_day`
 
 ---

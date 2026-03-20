@@ -7,7 +7,7 @@ import SlotForm from "../components/Forms/SlotForms";
 import FilterSlotAdmin from "../components/FilertSlotAdmin";
 import TableAdminSlot from "../components/Admin/AdminSlotTable";
 
-export default function AdminSlot({ lang }: { lang: Lang }) {
+export default function AdminSlot({ lang, initialDate }: { lang: Lang; initialDate?: string }) {
   const nav = useNavigate();
   const {
     startOd,
@@ -31,7 +31,7 @@ export default function AdminSlot({ lang }: { lang: Lang }) {
     onApproveCancel,
     onRejectCancel,
     handleCreateSlot,
-  } = useAdminSlots(lang);
+  } = useAdminSlots(lang, initialDate);
 
   return (
     <div className="p-4 max-w-5xl mx-auto">

@@ -5,12 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3f889869-2d87-421a-9942-feb6be4919ee" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.db" beforeDir="false" afterPath="$PROJECT_DIR$/app.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routers/slots.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routers/slots.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../frontend/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/TODO.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TODO_FAZA2.md" beforeDir="false" afterPath="$PROJECT_DIR$/../TODO_FAZA2.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/API/serviceSlot.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/API/serviceSlot.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/App.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../frontend/src/Helper/i18n.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/Helper/i18n.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/components/Menu.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/components/Menu.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/hooks/useAdminSlots.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/hooks/useAdminSlots.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/pages/AdminSlot.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/pages/AdminSlot.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/src/pages/Slots.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/src/pages/Slots.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../frontend/tsconfig.tsbuildinfo" beforeDir="false" afterPath="$PROJECT_DIR$/../frontend/tsconfig.tsbuildinfo" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,7 +28,7 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
@@ -40,10 +43,11 @@
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "ai.playground.ignore.import.keys.banner.in.settings": "true",
-    "git-widget-placeholder": "etap2/CRUD",
+    "git-widget-placeholder": "main",
     "last_opened_file_path": "C:/Users/Wojciech.M/OneDrive - MCG-Logistics sp. z o.o/Narzędzia/Time slot/wh-slot-booking/backend",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -70,6 +74,7 @@
       <updated>1773910271596</updated>
       <workItem from="1773910272674" duration="3642000" />
       <workItem from="1773992671464" duration="1408000" />
+      <workItem from="1773997045623" duration="2800000" />
     </task>
     <servers />
   </component>

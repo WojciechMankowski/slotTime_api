@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getSlotsAdmin, assignDock, createSlot, patchSlot, approveSlot, patchSlotStatus, cancelSlot, rejectCancelSlot } from "../API/serviceSlot";
 import { getDokAdmin } from "../API/serviceDok";
 import { errorText, Lang } from "../Helper/i18n";
@@ -27,11 +27,11 @@ function getApiErrorMessage(error: unknown, lang: Lang): string {
   return errorText.UNEXPECTED_ERROR[lang];
 }
 
-export default function useAdminSlots(lang: Lang) {
+export default function useAdminSlots(lang: Lang, initialDate?: string) {
   const now = new Date().toISOString().split("T")[0];
 
-  const [startOd, setStartOd] = useState(now);
-  const [endDo, setEndDo] = useState(now);
+  const [startOd, setStartOd] = useState(initialDate ?? now);
+  const [endDo, setEndDo] = useState(initialDate ?? now);
   const [slotsAdmin, setSlotsAdmin] = useState<Slot[]>([]);
   const [dockAdmin, setDockAdmin] = useState<DokTyp[]>([]);
   const [typeSlot, setTypeSlot] = useState<string>("--");
@@ -44,6 +44,11 @@ export default function useAdminSlots(lang: Lang) {
   const [errorApprove, setErrorApprove] = useState<string | null>(null);
   const [errorCancelAction, setErrorCancelAction] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+
+  useEffect(() => {
+    if (initialDate) loadDataSlot(initialDate, initialDate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadDataSlot = async (start: string, end: string) => {
     setErrorLoad(null);

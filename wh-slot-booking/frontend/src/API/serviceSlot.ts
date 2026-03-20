@@ -95,6 +95,22 @@ export const rejectCancelSlot = async (slotId: number): Promise<Slot> => {
   return res.data
 }
 
+export interface CalendarDaySummary {
+  date: string;
+  total: number;
+  available: number;
+  booked: number;
+  completed: number;
+  cancelled: number;
+}
+
+export const getCalendarSummary = async (dateFrom: string, dateTo: string): Promise<CalendarDaySummary[]> => {
+  const res = await api.get<CalendarDaySummary[]>("/api/calendar/summary", {
+    params: { date_from: dateFrom, date_to: dateTo },
+  });
+  return res.data;
+};
+
 export const getArchiveSlots = async (params: {
   status?: string;
   date_from?: string;

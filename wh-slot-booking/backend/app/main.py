@@ -5,7 +5,7 @@ from pathlib import Path
 
 from .config import settings
 from .db import engine, Base
-from .routers import auth, me, warehouses, companies, users, docks, slots, notices, day_capacity, templates
+from .routers import auth, me, warehouses, companies, users, docks, slots, notices, day_capacity, templates, calendar, seed
 
 
 def create_app() -> FastAPI:
@@ -41,6 +41,8 @@ def create_app() -> FastAPI:
     app.include_router(notices.router)
     app.include_router(day_capacity.router)
     app.include_router(templates.router)
+    app.include_router(calendar.router)
+    app.include_router(seed.router)
 
     @app.get("/health")
     def health():
