@@ -58,6 +58,42 @@ export default function TableAdminSlot({
     t("action", lang),
   ];
 
+  const STATUS_ORDER = [
+    "CANCEL_PENDING",
+    "BOOKED",
+    "RESERVED_CONFIRMED",
+    "APPROVED_WAITING_DETAILS",
+    "AVAILABLE",
+    "COMPLETED",
+    "CANCELLED",
+  ];
+
+  const GROUP_STYLE: Record<string, { bar: string; label: string }> = {
+    CANCEL_PENDING:           { bar: "bg-orange-100 border-orange-300", label: "text-orange-800" },
+    BOOKED:                   { bar: "bg-amber-100 border-amber-300",   label: "text-amber-800"  },
+    RESERVED_CONFIRMED:       { bar: "bg-indigo-100 border-indigo-300", label: "text-indigo-800" },
+    APPROVED_WAITING_DETAILS: { bar: "bg-blue-100 border-blue-300",     label: "text-blue-800"   },
+    AVAILABLE:                { bar: "bg-emerald-100 border-emerald-300", label: "text-emerald-800" },
+    COMPLETED:                { bar: "bg-gray-100 border-gray-300",     label: "text-gray-600"   },
+    CANCELLED:                { bar: "bg-red-100 border-red-300",       label: "text-red-700"    },
+  };
+
+  const STATUS_LABEL: Record<string, any> = {
+    CANCEL_PENDING:           "cancel_pending",
+    BOOKED:                   "booked",
+    RESERVED_CONFIRMED:       "reserved_confirmed",
+    APPROVED_WAITING_DETAILS: "approved_waiting_details",
+    AVAILABLE:                "available",
+    COMPLETED:                "completed",
+    CANCELLED:                "cancelled",
+  };
+
+  const grouped = STATUS_ORDER.reduce<Record<string, Slot[]>>((acc, status) => {
+    const group = rows?.filter(r => r.status === status) ?? [];
+    if (group.length > 0) acc[status] = group;
+    return acc;
+  }, {});
+
   return (
     <div className="overflow-x-auto rounded-xl border border-gray-100">
       <table className={`min-w-full divide-y divide-gray-200 ${className}`}>
@@ -75,9 +111,23 @@ export default function TableAdminSlot({
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-100">
-          {rows?.map((row: Slot, index: number) => {
+          {Object.entries(grouped).map(([status, groupRows]) => (
+            <React.Fragment key={status}>
+              {/* Group header */}
+              <tr>
+                <td colSpan={columns.length} className={`px-6 py-2 border-y ${GROUP_STYLE[status]?.bar ?? "bg-gray-100 border-gray-200"}`}>
+                  <span className={`text-[0.7rem] font-black uppercase tracking-widest ${GROUP_STYLE[status]?.label ?? "text-gray-600"}`}>
+                    {t(STATUS_LABEL[status], lang)}
+                  </span>
+                  <span className={`ml-2 text-[0.7rem] font-bold ${GROUP_STYLE[status]?.label ?? "text-gray-500"} opacity-70`}>
+                    ({groupRows.length})
+                  </span>
+                </td>
+              </tr>
+              {groupRows.map((row: Slot, index: number) => {
             const slotId = row.id ?? index;
             const statusStyle = STATUS_STYLE[row.status] ?? { bg: "bg-gray-100", text: "text-gray-600" };
+
 
             return (
               <tr key={slotId} className={`transition-colors group ${row.status === "CANCEL_PENDING" ? "bg-orange-50 hover:bg-orange-100/70" : "hover:bg-blue-50/30"}`}>
@@ -234,6 +284,8 @@ export default function TableAdminSlot({
               </tr>
             );
           })}
+            </React.Fragment>
+          ))}
         </tbody>
       </table>
 

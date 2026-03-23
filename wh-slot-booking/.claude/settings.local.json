@@ -5,7 +5,8 @@
       "Bash(python seed.py)",
       "Bash(.venv/Scripts/python seed.py)",
       "Bash(.venv/Scripts/python -c \":*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

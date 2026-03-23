@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   getSlotsAdmin,
   assignDock,
@@ -71,6 +71,10 @@ export default function useAdminSlots(lang: Lang) {
       setLoadErr(getApiErrorMessage(err, lang));
     }
   };
+
+  useEffect(() => {
+    load(now, now);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const reload = () => load(startOd, endDo);
 

@@ -28,8 +28,13 @@ function getApiErrorMessage(error: unknown, lang: Lang): string {
 }
 
 export default function useAdminSlots(lang: Lang, initialDate?: string) {
-  const now = new Date().toISOString().split("T")[0];
 
+  const getData = async () => {
+    const slots = await getSlotsAdmin(startOd, endDo)
+    return slots
+  }
+
+  const now = new Date().toISOString().split("T")[0];
   const [startOd, setStartOd] = useState(initialDate ?? now);
   const [endDo, setEndDo] = useState(initialDate ?? now);
   const [slotsAdmin, setSlotsAdmin] = useState<Slot[]>([]);
@@ -46,8 +51,10 @@ export default function useAdminSlots(lang: Lang, initialDate?: string) {
   const [errorDelete, setErrorDelete] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
+  
+
   useEffect(() => {
-    if (initialDate) loadDataSlot(initialDate, initialDate);
+    loadDataSlot(startOd, endDo);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

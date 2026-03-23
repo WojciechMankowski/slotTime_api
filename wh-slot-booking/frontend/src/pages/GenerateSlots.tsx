@@ -1,18 +1,13 @@
 import { useEffect, useState } from 'react'
+import { t, Lang } from '../Helper/i18n'
+import type { SlotTemplate, SlotTemplateCreate } from '../Types/apiType'
+import useTemplates from '../hooks/useTemplates'
+import TemplateList from '../components/templates/TemplateList'
+import TemplateForm from '../components/templates/TemplateForm'
+import ConfirmDeleteModal from '../components/UI/ConfirmDeleteModal'
 import { api } from '../API/api'
-import { t, Lang, errorText } from '../Helper/i18n'
 
 type SlotType = 'INBOUND' | 'OUTBOUND' | 'ANY'
-
-type Template = {
-  id: number
-  name: string
-  start_hour: number
-  end_hour: number
-  slot_minutes: number
-  slot_type: SlotType
-  parallel_slots?: number
-}
 
 type ReportRow = {
   date: string
@@ -23,65 +18,86 @@ type ReportRow = {
 
 export default function GenerateSlots({ lang }: { lang: Lang }) {
   /* ===============================
-     TEMPLATES
+     TEMPLATES — CRUD
   =============================== */
-  const [templates, setTemplates] = useState<Template[]>([])
-  const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null)
+  const { templates, fetchTemplates, createTemplate, updateTemplate, deleteTemplate } = useTemplates()
+
+  const [modalOpen, setModalOpen] = useState(false)
+  const [editingTemplate, setEditingTemplate] = useState<SlotTemplate | null>(null)
+  const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  useEffect(() => {
+    fetchTemplates()
+  }, [fetchTemplates])
+
+  const openCreate = () => {
+    setEditingTemplate(null)
+    setModalOpen(true)
+  }
+
+  const openEdit = (tpl: SlotTemplate) => {
+    setEditingTemplate(tpl)
+    setModalOpen(true)
+  }
+
+  const handleFormSubmit = async (data: SlotTemplateCreate) => {
+    if (editingTemplate) {
+      await updateTemplate(editingTemplate.id, data)
+    } else {
+      await createTemplate(data)
+    }
+    setModalOpen(false)
+    setEditingTemplate(null)
+  }
+
+  const handleDelete = async () => {
+    if (deleteId === null) return
+    setIsDeleting(true)
+    try {
+      await deleteTemplate(deleteId)
+    } finally {
+      setIsDeleting(false)
+      setDeleteId(null)
+    }
+  }
 
   /* ===============================
-     COMMON FIELDS (EDITABLE)
+     GENERATION — FIELDS
   =============================== */
   const today = new Date().toISOString().slice(0, 10)
 
+  const [selectedTemplateId, setSelectedTemplateId] = useState<number | null>(null)
   const [dateFrom, setDateFrom] = useState(today)
   const [dateTo, setDateTo] = useState(today)
-
   const [startTime, setStartTime] = useState('08:00')
   const [endTime, setEndTime] = useState('16:00')
   const [interval, setInterval] = useState(30)
   const [slotType, setSlotType] = useState<SlotType>('ANY')
   const [parallelSlots, setParallelSlots] = useState(1)
 
-  /* ===============================
-     REPORT
-  =============================== */
   const [report, setReport] = useState<ReportRow[]>([])
-  const [error, setError] = useState<string | null>(null)
+  const [genError, setGenError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  /* ===============================
-     LOAD TEMPLATES
-  =============================== */
-  useEffect(() => {
-    api.get('/api/templates').then(res => {
-      setTemplates(res.data)
-    })
-  }, [])
-
-  /* ===============================
-     APPLY TEMPLATE (EDITABLE!)
-  =============================== */
+  // Apply selected template params to generation fields
   useEffect(() => {
     if (!selectedTemplateId) return
-
-    const t = templates.find(t => t.id === selectedTemplateId)
-    if (!t) return
-
-    setStartTime(`${String(t.start_hour).padStart(2, '0')}:00`)
-    setEndTime(`${String(t.end_hour).padStart(2, '0')}:00`)
-    setInterval(t.slot_minutes)
-    setSlotType(t.slot_type)
-    setParallelSlots(t.parallel_slots ?? 1)
+    const tpl = templates.find(t => t.id === selectedTemplateId)
+    if (!tpl) return
+    setStartTime(`${String(tpl.start_hour).padStart(2, '0')}:00`)
+    setEndTime(`${String(tpl.end_hour).padStart(2, '0')}:00`)
+    setInterval(tpl.slot_minutes)
+    setSlotType(tpl.slot_type)
   }, [selectedTemplateId, templates])
 
   /* ===============================
      GENERATE
   =============================== */
   const generate = async () => {
-    setError(null)
+    setGenError(null)
     setLoading(true)
     setReport([])
-
     try {
       const res = await api.post('/api/slots/generate', {
         date_from: dateFrom,
@@ -92,10 +108,9 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
         slot_type: slotType,
         parallel_slots: parallelSlots,
       })
-
       setReport(res.data.days)
     } catch (e: any) {
-      setError(e?.response?.data?.detail?.error_code || 'ERROR')
+      setGenError(e?.response?.data?.detail?.error_code || 'ERROR')
     } finally {
       setLoading(false)
     }
@@ -111,44 +126,70 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
     { requested: 0, generated: 0, skipped: 0 }
   )
 
+  const inputCls =
+    'w-full px-4 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
+
   /* ===============================
      RENDER
   =============================== */
   return (
     <div className="p-4 max-w-7xl mx-auto space-y-6">
-      {/* ===== Page header ===== */}
-      <div className="mb-8">
+      {/* Page header */}
+      <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-1">
-          {t("generate_slots", lang)}
+          {t('generate_slots', lang)}
         </h1>
-        <p className="text-gray-500 text-sm">{t("system_subtitle", lang)} (Admin)</p>
+        <p className="text-gray-500 text-sm">{t('system_subtitle', lang)} (Admin)</p>
       </div>
 
+      {/* ===========================
+          SECTION A — Templates
+      =========================== */}
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-linear-to-br from-indigo-600 to-indigo-800 px-7 py-4">
+          <h2 className="text-lg font-bold text-white leading-none">
+            {t('templates_section', lang)}
+          </h2>
+          <p className="text-indigo-200 text-xs mt-0.5">{t('templates_desc', lang)}</p>
+        </div>
+        <div className="p-7">
+          <TemplateList
+            templates={templates}
+            lang={lang}
+            onAdd={openCreate}
+            onEdit={openEdit}
+            onDelete={id => setDeleteId(id)}
+          />
+        </div>
+      </div>
+
+      {/* ===========================
+          SECTION B — Generation
+      =========================== */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* ===============================
-            LEFT – PARAMETERS
-        =============================== */}
+        {/* Left — params */}
         <div className="lg:col-span-2 bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden h-fit">
           <div className="bg-linear-to-br from-indigo-600 to-indigo-800 px-7 py-4">
             <h2 className="text-lg font-bold text-white leading-none">
-              {t('slot_params', lang)}
+              {t('generate_section', lang)}
             </h2>
           </div>
-          
+
           <div className="p-7">
+            {/* Template selector */}
             <div className="flex flex-col gap-1.5 mb-6">
-              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('template_optional', lang)}</label>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                {t('template_optional', lang)}
+              </label>
               <select
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium"
                 value={selectedTemplateId ?? ''}
-                onChange={e =>
-                  setSelectedTemplateId(e.target.value ? Number(e.target.value) : null)
-                }
+                onChange={e => setSelectedTemplateId(e.target.value ? Number(e.target.value) : null)}
               >
                 <option value="">{t('none', lang)}</option>
-                {templates.map(t => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
+                {templates.filter(tpl => tpl.is_active).map(tpl => (
+                  <option key={tpl.id} value={tpl.id}>
+                    {tpl.name} ({String(tpl.start_hour).padStart(2, '0')}:00–{String(tpl.end_hour).padStart(2, '0')}:00, {tpl.slot_minutes} min, {tpl.slot_type})
                   </option>
                 ))}
               </select>
@@ -157,59 +198,57 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('date_from', lang)}</label>
-                <input type="date" className="w-full px-4 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
+                <input type="date" className={inputCls} value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
               </div>
-
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('date_to', lang)}</label>
-                <input type="date" className="w-full px-4 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" value={dateTo} onChange={e => setDateTo(e.target.value)} />
+                <input type="date" className={inputCls} value={dateTo} onChange={e => setDateTo(e.target.value)} />
               </div>
-
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('start', lang)}</label>
-                <input type="time" className="w-full px-4 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" value={startTime} onChange={e => setStartTime(e.target.value)} />
+                <input type="time" className={inputCls} value={startTime} onChange={e => setStartTime(e.target.value)} />
               </div>
-
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('end', lang)}</label>
-                <input type="time" className="w-full px-4 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" value={endTime} onChange={e => setEndTime(e.target.value)} />
+                <input type="time" className={inputCls} value={endTime} onChange={e => setEndTime(e.target.value)} />
               </div>
-              
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('interval_minutes', lang)}</label>
                 <input
                   type="number"
                   min={5}
-                  className="w-full px-4 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className={inputCls}
                   value={interval}
                   onChange={e => setInterval(Number(e.target.value))}
                 />
               </div>
-              
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('parallel_slots', lang)}</label>
                 <input
                   type="number"
                   min={1}
-                  className="w-full px-4 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className={inputCls}
                   value={parallelSlots}
                   onChange={e => setParallelSlots(Number(e.target.value))}
                 />
               </div>
-
               <div className="flex flex-col gap-1.5 sm:col-span-2">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('type', lang)}</label>
-                <select className="w-full px-4 py-2 text-sm rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white" value={slotType} onChange={e => setSlotType(e.target.value as SlotType)}>
-                  <option value="ANY">ANY</option>
-                  <option value="INBOUND">INBOUND</option>
-                  <option value="OUTBOUND">OUTBOUND</option>
+                <select
+                  className={`${inputCls} bg-white`}
+                  value={slotType}
+                  onChange={e => setSlotType(e.target.value as SlotType)}
+                >
+                  <option value="ANY">{t('any', lang)}</option>
+                  <option value="INBOUND">{t('inbound', lang)}</option>
+                  <option value="OUTBOUND">{t('outbound', lang)}</option>
                 </select>
               </div>
             </div>
 
-            <button 
-              className="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold rounded-xl px-6 py-3.5 text-sm transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 disabled:opacity-60" 
-              onClick={generate} 
+            <button
+              className="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold rounded-xl px-6 py-3.5 text-sm transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 disabled:opacity-60"
+              onClick={generate}
               disabled={loading}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -218,36 +257,21 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
               {loading ? t('generating', lang) : t('generate_slots', lang)}
             </button>
 
-            {error && (
+            {genError && (
               <div className="mt-4 p-4 bg-red-50 text-red-700 border border-red-200 rounded-xl text-sm font-bold flex items-center gap-2">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
                 </svg>
-                {t(error as any, lang) || error}
+                {t(genError as any, lang) || genError}
               </div>
             )}
           </div>
         </div>
 
-        {/* ===============================
-            RIGHT – INFO / PLACEHOLDER
-        =============================== */}
+        {/* Right — info + report */}
         <div className="flex flex-col gap-6">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <svg className="text-blue-600" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
-              </svg>
-              {t('daily_limits', lang)}
-            </h3>
-            <p className="text-gray-500 text-sm leading-relaxed">
-              {t('daily_limits_desc', lang)}
-            </p>
-          </div>
-
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 overflow-hidden">
             <h3 className="text-lg font-bold text-gray-900 mb-4">{t('report_latest', lang)}</h3>
-
             {report.length === 0 ? (
               <div className="text-center py-10 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">
                 <svg className="mx-auto mb-3 opacity-30" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -261,14 +285,14 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
                   <thead className="bg-gray-50 text-[0.65rem] uppercase tracking-widest text-gray-400 font-bold border-b border-gray-200">
                     <tr>
                       <th className="px-3 py-3 font-bold">{t('date', lang)}</th>
-                      <th className="px-3 py-3 font-bold">{t('req', lang) || 'REQ'}</th>
-                      <th className="px-3 py-3 font-bold">{t('gen', lang) || 'GEN'}</th>
-                      <th className="px-3 py-3 font-bold">{t('skip', lang) || 'SKIP'}</th>
+                      <th className="px-3 py-3 font-bold">{t('req', lang)}</th>
+                      <th className="px-3 py-3 font-bold">{t('gen', lang)}</th>
+                      <th className="px-3 py-3 font-bold">{t('skip', lang)}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {report.map(r => (
-                      <tr key={r.date} className="hover:bg-gray-50 transition-colors italic-none">
+                      <tr key={r.date} className="hover:bg-gray-50 transition-colors">
                         <td className="px-3 py-2.5 font-bold text-gray-900">{r.date.slice(5)}</td>
                         <td className="px-3 py-2.5 text-gray-500">{r.requested}</td>
                         <td className="px-3 py-2.5 font-bold text-emerald-600">{r.generated}</td>
@@ -288,6 +312,28 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
           </div>
         </div>
       </div>
+
+      {/* ===========================
+          MODALS
+      =========================== */}
+      {modalOpen && (
+        <TemplateForm
+          lang={lang}
+          initialData={editingTemplate ?? undefined}
+          onSubmit={handleFormSubmit}
+          onCancel={() => { setModalOpen(false); setEditingTemplate(null) }}
+        />
+      )}
+
+      {deleteId !== null && (
+        <ConfirmDeleteModal
+          lang={lang}
+          title={templates.find(t => t.id === deleteId)?.name ?? ''}
+          isDeleting={isDeleting}
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteId(null)}
+        />
+      )}
     </div>
   )
 }
