@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { t, Lang } from "../Helper/i18n";
 import { Me } from "../Types/types";
@@ -8,6 +8,9 @@ import SlotForm from "../components/Forms/SlotForms";
 import FilterSlotAdmin from "../components/FilertSlotAdmin";
 import TableAdminSlot from "../components/Admin/AdminSlotTable";
 import ConfirmDeleteModal from "../components/UI/ConfirmDeleteModal";
+import { api } from "../API/api";
+
+type DayCap = { id: number; date: string; slot_type: "INBOUND" | "OUTBOUND" | "ANY"; capacity: number };
 
 export default function AdminSlot({ lang, me, initialDate }: { lang: Lang; me: Me; initialDate?: string }) {
   const nav = useNavigate();
@@ -38,6 +41,15 @@ export default function AdminSlot({ lang, me, initialDate }: { lang: Lang; me: M
   } = useAdminSlots(lang, initialDate);
 
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; label: string } | null>(null);
+
+  const [dayCaps, setDayCaps] = useState<DayCap[]>([]);
+  useEffect(() => {
+    if (!startOd || !endDo) return;
+    api
+      .get<DayCap[]>("/api/day-capacity", { params: { date_from: startOd, date_to: endDo } })
+      .then(res => setDayCaps(res.data))
+      .catch(() => setDayCaps([]));
+  }, [startOd, endDo]);
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
@@ -96,6 +108,42 @@ export default function AdminSlot({ lang, me, initialDate }: { lang: Lang; me: M
         />
         {errorLoad && <ErrorBanner msg={errorLoad} />}
       </div>
+
+      {/* Daily limits */}
+      {dayCaps.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mb-6 overflow-x-auto">
+          <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-500">
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12.01" y2="8" /><line x1="12" y1="12" x2="12" y2="16" />
+            </svg>
+            {t("daily_limits", lang)}
+          </h3>
+          <table className="w-full text-xs text-left">
+            <thead className="text-[0.65rem] uppercase tracking-widest text-gray-400 font-bold border-b border-gray-100">
+              <tr>
+                <th className="pb-2 pr-4">{t("date", lang)}</th>
+                <th className="pb-2 pr-4">{t("type", lang)}</th>
+                <th className="pb-2">{t("capacity", lang)}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {dayCaps.map(cap => (
+                <tr key={cap.id}>
+                  <td className="py-1.5 pr-4 font-bold text-gray-900">{cap.date.slice(5)}</td>
+                  <td className="py-1.5 pr-4 text-gray-600">
+                    {cap.slot_type === "INBOUND"
+                      ? t("inbound", lang)
+                      : cap.slot_type === "OUTBOUND"
+                      ? t("outbound", lang)
+                      : t("any", lang)}
+                  </td>
+                  <td className="py-1.5 font-bold text-indigo-700">{cap.capacity}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 overflow-hidden">

@@ -270,16 +270,6 @@ export default function GenerateSlots({ lang }: { lang: Lang }) {
 
         {/* Right — info + report */}
         <div className="flex flex-col gap-6">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-              <svg className="text-blue-600" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
-              </svg>
-              {t('daily_limits', lang)}
-            </h3>
-            <p className="text-gray-500 text-sm leading-relaxed">{t('daily_limits_desc', lang)}</p>
-          </div>
-
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 overflow-hidden">
             <h3 className="text-lg font-bold text-gray-900 mb-4">{t('report_latest', lang)}</h3>
             {report.length === 0 ? (

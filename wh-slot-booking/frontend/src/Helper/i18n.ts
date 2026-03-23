@@ -208,6 +208,8 @@ notice_notes:         { pl: 'Uwagi',                       en: 'Notes' },
   template_interval_min: { pl: 'min',                              en: 'min' },
   template_name_required:{ pl: 'Nazwa szablonu jest wymagana.',    en: 'Template name is required.' },
   generate_section:      { pl: 'Generowanie slotów',               en: 'Generate slots' },
+  no_day_caps:           { pl: 'Brak limitów dla wybranego zakresu.', en: 'No limits for selected range.' },
+  capacity:              { pl: 'Limit',                             en: 'Limit' },
 }
 
 export function t(key: keyof typeof dict, lang: Lang): string {
