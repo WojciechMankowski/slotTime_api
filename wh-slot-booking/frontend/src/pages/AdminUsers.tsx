@@ -54,7 +54,7 @@ export default function AdminUsers({ lang, me }: { lang: Lang; me: Me }) {
           </h2>
         </div>
         <div className="p-7">
-          <AdminCreateUser onSuccess={reload} />
+          <AdminCreateUser onSuccess={reload} isSuperadmin={me.role === "superadmin"} />
         </div>
       </div>
 
@@ -86,6 +86,7 @@ export default function AdminUsers({ lang, me }: { lang: Lang; me: Me }) {
         <UpdateFormUser
           user={user}
           lang={lang}
+          isSuperadmin={me.role === "superadmin"}
           onClose={() => setIsEdit(false)}
           onSuccess={reload}
         />

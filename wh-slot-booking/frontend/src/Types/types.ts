@@ -4,6 +4,8 @@ export interface Warehouse {
   id: number
   name: string
   alias: string
+  location?: string | null
+  is_active: boolean
   logo_path?: string | null
 }
 
@@ -20,7 +22,7 @@ export interface Me {
   alias: string
   role: Role
   company: Company | null
-  warehouse: Warehouse
+  warehouse: Warehouse | null
 }
 
 // export interface Slot {

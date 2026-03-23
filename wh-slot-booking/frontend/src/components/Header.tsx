@@ -21,7 +21,7 @@ function Header({
             {/* container = max-width jak w starym index.html */}
             <div className="max-w-[1200px] mx-auto px-5 w-full flex items-center gap-4">
                 <div className="flex items-center gap-1">
-                    <Menu lang={lang} me={me} />
+                    {me.role !== 'client' && <Menu lang={lang} me={me} />}
                     <img
                         src={me.warehouse.logo_path || '/static/app_logo.png'}
                         alt="logo"

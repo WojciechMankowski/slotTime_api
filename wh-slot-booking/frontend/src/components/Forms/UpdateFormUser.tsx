@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { patchUser } from "../../API/serviceUser";
 import { getCompanies } from "../../API/serviceCopany";
+import { getWarehouses } from "../../API/serviceWarehouse";
 import { CompanyResponse } from "../../Types/apiType";
-import { UserOut } from "../../Types/types";
+import { UserOut, Warehouse } from "../../Types/types";
 import { Lang, t, errorText } from "../../Helper/i18n";
 import { getApiError } from "../../Helper/helper";
 import Overlay from "../UI/Overlay";
@@ -16,6 +17,7 @@ import Label from "../UI/Label";
 interface UpdateFormUserProps {
   user: UserOut;
   lang: Lang;
+  isSuperadmin?: boolean;
   onClose: () => void;
   onSuccess?: () => void;
 }
@@ -23,6 +25,7 @@ interface UpdateFormUserProps {
 export default function UpdateFormUser({
   user,
   lang,
+  isSuperadmin,
   onClose,
   onSuccess,
 }: UpdateFormUserProps) {
@@ -31,7 +34,9 @@ export default function UpdateFormUser({
   const [alias, setAlias] = useState(user.alias);
   const [role, setRole] = useState(user.role);
   const [companyId, setCompanyId] = useState<number | null>(user.company_id);
+  const [warehouseId, setWarehouseId] = useState<number | null>(user.warehouse_id);
   const [companies, setCompanies] = useState<CompanyResponse[]>([]);
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,6 +48,12 @@ export default function UpdateFormUser({
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (isSuperadmin) {
+      getWarehouses().then(setWarehouses).catch(() => {});
+    }
+  }, [isSuperadmin]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -53,7 +64,8 @@ export default function UpdateFormUser({
         username,
         alias,
         role: role as any,
-        company_id: companyId,
+        company_id: role === "client" ? companyId : null,
+        warehouse_id: role === "admin" ? warehouseId : null,
       });
       if (onSuccess) onSuccess();
       onClose();
@@ -101,18 +113,34 @@ export default function UpdateFormUser({
                 onChange={(val) => setRole(val as any)}
               />
             </div>
-            <div className="flex flex-col gap-1">
-              <Label label={t("company", lang)} />
-              <Select
-                name="company_select"
-                options={[
-                  { value: "", label: "—" },
-                  ...companies.map((c) => ({ value: String(c.id), label: c.name })),
-                ]}
-                defaultValue={companyId != null ? String(companyId) : ""}
-                onChange={(val) => setCompanyId(val ? Number(val) : null)}
-              />
-            </div>
+            {role === "client" && (
+              <div className="flex flex-col gap-1">
+                <Label label={t("company", lang)} />
+                <Select
+                  name="company_select"
+                  options={[
+                    { value: "", label: "—" },
+                    ...companies.map((c) => ({ value: String(c.id), label: c.name })),
+                  ]}
+                  defaultValue={companyId != null ? String(companyId) : ""}
+                  onChange={(val) => setCompanyId(val ? Number(val) : null)}
+                />
+              </div>
+            )}
+            {role === "admin" && isSuperadmin && (
+              <div className="flex flex-col gap-1">
+                <Label label={t("warehouse", lang)} />
+                <Select
+                  name="warehouse_select"
+                  options={[
+                    { value: "", label: "—" },
+                    ...warehouses.map((w) => ({ value: String(w.id), label: `${w.name} (${w.alias})` })),
+                  ]}
+                  defaultValue={warehouseId != null ? String(warehouseId) : ""}
+                  onChange={(val) => setWarehouseId(val ? Number(val) : null)}
+                />
+              </div>
+            )}
             <Input
               label={`${t("password", lang)} (${t("leave_empty_to_keep", lang)})`}
               type="password"

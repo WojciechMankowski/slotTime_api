@@ -249,13 +249,13 @@
 
 ### Frontend
 
-- [ ] **Klient nie widzi zasobów spoza swojego warehouse** 
+- [x] **Klient nie widzi zasobów spoza swojego warehouse** *done 23.03.2026*
   - Lista slotów, doków i kalendarza zawiera tylko dane z magazynu klienta
   - Nawigacja nie zawiera opcji zmiany magazynu dla klienta
   - Ręczne wpisanie URL z innym warehouse_id nie zwraca danych (walidacja po stronie API + obsługa 403 na froncie)
   - Dropdown filtrów nie pokazuje innych magazynów
 
-- [ ] **Klient widzi tylko aktywne docki**
+- [x] **Klient widzi tylko aktywne docki** *done 23.03.2026*
   - Klient na liście doków widzi tylko te ze statusem active
   - Przy rezerwacji dropdown doków nie zawiera nieaktywnych
   - Admin nadal widzi wszystkie docki (aktywne i nieaktywne) z oznaczeniem statusu

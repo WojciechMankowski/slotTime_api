@@ -5,16 +5,20 @@ import Label from "../UI/Label";
 import Select from "../UI/Select";
 import { createUser } from "../../API/serviceUser";
 import { getCompanies } from "../../API/serviceCopany";
+import { getWarehouses } from "../../API/serviceWarehouse";
 import { CompanyResponse } from "../../Types/apiType";
+import { Warehouse } from "../../Types/types";
 import { t, getLang } from "../../Helper/i18n";
 
-const AdminCreateUser = ({ onSuccess }: { onSuccess?: () => void }) => {
+const AdminCreateUser = ({ onSuccess, isSuperadmin }: { onSuccess?: () => void; isSuperadmin?: boolean }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [alias, setAlias] = useState("");
   const [companyId, setCompanyId] = useState<number | null>(null);
+  const [warehouseId, setWarehouseId] = useState<number | null>(null);
   const [role, setRole] = useState<"client" | "admin">("client");
   const [companies, setCompanies] = useState<CompanyResponse[]>([]);
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
 
   const roles = ["client", "admin"];
 
@@ -27,6 +31,12 @@ const AdminCreateUser = ({ onSuccess }: { onSuccess?: () => void }) => {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (isSuperadmin) {
+      getWarehouses().then(setWarehouses).catch(() => {});
+    }
+  }, [isSuperadmin]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -35,7 +45,8 @@ const AdminCreateUser = ({ onSuccess }: { onSuccess?: () => void }) => {
         password,
         alias,
         role,
-        company_id: companyId,
+        company_id: role === "client" ? companyId : null,
+        warehouse_id: role === "admin" ? warehouseId : null,
       });
       setUsername("");
       setPassword("");
@@ -81,14 +92,6 @@ const AdminCreateUser = ({ onSuccess }: { onSuccess?: () => void }) => {
             />
           </div>
           <div className="form-group w-full">
-            <Label label={t('company', getLang())} />
-            <Select
-              name="company_select"
-              options={companies.map((c) => ({ value: String(c.id), label: c.name }))}
-              onChange={(val) => setCompanyId(Number(val))}
-            />
-          </div>
-          <div className="form-group w-full">
             <Label label={t('role', getLang())} />
             <Select
               name="role_select"
@@ -96,6 +99,29 @@ const AdminCreateUser = ({ onSuccess }: { onSuccess?: () => void }) => {
               onChange={(val) => setRole(val as "client" | "admin")}
             />
           </div>
+          {role === "client" && (
+            <div className="form-group w-full">
+              <Label label={t('company', getLang())} />
+              <Select
+                name="company_select"
+                options={companies.map((c) => ({ value: String(c.id), label: c.name }))}
+                onChange={(val) => setCompanyId(Number(val))}
+              />
+            </div>
+          )}
+          {role === "admin" && isSuperadmin && (
+            <div className="form-group w-full">
+              <Label label={t('warehouse', getLang())} />
+              <Select
+                name="warehouse_select"
+                options={[
+                  { value: "", label: "— brak —" },
+                  ...warehouses.map((w) => ({ value: String(w.id), label: `${w.name} (${w.alias})` })),
+                ]}
+                onChange={(val) => setWarehouseId(val ? Number(val) : null)}
+              />
+            </div>
+          )}
         </div>
         <div className="mt-4 text-right">
           <Button

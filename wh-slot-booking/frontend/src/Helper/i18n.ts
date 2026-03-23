@@ -208,8 +208,21 @@ notice_notes:         { pl: 'Uwagi',                       en: 'Notes' },
   template_interval_min: { pl: 'min',                              en: 'min' },
   template_name_required:{ pl: 'Nazwa szablonu jest wymagana.',    en: 'Template name is required.' },
   generate_section:      { pl: 'Generowanie slotów',               en: 'Generate slots' },
+  select_warehouse:      { pl: 'Wybierz magazyn',                  en: 'Select warehouse' },
+  warehouse_required:    { pl: 'Wybierz magazyn, aby kontynuować', en: 'Select a warehouse to continue' },
   no_day_caps:           { pl: 'Brak limitów dla wybranego zakresu.', en: 'No limits for selected range.' },
   capacity:              { pl: 'Limit',                             en: 'Limit' },
+
+  // --- Magazyny ---
+  warehouses:            { pl: 'Magazyny',                          en: 'Warehouses' },
+  create_new_warehouse:  { pl: 'Utwórz nowy magazyn',              en: 'Create new warehouse' },
+  edit_warehouse:        { pl: 'Edytuj magazyn',                   en: 'Edit warehouse' },
+  location:              { pl: 'Lokalizacja',                       en: 'Location' },
+  no_warehouses:         { pl: 'Brak magazynów',                   en: 'No warehouses' },
+  warehouse_name:        { pl: 'Nazwa magazynu',                   en: 'Warehouse name' },
+  warehouse_alias:       { pl: 'Alias magazynu',                   en: 'Warehouse alias' },
+  warehouse_name_required: { pl: 'Nazwa magazynu jest wymagana.', en: 'Warehouse name is required.' },
+  warehouse_alias_required: { pl: 'Alias magazynu jest wymagany.', en: 'Warehouse alias is required.' },
 }
 
 export function t(key: keyof typeof dict, lang: Lang): string {
@@ -225,6 +238,7 @@ export const errorText: Dict = {
   FIELD_REQUIRED: { pl: 'Brak wymaganego pola.', en: 'Missing required field.' },
   COMPANY_INACTIVE: { pl: 'Firma nieaktywna: brak dostępu.', en: 'Company inactive: access blocked.' },
   SLOT_NOT_AVAILABLE: { pl: 'Slot jest już zajęty.', en: 'Slot is not available.' },
+  WAREHOUSE_HAS_DEPENDENCIES: { pl: 'Nie można usunąć magazynu — ma przypisane firmy, użytkowników lub doki.', en: 'Cannot delete warehouse — it has assigned companies, users or docks.' },
   INVALID_STATUS: { pl: 'Nieprawidłowy status operacji.', en: 'Invalid status for operation.' },
   NOT_FOUND: { pl: 'Nie znaleziono zasobu.', en: 'Resource not found.' },
   DATA_CONFLICT: { pl: 'Konflikt danych - odśwież i spróbuj ponownie.', en: 'Data conflict - please refresh and try again.' },

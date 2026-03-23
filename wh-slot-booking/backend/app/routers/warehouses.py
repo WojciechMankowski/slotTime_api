@@ -51,6 +51,21 @@ def patch_warehouse(warehouse_id: int, data: WarehousePatch, db: Session = Depen
     db.refresh(wh)
     return wh
 
+@router.delete("/{warehouse_id}", status_code=204, dependencies=[Depends(require_role(models.Role.superadmin))])
+def delete_warehouse(warehouse_id: int, db: Session = Depends(get_db)):
+    wh = db.get(models.Warehouse, warehouse_id)
+    if not wh:
+        raise HTTPException(status_code=404, detail={"error_code": "WAREHOUSE_NOT_FOUND"})
+    has_deps = (
+        db.query(models.Company).filter(models.Company.warehouse_id == warehouse_id).first() or
+        db.query(models.User).filter(models.User.warehouse_id == warehouse_id).first() or
+        db.query(models.Dock).filter(models.Dock.warehouse_id == warehouse_id).first()
+    )
+    if has_deps:
+        raise HTTPException(status_code=400, detail={"error_code": "WAREHOUSE_HAS_DEPENDENCIES"})
+    db.delete(wh)
+    db.commit()
+
 @router.post("/{warehouse_id}/logo")
 def upload_logo(
     warehouse_id: int,

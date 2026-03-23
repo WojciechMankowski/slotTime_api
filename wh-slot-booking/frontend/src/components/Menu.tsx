@@ -1,10 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { t, Lang } from "../Helper/i18n";
-import { Me } from "../Types/types";
+import { Me, Warehouse } from "../Types/types";
+import { api, setWarehouseId, getWarehouseId } from "../API/api";
 
 const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [selectedWh, setSelectedWh] = useState<number | null>(getWarehouseId());
+
+  useEffect(() => {
+    if (me.role === "superadmin") {
+      api.get<Warehouse[]>("/api/warehouses").then(res => setWarehouses(res.data));
+    }
+  }, [me.role]);
+
+  const handleWarehouseChange = (id: number | null) => {
+    setSelectedWh(id);
+    setWarehouseId(id);
+  };
   const toggleMenu = () => {
     const next = !isOpen;
     setIsOpen(next);
@@ -87,7 +101,7 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
             </div>
             <div>
               <strong className="text-(--text-main) font-semibold">{t("warehouse", lang)}:</strong>{" "}
-              {me.warehouse.alias}
+              {me.warehouse?.alias ?? "-"}
             </div>
             <div>
               <strong className="text-(--text-main) font-semibold">{t("company", lang)}:</strong>{" "}
@@ -95,6 +109,30 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
             </div>
           </div>
         </div>
+
+        {/* warehouse selector for superadmin */}
+        {me.role === "superadmin" && (
+          <div className="mb-3">
+            <label className="text-[0.65rem] uppercase font-bold tracking-widest text-(--text-muted) px-1 mb-1 block">
+              {t("select_warehouse", lang)}
+            </label>
+            <select
+              value={selectedWh ?? ""}
+              onChange={e => handleWarehouseChange(e.target.value ? Number(e.target.value) : null)}
+              className="w-full px-3 py-2 rounded-xl border border-(--border) text-sm font-medium bg-(--bg) text-(--text-main) focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="">— {t("select_warehouse", lang)} —</option>
+              {warehouses.map(wh => (
+                <option key={wh.id} value={wh.id}>{wh.name} ({wh.alias})</option>
+              ))}
+            </select>
+            {!selectedWh && (
+              <p className="text-[0.7rem] text-orange-600 font-medium mt-1 px-1">
+                {t("warehouse_required", lang)}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* navigation */}
         <div className="flex flex-col gap-1">
@@ -170,6 +208,16 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
               >
                 {t("docks", lang)}
               </NavLink>
+
+              {me.role === "superadmin" && (
+                <NavLink
+                  to="/admin/warehouses"
+                  onClick={closeMenu}
+                  className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}
+                >
+                  {t("warehouses", lang)}
+                </NavLink>
+              )}
             </>
           )}
         </div>

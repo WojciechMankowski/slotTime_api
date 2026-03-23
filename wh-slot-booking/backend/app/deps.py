@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Query, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from typing import Tuple, Optional
@@ -21,6 +21,8 @@ def get_current_user(
 
 def require_role(*roles: models.Role):
     def _guard(user: models.User = Depends(get_current_user)) -> models.User:
+        if user.role == models.Role.superadmin:
+            return user  # superadmin bypasses all role checks
         if user.role not in roles:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={"error_code": "FORBIDDEN"})
         return user
@@ -49,7 +51,15 @@ def warehouse_context(user: models.User, db: Session) -> models.Warehouse:
     return wh
 
 def get_context_warehouse(
+    warehouse_id: Optional[int] = Query(None),
     user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> models.Warehouse:
+    if user.role == models.Role.superadmin:
+        if warehouse_id is None:
+            raise HTTPException(status_code=400, detail={"error_code": "WAREHOUSE_CONTEXT_REQUIRED"})
+        wh = db.get(models.Warehouse, warehouse_id)
+        if not wh:
+            raise HTTPException(status_code=404, detail={"error_code": "WAREHOUSE_NOT_FOUND"})
+        return wh
     return warehouse_context(user, db)
