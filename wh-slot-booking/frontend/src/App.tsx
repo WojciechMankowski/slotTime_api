@@ -17,6 +17,7 @@ import ClientBooking from './pages/ClientBooking'
 import AdminArchive from './pages/AdminArchive'
 import AdminCalendar from './pages/AdminCalendar'
 import AdminWarehouses from './pages/AdminWarehouses'
+import AdminReports from './pages/AdminReports'
 import Header from './components/Header'
 import CompanyBlocked from './pages/CompanyBlocked'
 
@@ -118,6 +119,10 @@ export default function App() {
             <Route
               path="/admin/warehouses"
               element={me.role === 'superadmin' ? <AdminWarehouses lang={lang} /> : <Navigate to="/" replace />}
+            />
+            <Route
+              path="/admin/reports"
+              element={me.role !== 'client' ? <AdminReports lang={lang} me={me} /> : <Navigate to="/" replace />}
             />
 
             <Route path="/test" element={<TestPage lang={lang} />} />

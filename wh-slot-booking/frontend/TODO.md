@@ -283,14 +283,14 @@
 
 ### Frontend
 
-- [ ] **Raporty**
+- [x] **Raporty** *done 23.03.2026*
   - Raport "Wykorzystanie slotów": % zajętości per dzień/tydzień/miesiąc
   - Raport "Rezerwacje per firma": liczba rezerwacji z podziałem na firmy
   - Filtrowanie po zakresie dat, magazynie, firmie
   - Eksport do CSV lub XLSX
   - Wykresy (bar chart / line chart) dla wizualizacji trendów
 
-- [ ] **Przeklikanie czy wszędzie zmienia się język**
+- [x] **Przeklikanie czy wszędzie zmienia się język** *done 23.03.2026*
   - Checklist każdego widoku: nagłówki, przyciski, placeholdery, komunikaty walidacji, toasty, puste stany, tooltips
   - Przełączenie języka natychmiast zmienia wszystkie teksty (bez przeładowania strony)
   - Daty i liczby formatowane zgodnie z lokalizacją (np. dd.MM.yyyy dla PL)

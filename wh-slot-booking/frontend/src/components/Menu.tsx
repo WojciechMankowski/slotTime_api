@@ -68,7 +68,7 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
 
       {/* sidebar */}
       <aside
-        className={`fixed top-0 w-[300px] h-screen bg-(--card-bg) shadow-[4px_0_25px_rgba(15,23,42,0.15)] z-20001 px-4 py-4 flex flex-col gap-0 overflow-hidden transition-[left,opacity,visibility] duration-300 ease-in-out ${
+        className={`fixed top-0 w-[300px] h-screen bg-(--card-bg) shadow-[4px_0_25px_rgba(15,23,42,0.15)] z-20001 px-4 py-4 flex flex-col gap-0 overflow-y-auto transition-[left,opacity,visibility] duration-300 ease-in-out ${
           isOpen ? "left-0 opacity-100 visible" : "-left-[320px] opacity-0 invisible"
         }`}
       >
@@ -207,6 +207,14 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
                 className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}
               >
                 {t("docks", lang)}
+              </NavLink>
+
+              <NavLink
+                to="/admin/reports"
+                onClick={closeMenu}
+                className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}
+              >
+                {t("reports", lang)}
               </NavLink>
 
               {me.role === "superadmin" && (

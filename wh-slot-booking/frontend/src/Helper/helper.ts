@@ -52,3 +52,19 @@ export const TYPE_STYLE: Record<string, string> = {
   OUTBOUND: "bg-emerald-100 text-emerald-800",
   ANY:      "bg-purple-100 text-purple-800",
 };
+
+export function exportToCsv(rows: Record<string, unknown>[], filename: string): void {
+  if (rows.length === 0) return;
+  const headers = Object.keys(rows[0]);
+  const lines = [
+    headers.join(";"),
+    ...rows.map(r => headers.map(h => String(r[h] ?? "")).join(";")),
+  ];
+  const blob = new Blob(["\uFEFF" + lines.join("\r\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}

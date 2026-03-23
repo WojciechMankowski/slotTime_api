@@ -224,6 +224,22 @@ notice_notes:         { pl: 'Uwagi',                       en: 'Notes' },
   warehouse_name_required: { pl: 'Nazwa magazynu jest wymagana.', en: 'Warehouse name is required.' },
   warehouse_alias_required: { pl: 'Alias magazynu jest wymagany.', en: 'Warehouse alias is required.' },
 
+  // --- Raporty ---
+  reports:             { pl: 'Raporty',                                   en: 'Reports' },
+  reports_desc:        { pl: 'Analiza wykorzystania slotów',              en: 'Slot utilization analysis' },
+  generate_report:     { pl: 'Generuj raport',                           en: 'Generate report' },
+  utilization:         { pl: 'Wykorzystanie',                            en: 'Utilization' },
+  kpi_total:           { pl: 'Wszystkie sloty',                          en: 'Total slots' },
+  kpi_utilization:     { pl: 'Wykorzystanie',                            en: 'Utilization' },
+  kpi_completed:       { pl: 'Zakończone',                               en: 'Completed' },
+  kpi_cancelled:       { pl: 'Anulowane',                                en: 'Cancelled' },
+  export_csv:          { pl: 'Eksportuj CSV',                            en: 'Export CSV' },
+  no_report_data:      { pl: 'Brak danych — wybierz zakres i kliknij Generuj', en: 'No data — select range and click Generate' },
+  by_company:          { pl: 'Według firm',                              en: 'By company' },
+  daily_breakdown:     { pl: 'Rozkład dzienny',                          en: 'Daily breakdown' },
+  reservations:        { pl: 'Rezerwacje',                               en: 'Reservations' },
+  generating_report:   { pl: 'Generowanie…',                            en: 'Generating…' },
+
   // --- Usuwanie hurtowe slotów ---
   bulk_delete_section:   { pl: 'Usuń sloty',                               en: 'Delete slots' },
   bulk_delete_btn:       { pl: 'Usuń',                                     en: 'Delete' },
