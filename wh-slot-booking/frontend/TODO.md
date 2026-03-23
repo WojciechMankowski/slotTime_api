@@ -58,12 +58,12 @@
   - Po zapisie lista doków odświeża się z aktualnymi danymi
   - Toast/komunikat o sukcesie lub błędzie -[x] Odświeżenie danych dok, user (done 17.03.2026)
 
-- [x] **Dodanie możliwości edycji użytkownika** (done 17.03.2026)
+- [x] **Dodanie możliwości edycji użytkownika** *(done 20.03.2026)*
   - Admin widzi przycisk "Edytuj" przy każdym użytkowniku
   - Formularz wczytuje aktualne dane użytkownika
   - Zmiana roli działa poprawnie (dropdown z dostępnymi rolami)
-  - Nie można edytować superadmina z poziomu admina
-  - Walidacja email (unikalność, format)
+  - Admin nie może nadać roli superadmin (blokada po stronie backendu)
+  - Walidacja unikalności username (backend zwraca USERNAME_TAKEN)
 
 - [x] **Dodanie możliwości edycji firmy** *done 19.03.2026*
   - Admin widzi przycisk "Edytuj" przy każdej firmie
@@ -105,11 +105,11 @@
 
 ### Backend
 
-- [ ] **COMPLETED status + filtrowanie archiwum**
-  - Slot może przejść do statusu COMPLETED (np. po zakończeniu okna czasowego lub ręcznie)
-  - GET `/api/slots?status=COMPLETED` zwraca tylko zakończone sloty
-  - GET `/api/slots?status=COMPLETED&date_from=...&date_to=...` filtruje po dacie
-  - Domyślne listowanie slotów (bez filtra) nie zwraca COMPLETED (archiwum osobno)
+- [x] **COMPLETED status + filtrowanie archiwum** *(done 20.03.2026)*
+  - Slot przechodzi do COMPLETED przez `PATCH /api/slots/{id}/status`
+  - `GET /api/slots/archive` zwraca zakończone sloty (domyślnie COMPLETED)
+  - Parametry: `?status=COMPLETED|CANCELLED|ALL`, opcjonalne `date_from` i `date_to`
+  - Klient widzi tylko swoje sloty; admin/superadmin widzi wszystkie w magazynie
 
 ### Frontend
 
