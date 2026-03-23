@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, func
 from datetime import datetime, date, timedelta, time as dtime
 from typing import List, Optional, Tuple
 
@@ -644,6 +644,45 @@ def change_slot_status(
     db.commit()
     db.refresh(slot)
     return slot_to_out(slot, db)
+
+
+@router.delete(
+    "",
+    status_code=200,
+    dependencies=[Depends(require_role(models.Role.superadmin))],
+)
+def bulk_delete_slots(
+    date_from: str = Query(...),
+    date_to: str = Query(...),
+    slot_type: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    wh: models.Warehouse = Depends(get_context_warehouse),
+    db: Session = Depends(get_db),
+):
+    try:
+        dt_from = date.fromisoformat(date_from)
+        dt_to = date.fromisoformat(date_to)
+    except ValueError:
+        raise HTTPException(400, detail={"error_code": "INVALID_DATE_RANGE"})
+
+    q = db.query(models.Slot).filter(
+        models.Slot.warehouse_id == wh.id,
+        func.date(models.Slot.start_dt) >= dt_from,
+        func.date(models.Slot.start_dt) <= dt_to,
+    )
+    if slot_type:
+        q = q.filter(models.Slot.slot_type == slot_type)
+    if status:
+        q = q.filter(models.Slot.status == status)
+    else:
+        q = q.filter(models.Slot.status == models.SlotStatus.AVAILABLE)
+
+    slots_to_delete = q.all()
+    count = len(slots_to_delete)
+    for slot in slots_to_delete:
+        db.delete(slot)
+    db.commit()
+    return {"deleted": count}
 
 
 @router.delete(

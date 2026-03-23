@@ -223,6 +223,15 @@ notice_notes:         { pl: 'Uwagi',                       en: 'Notes' },
   warehouse_alias:       { pl: 'Alias magazynu',                   en: 'Warehouse alias' },
   warehouse_name_required: { pl: 'Nazwa magazynu jest wymagana.', en: 'Warehouse name is required.' },
   warehouse_alias_required: { pl: 'Alias magazynu jest wymagany.', en: 'Warehouse alias is required.' },
+
+  // --- Usuwanie hurtowe slotów ---
+  bulk_delete_section:   { pl: 'Usuń sloty',                               en: 'Delete slots' },
+  bulk_delete_btn:       { pl: 'Usuń',                                     en: 'Delete' },
+  bulk_delete_deleting:  { pl: 'Usuwanie…',                                en: 'Deleting…' },
+  bulk_deleted_msg:      { pl: 'Usunięto slotów',                          en: 'Slots deleted' },
+  bulk_status_default:   { pl: 'domyślnie: Dostępne',                      en: 'default: Available' },
+  all_types_opt:         { pl: 'Wszystkie typy',                           en: 'All types' },
+  all_statuses_opt:      { pl: 'Domyślnie (AVAILABLE)',                    en: 'Default (AVAILABLE)' },
 }
 
 export function t(key: keyof typeof dict, lang: Lang): string {

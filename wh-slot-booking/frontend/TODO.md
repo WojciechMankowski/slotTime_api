@@ -260,7 +260,7 @@
   - Przy rezerwacji dropdown doków nie zawiera nieaktywnych
   - Admin nadal widzi wszystkie docki (aktywne i nieaktywne) z oznaczeniem statusu
 
-- [ ] **Ekran zarządzania magazynami dla superadmina (CRUD w UI)**
+- [x] **Ekran zarządzania magazynami dla superadmina (CRUD w UI)** *done 23.03.2026*
   - Superadmin widzi listę wszystkich magazynów
   - Formularz tworzenia nowego magazynu (nazwa, adres, strefa czasowa)
   - Formularz edycji magazynu

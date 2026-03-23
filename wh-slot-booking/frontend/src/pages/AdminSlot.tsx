@@ -42,6 +42,16 @@ export default function AdminSlot({ lang, me, initialDate }: { lang: Lang; me: M
 
   const [deleteTarget, setDeleteTarget] = useState<{ id: number; label: string } | null>(null);
 
+  // Bulk delete state
+  const [bulkDateFrom, setBulkDateFrom] = useState(new Date().toISOString().slice(0, 10));
+  const [bulkDateTo, setBulkDateTo] = useState(new Date().toISOString().slice(0, 10));
+  const [bulkStatus, setBulkStatus] = useState("");
+  const [bulkType, setBulkType] = useState("");
+  const [bulkConfirm, setBulkConfirm] = useState(false);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkErr, setBulkErr] = useState<string | null>(null);
+  const [bulkResult, setBulkResult] = useState<number | null>(null);
+
   const [dayCaps, setDayCaps] = useState<DayCap[]>([]);
   useEffect(() => {
     if (!startOd || !endDo) return;
@@ -55,6 +65,25 @@ export default function AdminSlot({ lang, me, initialDate }: { lang: Lang; me: M
     if (!deleteTarget) return;
     await onDeleteSlot(deleteTarget.id);
     setDeleteTarget(null);
+  };
+
+  const handleBulkDelete = async () => {
+    setBulkLoading(true);
+    setBulkErr(null);
+    setBulkResult(null);
+    try {
+      const params: Record<string, string> = { date_from: bulkDateFrom, date_to: bulkDateTo };
+      if (bulkStatus) params.status = bulkStatus;
+      if (bulkType) params.slot_type = bulkType;
+      const res = await api.delete<{ deleted: number }>("/api/slots", { params });
+      setBulkResult(res.data.deleted);
+      setBulkConfirm(false);
+      loadDataSlot(startOd, endDo);
+    } catch (err: any) {
+      setBulkErr(err?.response?.data?.detail?.error_code ?? "ERROR");
+    } finally {
+      setBulkLoading(false);
+    }
   };
 
   return (
@@ -108,6 +137,69 @@ export default function AdminSlot({ lang, me, initialDate }: { lang: Lang; me: M
         />
         {errorLoad && <ErrorBanner msg={errorLoad} />}
       </div>
+
+      {/* Bulk delete — superadmin only */}
+      {me.role === "superadmin" && (
+        <div className="bg-white rounded-2xl shadow-sm border border-red-100 p-5 mb-6">
+          <h3 className="text-sm font-bold text-red-700 mb-3 flex items-center gap-2">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+            </svg>
+            {t("bulk_delete_section", lang)}
+          </h3>
+          <div className="flex flex-wrap gap-4 items-end">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("date_from", lang)}</label>
+              <input type="date" value={bulkDateFrom} onChange={e => setBulkDateFrom(e.target.value)}
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("date_to", lang)}</label>
+              <input type="date" value={bulkDateTo} onChange={e => setBulkDateTo(e.target.value)}
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("status", lang)}</label>
+              <select value={bulkStatus} onChange={e => setBulkStatus(e.target.value)}
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-400 min-w-[180px]">
+                <option value="">{t("all_statuses_opt", lang)}</option>
+                <option value="AVAILABLE">{t("available", lang)}</option>
+                <option value="BOOKED">{t("booked", lang)}</option>
+                <option value="APPROVED_WAITING_DETAILS">{t("approved_waiting_details", lang)}</option>
+                <option value="RESERVED_CONFIRMED">{t("reserved_confirmed", lang)}</option>
+                <option value="CANCEL_PENDING">{t("cancel_pending", lang)}</option>
+                <option value="COMPLETED">{t("completed", lang)}</option>
+                <option value="CANCELLED">{t("cancelled", lang)}</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t("type", lang)}</label>
+              <select value={bulkType} onChange={e => setBulkType(e.target.value)}
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-400 min-w-[140px]">
+                <option value="">{t("all_types_opt", lang)}</option>
+                <option value="INBOUND">{t("inbound", lang)}</option>
+                <option value="OUTBOUND">{t("outbound", lang)}</option>
+                <option value="ANY">{t("any", lang)}</option>
+              </select>
+            </div>
+            <button
+              onClick={() => { setBulkErr(null); setBulkResult(null); setBulkConfirm(true); }}
+              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold rounded-lg px-5 py-2 text-sm transition-colors shadow-sm"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              </svg>
+              {t("bulk_delete_btn", lang)}
+            </button>
+          </div>
+          {bulkErr && <p className="mt-2 text-xs text-red-600 font-semibold">{bulkErr}</p>}
+          {bulkResult !== null && (
+            <p className="mt-2 text-xs text-emerald-700 font-semibold">
+              ✓ {t("bulk_deleted_msg", lang)}: <strong>{bulkResult}</strong>
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Summary */}
       {slotsAdmin.length > 0 && (() => {
@@ -248,6 +340,16 @@ export default function AdminSlot({ lang, me, initialDate }: { lang: Lang; me: M
           isDeleting={false}
           onConfirm={handleDeleteConfirm}
           onCancel={() => setDeleteTarget(null)}
+        />
+      )}
+
+      {bulkConfirm && (
+        <ConfirmDeleteModal
+          lang={lang}
+          title={`${bulkDateFrom} → ${bulkDateTo}${bulkStatus ? ` · ${bulkStatus}` : ""}${bulkType ? ` · ${bulkType}` : ""}`}
+          isDeleting={bulkLoading}
+          onConfirm={handleBulkDelete}
+          onCancel={() => setBulkConfirm(false)}
         />
       )}
     </div>
