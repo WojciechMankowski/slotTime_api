@@ -109,6 +109,75 @@ export default function AdminSlot({ lang, me, initialDate }: { lang: Lang; me: M
         {errorLoad && <ErrorBanner msg={errorLoad} />}
       </div>
 
+      {/* Summary */}
+      {slotsAdmin.length > 0 && (() => {
+        const byStatus = slotsAdmin.reduce<Record<string, number>>((acc, s) => {
+          acc[s.status] = (acc[s.status] ?? 0) + 1;
+          return acc;
+        }, {});
+        const byType = slotsAdmin.reduce<Record<string, number>>((acc, s) => {
+          const key = s.original_slot_type;
+          acc[key] = (acc[key] ?? 0) + 1;
+          return acc;
+        }, {});
+
+        const STATUS_STYLE: Record<string, string> = {
+          AVAILABLE:                "bg-emerald-100 text-emerald-800",
+          BOOKED:                   "bg-amber-100 text-amber-800",
+          APPROVED_WAITING_DETAILS: "bg-blue-100 text-blue-800",
+          RESERVED_CONFIRMED:       "bg-indigo-100 text-indigo-800",
+          COMPLETED:                "bg-gray-100 text-gray-600",
+          CANCELLED:                "bg-red-100 text-red-700",
+          CANCEL_PENDING:           "bg-orange-100 text-orange-700",
+        };
+        const STATUS_LABEL: Record<string, keyof typeof import("../Helper/i18n").dict> = {
+          AVAILABLE:                "available",
+          BOOKED:                   "booked",
+          APPROVED_WAITING_DETAILS: "approved_waiting_details",
+          RESERVED_CONFIRMED:       "reserved_confirmed",
+          COMPLETED:                "completed",
+          CANCELLED:                "cancelled",
+          CANCEL_PENDING:           "cancel_pending",
+        };
+
+        return (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 mb-6">
+            <div className="flex flex-wrap items-center gap-4">
+              {/* Total */}
+              <div className="flex items-center gap-1.5 text-sm font-bold text-gray-700 pr-4 border-r border-gray-200">
+                <span className="text-2xl font-black text-indigo-600">{slotsAdmin.length}</span>
+                <span className="text-xs text-gray-500 font-semibold uppercase tracking-wide">{t("slots", lang)}</span>
+              </div>
+
+              {/* By status */}
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(byStatus).map(([status, count]) => (
+                  <span
+                    key={status}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${STATUS_STYLE[status] ?? "bg-gray-100 text-gray-600"}`}
+                  >
+                    {t(STATUS_LABEL[status] ?? status as any, lang)}
+                    <span className="font-black ml-0.5">{count}</span>
+                  </span>
+                ))}
+              </div>
+
+              {/* By type */}
+              {Object.keys(byType).length > 0 && (
+                <div className="flex flex-wrap gap-2 pl-4 border-l border-gray-200">
+                  {Object.entries(byType).map(([type, count]) => (
+                    <span key={type} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700">
+                      {type === "INBOUND" ? t("inbound", lang) : type === "OUTBOUND" ? t("outbound", lang) : t("any", lang)}
+                      <span className="font-black ml-0.5">{count}</span>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Daily limits */}
       {dayCaps.length > 0 && (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mb-6 overflow-x-auto">

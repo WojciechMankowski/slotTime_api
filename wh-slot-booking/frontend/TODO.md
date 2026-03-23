@@ -217,7 +217,7 @@
 
 ### Frontend
 
-- [ ] **Podstrona z generowaniem slotów na podstawie szablonów wraz z ich tworzeniem**
+- [x] **Podstrona z generowaniem slotów na podstawie szablonów wraz z ich tworzeniem**
   - Formularz tworzenia szablonu: dni tygodnia, zakres godzin, interwał, typ operacji, dock (opcjonalnie)
   - Lista zapisanych szablonów z opcją edycji i usunięcia
   - Przycisk "Generuj sloty" z wyborem zakresu dat i szablonu
@@ -249,7 +249,7 @@
 
 ### Frontend
 
-- [ ] **Klient nie widzi zasobów spoza swojego warehouse**
+- [ ] **Klient nie widzi zasobów spoza swojego warehouse** 
   - Lista slotów, doków i kalendarza zawiera tylko dane z magazynu klienta
   - Nawigacja nie zawiera opcji zmiany magazynu dla klienta
   - Ręczne wpisanie URL z innym warehouse_id nie zwraca danych (walidacja po stronie API + obsługa 403 na froncie)
