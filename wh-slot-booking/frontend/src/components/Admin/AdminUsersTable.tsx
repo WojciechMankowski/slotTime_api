@@ -8,6 +8,7 @@ interface AdminUsersTableProps {
   className?: string;
   setIsEdit: (v: boolean) => void;
   setUser: (user: UserOut) => void;
+  onDelete?: (id: number) => void;
 }
 
 const ROLE_STYLE: Record<string, string> = {
@@ -22,6 +23,7 @@ export default function AdminUsersTable({
   className = "",
   setIsEdit,
   setUser,
+  onDelete,
 }: AdminUsersTableProps) {
   const handleEdit = (row: UserOut) => {
     setUser(row);
@@ -55,10 +57,9 @@ export default function AdminUsersTable({
   return (
     <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 ${className}`}>
       {rows.map((row, index) => (
-        <button
+        <div
           key={row.id ?? index}
-          onClick={() => handleEdit(row)}
-          className="group relative bg-white border border-gray-200 rounded-2xl p-5 text-left shadow-sm hover:shadow-md hover:border-blue-400 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+          className="relative bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-blue-400 hover:-translate-y-0.5 transition-all duration-200"
         >
           {/* Avatar + name */}
           <div className="flex items-center gap-3 mb-3">
@@ -81,7 +82,6 @@ export default function AdminUsersTable({
 
           {/* Info badges */}
           <div className="flex flex-wrap gap-1.5 mb-3">
-            {/* Role */}
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.7rem] font-bold uppercase tracking-wider border ${
                 ROLE_STYLE[row.role] ?? ROLE_STYLE.client
@@ -89,15 +89,11 @@ export default function AdminUsersTable({
             >
               {row.role}
             </span>
-
-            {/* Company */}
             {row.company_alias && (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.7rem] font-bold tracking-wider border bg-amber-50 text-amber-800 border-amber-200">
                 {row.company_alias}
               </span>
             )}
-
-            {/* Warehouse */}
             {row.warehouse_alias && (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.7rem] font-bold tracking-wider border bg-emerald-50 text-emerald-800 border-emerald-200">
                 {row.warehouse_alias}
@@ -105,24 +101,26 @@ export default function AdminUsersTable({
             )}
           </div>
 
-          {/* Hover CTA */}
-          <div className="text-xs text-blue-600 font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-1">
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          {/* Actions */}
+          <div className="flex gap-2 mt-1">
+            <button
+              type="button"
+              onClick={() => handleEdit(row)}
+              className="px-3 py-1.5 rounded-full text-xs font-semibold text-gray-700 border border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50 transition-all"
             >
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-            </svg>
-            {t("edit", lang)}
+              {t("edit", lang)}
+            </button>
+            {onDelete && (
+              <button
+                type="button"
+                onClick={() => onDelete(row.id)}
+                className="px-3 py-1.5 rounded-full text-xs font-semibold text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 transition-all"
+              >
+                {t("delete_btn", lang)}
+              </button>
+            )}
           </div>
-        </button>
+        </div>
       ))}
     </div>
   );

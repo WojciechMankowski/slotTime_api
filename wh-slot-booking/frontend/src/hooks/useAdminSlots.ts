@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { getSlotsAdmin, assignDock, createSlot, patchSlot, approveSlot, patchSlotStatus } from "../API/serviceSlot";
+import { useState, useEffect } from "react";
+import { getSlotsAdmin, assignDock, createSlot, patchSlot, approveSlot, patchSlotStatus, cancelSlot, rejectCancelSlot, deleteSlot } from "../API/serviceSlot";
 import { getDokAdmin } from "../API/serviceDok";
 import { errorText, Lang } from "../Helper/i18n";
 import type { Slot } from "../Types/SlotType";
@@ -27,11 +27,11 @@ function getApiErrorMessage(error: unknown, lang: Lang): string {
   return errorText.UNEXPECTED_ERROR[lang];
 }
 
-export default function useAdminSlots(lang: Lang) {
+export default function useAdminSlots(lang: Lang, initialDate?: string) {
   const now = new Date().toISOString().split("T")[0];
 
-  const [startOd, setStartOd] = useState(now);
-  const [endDo, setEndDo] = useState(now);
+  const [startOd, setStartOd] = useState(initialDate ?? now);
+  const [endDo, setEndDo] = useState(initialDate ?? now);
   const [slotsAdmin, setSlotsAdmin] = useState<Slot[]>([]);
   const [dockAdmin, setDockAdmin] = useState<DokTyp[]>([]);
   const [typeSlot, setTypeSlot] = useState<string>("--");
@@ -42,7 +42,14 @@ export default function useAdminSlots(lang: Lang) {
   const [errorDock, setErrorDock] = useState<string | null>(null);
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
   const [errorApprove, setErrorApprove] = useState<string | null>(null);
+  const [errorCancelAction, setErrorCancelAction] = useState<string | null>(null);
+  const [errorDelete, setErrorDelete] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+
+  useEffect(() => {
+    if (initialDate) loadDataSlot(initialDate, initialDate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadDataSlot = async (start: string, end: string) => {
     setErrorLoad(null);
@@ -58,6 +65,8 @@ export default function useAdminSlots(lang: Lang) {
       }
       if (statusFilter !== "--") {
         slots = slots.filter((slot) => slot.status === statusFilter);
+      } else {
+        slots = slots.filter((slot) => slot.status !== "COMPLETED" && slot.status !== "CANCELLED");
       }
       setSlotsAdmin(slots);
       setDockAdmin(docks);
@@ -96,6 +105,36 @@ export default function useAdminSlots(lang: Lang) {
       await loadDataSlot(startOd, endDo);
     } catch (error) {
       setErrorApprove(getApiErrorMessage(error, lang));
+    }
+  };
+
+  const onApproveCancel = async (slotId: number) => {
+    setErrorCancelAction(null);
+    try {
+      await cancelSlot(slotId);
+      await loadDataSlot(startOd, endDo);
+    } catch (error) {
+      setErrorCancelAction(getApiErrorMessage(error, lang));
+    }
+  };
+
+  const onRejectCancel = async (slotId: number) => {
+    setErrorCancelAction(null);
+    try {
+      await rejectCancelSlot(slotId);
+      await loadDataSlot(startOd, endDo);
+    } catch (error) {
+      setErrorCancelAction(getApiErrorMessage(error, lang));
+    }
+  };
+
+  const onDeleteSlot = async (slotId: number) => {
+    setErrorDelete(null);
+    try {
+      await deleteSlot(slotId);
+      await loadDataSlot(startOd, endDo);
+    } catch (error) {
+      setErrorDelete(getApiErrorMessage(error, lang));
     }
   };
 
@@ -138,6 +177,8 @@ export default function useAdminSlots(lang: Lang) {
     errorDock,
     errorStatus,
     errorApprove,
+    errorCancelAction,
+    errorDelete,
     isCreating,
     setStartOd,
     setEndDo,
@@ -147,6 +188,9 @@ export default function useAdminSlots(lang: Lang) {
     onDockChange,
     onStatusChange,
     onApprove,
+    onApproveCancel,
+    onRejectCancel,
+    onDeleteSlot,
     handleCreateSlot,
   };
 }

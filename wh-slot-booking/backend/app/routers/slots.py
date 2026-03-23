@@ -498,6 +498,63 @@ def assign_dock(
 
 
 @router.post(
+    "/{slot_id}/request-cancel",
+    response_model=SlotOut,
+    dependencies=[Depends(require_role(models.Role.client))],
+)
+def request_cancel_slot(
+    slot_id: int,
+    user: models.User = Depends(get_current_user),
+    wh: models.Warehouse = Depends(get_context_warehouse),
+    db: Session = Depends(get_db),
+):
+    slot = db.get(models.Slot, slot_id)
+    if not slot or slot.warehouse_id != wh.id:
+        raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
+    if slot.reserved_by_user_id != user.id:
+        raise HTTPException(status_code=403, detail={"error_code": "FORBIDDEN"})
+
+    CANCELLABLE = {
+        models.SlotStatus.BOOKED,
+        models.SlotStatus.APPROVED_WAITING_DETAILS,
+        models.SlotStatus.RESERVED_CONFIRMED,
+    }
+    if slot.status not in CANCELLABLE:
+        raise HTTPException(status_code=409, detail={"error_code": "INVALID_STATUS"})
+
+    slot.previous_status = slot.status
+    slot.status = models.SlotStatus.CANCEL_PENDING
+    db.commit()
+    db.refresh(slot)
+    return slot_to_out(slot, db)
+
+
+@router.post(
+    "/{slot_id}/reject-cancel",
+    response_model=SlotOut,
+    dependencies=[Depends(require_role(models.Role.admin, models.Role.superadmin))],
+)
+def reject_cancel_slot(
+    slot_id: int,
+    wh: models.Warehouse = Depends(get_context_warehouse),
+    db: Session = Depends(get_db),
+):
+    slot = db.get(models.Slot, slot_id)
+    if not slot or slot.warehouse_id != wh.id:
+        raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
+    if slot.status != models.SlotStatus.CANCEL_PENDING:
+        raise HTTPException(status_code=409, detail={"error_code": "INVALID_STATUS"})
+    if not slot.previous_status:
+        raise HTTPException(status_code=409, detail={"error_code": "NO_PREVIOUS_STATUS"})
+
+    slot.status = slot.previous_status
+    slot.previous_status = None
+    db.commit()
+    db.refresh(slot)
+    return slot_to_out(slot, db)
+
+
+@router.post(
     "/{slot_id}/cancel",
     response_model=SlotOut,
     dependencies=[Depends(require_role(models.Role.admin, getattr(models.Role, "superadmin", models.Role.admin), models.Role.client))],
@@ -515,6 +572,7 @@ def cancel_slot(
         raise HTTPException(status_code=403, detail={"error_code": "FORBIDDEN"})
 
     slot.status = models.SlotStatus.CANCELLED
+    slot.previous_status = None
     db.commit()
     db.refresh(slot)
     return slot_to_out(slot, db)
@@ -572,6 +630,9 @@ def change_slot_status(
     if not slot or slot.warehouse_id != wh.id:
         raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
 
+    if data.status == models.SlotStatus.CANCEL_PENDING:
+        raise HTTPException(status_code=400, detail={"error_code": "USE_REQUEST_CANCEL_ENDPOINT"})
+
     slot.status = data.status
 
     # jeśli cofamy do AVAILABLE, czyścimy rezerwację
@@ -583,3 +644,22 @@ def change_slot_status(
     db.commit()
     db.refresh(slot)
     return slot_to_out(slot, db)
+
+
+@router.delete(
+    "/{slot_id}",
+    status_code=204,
+    dependencies=[Depends(require_role(models.Role.superadmin))],
+)
+def delete_slot(
+    slot_id: int,
+    wh: models.Warehouse = Depends(get_context_warehouse),
+    db: Session = Depends(get_db),
+):
+    slot = db.get(models.Slot, slot_id)
+    if not slot or slot.warehouse_id != wh.id:
+        raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
+    if slot.status != models.SlotStatus.AVAILABLE:
+        raise HTTPException(status_code=409, detail={"error_code": "SLOT_NOT_AVAILABLE"})
+    db.delete(slot)
+    db.commit()

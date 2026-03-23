@@ -77,24 +77,27 @@ export interface AdminCompaniesTableProps {
   className?: string;
   setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
   setCompany: React.Dispatch<React.SetStateAction<Company>>;
+  onDelete?: (id: number) => void;
 }
 
 export interface AdminUsersTableProps {
-  columns: string[];
   rows: UserOut[];
+  lang: Lang;
   className?: string;
-  isEdit: boolean;
-  setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
-  setUser: React.Dispatch<React.SetStateAction<UserOut>>;
+  columns?: string[];
+  setIsEdit: (v: boolean) => void;
+  setUser: (user: UserOut) => void;
+  onDelete?: (id: number) => void;
 }
 
 export interface AdminDocksTableProps {
-  columns: string[];
   rows: DokTyp[];
   className?: string;
-  lang: Lang
+  lang: Lang;
+  columns?: string[];
   setIsEdit: React.Dispatch<React.SetStateAction<boolean>>;
   setDock: React.Dispatch<React.SetStateAction<DokTyp>>;
+  onDelete?: (id: number) => void;
 }
 
 export interface UpdateFormCompanyProps {

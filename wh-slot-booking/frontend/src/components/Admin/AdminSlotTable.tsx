@@ -10,6 +10,7 @@ const STATUS_STYLE: Record<string, { bg: string; text: string }> = {
   RESERVED_CONFIRMED:       { bg: "bg-indigo-100",  text: "text-indigo-800"  },
   COMPLETED:                { bg: "bg-gray-100",    text: "text-gray-600"    },
   CANCELLED:                { bg: "bg-red-100",     text: "text-red-700"     },
+  CANCEL_PENDING:           { bg: "bg-orange-100",  text: "text-orange-700"  },
 };
 
 interface TableAdminSlotProps {
@@ -20,6 +21,9 @@ interface TableAdminSlotProps {
   onDockChange: (slotId: number, dockId: number) => void;
   onStatusChange: (slotId: number, newStatus: string) => void;
   onApprove: (slotId: number) => void;
+  onApproveCancel: (slotId: number) => void;
+  onRejectCancel: (slotId: number) => void;
+  onDelete?: (slotId: number) => void;
 }
 
 export default function TableAdminSlot({
@@ -29,6 +33,9 @@ export default function TableAdminSlot({
   onDockChange,
   onStatusChange,
   onApprove,
+  onApproveCancel,
+  onRejectCancel,
+  onDelete,
   className = "",
 }: TableAdminSlotProps) {
   const handleDockChange = (
@@ -73,7 +80,7 @@ export default function TableAdminSlot({
             const statusStyle = STATUS_STYLE[row.status] ?? { bg: "bg-gray-100", text: "text-gray-600" };
 
             return (
-              <tr key={slotId} className="hover:bg-blue-50/30 transition-colors group">
+              <tr key={slotId} className={`transition-colors group ${row.status === "CANCEL_PENDING" ? "bg-orange-50 hover:bg-orange-100/70" : "hover:bg-blue-50/30"}`}>
                 {/* Start */}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className="text-sm font-semibold text-gray-900">
@@ -113,6 +120,7 @@ export default function TableAdminSlot({
                     <option value="RESERVED_CONFIRMED">{t("reserved_confirmed", lang)}</option>
                     <option value="COMPLETED">{t("completed", lang)}</option>
                     <option value="CANCELLED">{t("cancelled", lang)}</option>
+                    <option value="CANCEL_PENDING">{t("cancel_pending", lang)}</option>
                   </select>
                 </td>
 
@@ -161,16 +169,55 @@ export default function TableAdminSlot({
                       </button>
                     )}
 
+                    {row.status === "CANCEL_PENDING" && (
+                      <div className="flex flex-col gap-1.5">
+                        <button
+                          onClick={() => onApproveCancel(slotId)}
+                          className="flex items-center gap-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 active:bg-red-800 px-4 py-2 rounded-xl transition-all shadow-md hover:shadow-lg whitespace-nowrap ring-2 ring-red-300"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                          </svg>
+                          {t("approve_cancel", lang)}
+                        </button>
+                        <button
+                          onClick={() => onRejectCancel(slotId)}
+                          className="flex items-center gap-2 text-xs font-bold text-orange-800 bg-orange-200 hover:bg-orange-300 active:bg-orange-400 px-4 py-2 rounded-xl transition-all whitespace-nowrap"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 .49-4.64" />
+                          </svg>
+                          {t("reject_cancel", lang)}
+                        </button>
+                      </div>
+                    )}
+
                     {row.status === "AVAILABLE" ? (
-                      <button
-                        onClick={() => onStatusChange(slotId, "CANCELLED")}
-                        className="p-2 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all group-hover:bg-gray-50"
-                        title={t("close_slot", lang)}
-                      >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => onStatusChange(slotId, "CANCELLED")}
+                          className="p-2 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all group-hover:bg-gray-50"
+                          title={t("close_slot", lang)}
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                          </svg>
+                        </button>
+                        {onDelete && (
+                          <button
+                            onClick={() => onDelete(slotId)}
+                            className="p-2 rounded-xl text-gray-400 hover:text-red-700 hover:bg-red-100 transition-all"
+                            title={t("delete_btn", lang)}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="3 6 5 6 21 6" />
+                              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                              <path d="M10 11v6" /><path d="M14 11v6" />
+                              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
                     ) : row.status === "BOOKED" || row.status === "APPROVED_WAITING_DETAILS" ? (
                       <button
                         onClick={() => onStatusChange(slotId, "AVAILABLE")}

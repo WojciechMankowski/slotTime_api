@@ -44,6 +44,7 @@ export const STATUS_STYLE: Record<string, { bg: string; text: string; label_pl: 
   RESERVED_CONFIRMED:       { bg: "bg-emerald-100", text: "text-emerald-800", label_pl: "Potwierdzone",            label_en: "Confirmed" },
   COMPLETED:                { bg: "bg-gray-100",    text: "text-gray-600",    label_pl: "Zakończony",              label_en: "Completed" },
   CANCELLED:                { bg: "bg-red-100",     text: "text-red-700",     label_pl: "Anulowany",              label_en: "Cancelled" },
+  CANCEL_PENDING:           { bg: "bg-orange-100",  text: "text-orange-700",  label_pl: "Oczekuje na anulowanie", label_en: "Cancel pending" },
 };
 
 export const TYPE_STYLE: Record<string, string> = {

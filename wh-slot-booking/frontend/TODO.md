@@ -71,7 +71,7 @@
   - Zmiana nazwy firmy nie zmienia automatycznie aliasu (alias edytowalny osobno)
   - Walidacja unikalności nazwy i aliasu
   - Toast/komunikat o sukcesie lub błędzie
-- [ ] **Blokada lokowania dla użytkownika nie zalogowanego** *(done 20.03.2026)*
+- [x] **Blokada lokowania dla użytkownika nie zalogowanego** *(done 20.03.2026)*
       **Cel** weryfikuje tylko username + hasło. Klient z nieaktywną firmą
       dostaje token i dopiero później wpada na błędy 403 przy operacjach.
       - [x] Klient z nieaktywną firmą widzi komunikat "Firma nieaktywna: brak dostępu."
@@ -87,7 +87,7 @@
 ---
 
 - [x] podbięcie akcj w tabeli z slotami (done 18.03.2026)
-- [x] test czy działa akcje
+- [x] test czy działa akcje *(done 23.03.2026)*
 - [x] rozpoczęcie pracy nad panelem dla klienta na razie pokazywanie i rezerwacja slotów (done 18.03.2026)
 
 ## Etap 2: Rezerwacja i workflow slotów
@@ -113,19 +113,19 @@
 
 ### Frontend
 
-- [ ] **Wyświetlanie otwartych slotów dla klientów**
+- [x] **Wyświetlanie otwartych slotów dla klientów** *(done 20.03.2026)*
   - Klient widzi tylko sloty ze statusem OPEN przypisane do jego magazynu
   - Widoczne informacje: data, godzina, typ (INBOUND/OUTBOUND/ANY), dock (jeśli przypisany)
   - Lista odświeża się po rezerwacji
   - Pusty stan ("Brak dostępnych slotów") wyświetla się poprawnie
 
-- [ ] **Przycisk "Rezerwuj" dla klienta**
+- [x] **Przycisk "Rezerwuj" dla klienta** *(done 20.03.2026)*
   - Przycisk "Rezerwuj" widoczny przy każdym otwartym slocie
   - Po kliknięciu slot zmienia status na RESERVED i znika z listy otwartych
   - Jeśli ktoś inny zdążył zarezerwować (race condition), wyświetla komunikat o błędzie
   - Przycisk jest nieaktywny podczas wysyłania żądania (zapobieganie podwójnemu kliknięciu)
 
-- [ ] **Formularz awizacji (notice) dla klienta**
+- [x] **Formularz awizacji (notice) dla klienta** *(done 23.03.2026)*
   - Formularz pojawia się po rezerwacji slotu (lub jest dostępny z widoku "Moje rezerwacje")
   - Wymagane pola: numer rejestracyjny, imię kierowcy, rodzaj towaru, ilość palet (do ustalenia)
   - Walidacja wymaganych pól przed wysłaniem
@@ -136,19 +136,19 @@
   - Wybrany kierunek jest zapisywany w rezerwacji
   - Dla slotów z ustalonym typem (INBOUND/OUTBOUND) dodatkowy wybór się nie pojawia
 
-- [ ] **Przycisk "Zatwierdź" (approve) dla admina**
+- [x] **Przycisk "Zatwierdź" (approve) dla admina** *done 23.03.2026*
   - Przycisk "Zatwierdź" widoczny przy slotach ze statusem RESERVED (tylko dla admina)
   - Po zatwierdzeniu status zmienia się na APPROVED
   - Admin widzi dane awizacji przed zatwierdzeniem
   - Przycisk nieaktywny w trakcie wysyłania żądania
 
-- [ ] **Przycisk "Przypisz dock" dla admina**
+- [x] **Przycisk "Przypisz dock" dla admina** *done 23.03.2026*
   - Przycisk/dropdown "Przypisz dock" widoczny przy slotach bez przypisanego doku
   - Lista doków filtrowana po magazynie i statusie (tylko aktywne)
   - Po przypisaniu dock wyświetla się przy slocie
   - Zmiana doku jest możliwa do momentu COMPLETED
 
-- [ ] **COMPLETED status + filtrowanie archiwum (frontend)**
+- [x] **COMPLETED status + filtrowanie archiwum (frontend)** *(done 23.03.2026)*
   - Zakładka "Archiwum" w nawigacji (lub toggle na liście slotów)
   - Filtrowanie po dacie (od, do), firmie, typie operacji
   - Tabela pokazuje wszystkie dane slotu (w tym dane awizacji)
@@ -171,20 +171,20 @@
 
 ### Frontend
 
-- [ ] **Dodanie akcji anulowania, zamknięcia slotu**
+- [x] **Dodanie akcji anulowania, zamknięcia slotu** *done 23.03.2026*
   - Przycisk "Anuluj" widoczny przy slotach w odpowiednich statusach
   - Przycisk "Zamknij" (→ COMPLETED) widoczny tylko dla admina
   - Potwierdzenie akcji modalem ("Czy na pewno chcesz anulować?")
   - Po akcji lista slotów odświeża się
 
-- [ ] **Cancel workflow (CANCEL_PENDING)**
+- [x] **Cancel workflow (CANCEL_PENDING)** *done 23.03.2026*
   - Klient klikając "Anuluj" zmienia status na CANCEL_PENDING (nie CANCELLED bezpośrednio)
   - Admin widzi sloty ze statusem CANCEL_PENDING z opcjami "Potwierdź anulowanie" / "Odrzuć"
   - Po potwierdzeniu status zmienia się na CANCELLED
   - Po odrzuceniu slot wraca do poprzedniego statusu
   - CANCEL_PENDING sloty są wizualnie wyróżnione (np. kolor, badge)
 
-- [ ] **Przycisk "Anuluj" (cancel) dla obu ról**
+- [x] **Przycisk "Anuluj" (cancel) dla obu ról** *done 23.03.2026*
   - Klient: przycisk tworzy żądanie anulowania (CANCEL_PENDING)
   - Admin: przycisk anuluje bezpośrednio (CANCELLED) lub zatwierdza żądanie klienta
   - Przycisk widoczny tylko przy slotach w statusach dopuszczających anulowanie
@@ -208,7 +208,7 @@
 
 ### Backend
 
-- [ ] **api/calendar/summary (endpoint agregacyjny)**
+- [x] **api/calendar/summary (endpoint agregacyjny)** *done 23.03.2026**done 23.03.2026*
   - GET `/api/calendar/summary?date_from=...&date_to=...&warehouse_id=...` zwraca dane
   - Odpowiedź zawiera: liczbę slotów per dzień/godzina, podział wg statusu, zajętość doków
   - Obsługa filtrów: warehouse, dock, typ operacji
@@ -224,7 +224,7 @@
   - Podgląd ile slotów zostanie wygenerowanych przed potwierdzeniem
   - Po generowaniu wyświetla podsumowanie (ile utworzono, ile pominięto jako duplikaty)
 
-- [ ] **Calendar (widok kalendarza)**
+- [x] **Calendar (widok kalendarza)** *done 23.03.2026*
   - Widok tygodniowy z osią czasu (godziny) i kolumnami (dni)
   - Sloty wyświetlane jako bloki z kolorem zależnym od statusu
   - Kliknięcie w slot otwiera szczegóły (status, firma, awizacja)

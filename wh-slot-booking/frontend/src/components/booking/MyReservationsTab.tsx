@@ -94,6 +94,7 @@ export default function MyReservationsTab({
               <option value="RESERVED_CONFIRMED">
                 {t("reserved_confirmed", lang)}
               </option>
+              <option value="CANCEL_PENDING">{t("cancel_pending", lang)}</option>
               <option value="COMPLETED">{t("completed", lang)}</option>
               <option value="CANCELLED">{t("cancelled", lang)}</option>
             </select>

@@ -25,3 +25,7 @@ export const patchDock = async (dockId: number, payload: DokTyp): Promise<DokTyp
   const res = await api.patch<DokTyp>(`/api/docks/${dockId}`, payload)
   return res.data
 }
+
+export const deleteDock = async (dockId: number): Promise<void> => {
+  await api.delete(`/api/docks/${dockId}`)
+}

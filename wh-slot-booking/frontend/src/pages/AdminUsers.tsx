@@ -1,15 +1,38 @@
-import React from "react";
-import { t, Lang } from "../Helper/i18n";
+import React, { useState } from "react";
+import { t, Lang, errorText } from "../Helper/i18n";
+import { Me } from "../Types/types";
 import useAdminUsers from "../hooks/useAdminUsers";
+import { deleteUser } from "../API/serviceUser";
+import { getApiError } from "../Helper/helper";
 import ErrorBanner from "../components/UI/ErrorBanner";
 import Spinner from "../components/UI/Spinner";
 import AdminCreateUser from "../components/Forms/AdminCreateUser";
 import AdminUsersTable from "../components/Admin/AdminUsersTable";
 import UpdateFormUser from "../components/Forms/UpdateFormUser";
+import ConfirmDeleteModal from "../components/UI/ConfirmDeleteModal";
 
-export default function AdminUsers({ lang }: { lang: Lang }) {
+export default function AdminUsers({ lang, me }: { lang: Lang; me: Me }) {
   const { users, loading, loadErr, isEdit, user, setIsEdit, setUser, reload } =
     useAdminUsers();
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
+  const [deleteErr, setDeleteErr] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleteErr(null);
+    setIsDeleting(true);
+    try {
+      await deleteUser(deleteTarget.id);
+      setDeleteTarget(null);
+      reload();
+    } catch (err) {
+      const code = getApiError(err);
+      setDeleteErr(errorText[code] ? errorText[code][lang] : code);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="p-4 max-w-5xl mx-auto">
@@ -36,6 +59,7 @@ export default function AdminUsers({ lang }: { lang: Lang }) {
       </div>
 
       {loadErr && <ErrorBanner msg={loadErr} />}
+      {deleteErr && <ErrorBanner msg={deleteErr} />}
 
       {/* Users cards */}
       {loading ? (
@@ -49,6 +73,11 @@ export default function AdminUsers({ lang }: { lang: Lang }) {
           lang={lang}
           setIsEdit={setIsEdit}
           setUser={setUser}
+          onDelete={me.role === "superadmin" ? (id) => {
+            const u = users.find(u => u.id === id);
+            setDeleteTarget({ id, name: u?.username ?? String(id) });
+            setDeleteErr(null);
+          } : undefined}
         />
       )}
 
@@ -59,6 +88,16 @@ export default function AdminUsers({ lang }: { lang: Lang }) {
           lang={lang}
           onClose={() => setIsEdit(false)}
           onSuccess={reload}
+        />
+      )}
+
+      {deleteTarget && (
+        <ConfirmDeleteModal
+          lang={lang}
+          title={deleteTarget.name}
+          isDeleting={isDeleting}
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteTarget(null)}
         />
       )}
     </div>

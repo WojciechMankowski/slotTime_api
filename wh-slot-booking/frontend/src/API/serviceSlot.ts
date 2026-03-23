@@ -85,9 +85,48 @@ export const cancelSlot = async (slotId: number): Promise<Slot> => {
   return res.data
 }
 
+export const requestCancelSlot = async (slotId: number): Promise<Slot> => {
+  const res = await api.post<Slot>(`/api/slots/${slotId}/request-cancel`)
+  return res.data
+}
+
+export const rejectCancelSlot = async (slotId: number): Promise<Slot> => {
+  const res = await api.post<Slot>(`/api/slots/${slotId}/reject-cancel`)
+  return res.data
+}
+
+export interface CalendarDaySummary {
+  date: string;
+  total: number;
+  available: number;
+  booked: number;
+  completed: number;
+  cancelled: number;
+}
+
+export const getCalendarSummary = async (dateFrom: string, dateTo: string): Promise<CalendarDaySummary[]> => {
+  const res = await api.get<CalendarDaySummary[]>("/api/calendar/summary", {
+    params: { date_from: dateFrom, date_to: dateTo },
+  });
+  return res.data;
+};
+
+export const getArchiveSlots = async (params: {
+  status?: string;
+  date_from?: string;
+  date_to?: string;
+}): Promise<Slot[]> => {
+  const res = await api.get<Slot[]>("/api/slots/archive", { params });
+  return res.data;
+}
+
 export const patchSlotStatus = async (slotId: number, status: string): Promise<Slot> => {
   const res = await api.patch<Slot>(`/api/slots/${slotId}/status`, { status });
   return res.data;
+};
+
+export const deleteSlot = async (slotId: number): Promise<void> => {
+  await api.delete(`/api/slots/${slotId}`);
 };
 
 export interface NoticePayload {

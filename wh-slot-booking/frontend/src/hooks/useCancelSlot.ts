@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { patchSlotStatus } from "../API/serviceSlot";
+import { requestCancelSlot } from "../API/serviceSlot";
 import { getApiError } from "../Helper/helper";
 
 export default function useCancelSlot(onSuccess: () => void) {
@@ -19,7 +19,7 @@ export default function useCancelSlot(onSuccess: () => void) {
     setCancelErr(null);
     setCancelling(true);
     try {
-      await patchSlotStatus(cancelSlotId, "CANCELLED");
+      await requestCancelSlot(cancelSlotId);
       setCancelSlotId(null);
       onSuccess();
     } catch (err) {

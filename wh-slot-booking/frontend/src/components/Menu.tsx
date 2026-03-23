@@ -5,16 +5,23 @@ import { Me } from "../Types/types";
 
 const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const toggleMenu = () => setIsOpen(!isOpen);
-  const closeMenu = () => setIsOpen(false);
+  const toggleMenu = () => {
+    const next = !isOpen;
+    setIsOpen(next);
+    document.body.style.overflow = next ? "hidden" : "";
+  };
+  const closeMenu = () => {
+    setIsOpen(false);
+    document.body.style.overflow = "";
+  };
 
   const linkBase =
-    "flex items-center py-3 px-4 rounded-xl text-[0.95rem] font-medium text-(--text-main) no-underline transition-all duration-200 hover:bg-(--accent-soft) hover:text-(--accent-dark) hover:translate-x-1";
+    "flex items-center py-2 px-3 rounded-xl text-[0.88rem] font-medium text-(--text-main) no-underline transition-all duration-200 hover:bg-(--accent-soft) hover:text-(--accent-dark) hover:translate-x-1";
   const linkActive =
     "bg-linear-to-br from-(--accent) to-(--accent-dark) text-white shadow-lg shadow-blue-600/25 translate-x-1";
 
   const sectionLabel =
-    "text-[0.7rem] uppercase font-bold tracking-widest text-(--text-muted) mt-5 mb-1 px-4";
+    "text-[0.65rem] uppercase font-bold tracking-widest text-(--text-muted) mt-3 mb-0.5 px-3";
 
   return (
     <>
@@ -47,21 +54,21 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
 
       {/* sidebar */}
       <aside
-        className={`fixed top-0 w-[300px] h-screen bg-(--card-bg) shadow-[4px_0_25px_rgba(15,23,42,0.15)] z-20001 p-6 flex flex-col gap-0 overflow-y-auto transition-[left,opacity,visibility] duration-300 ease-in-out ${
+        className={`fixed top-0 w-[300px] h-screen bg-(--card-bg) shadow-[4px_0_25px_rgba(15,23,42,0.15)] z-20001 px-4 py-4 flex flex-col gap-0 overflow-hidden transition-[left,opacity,visibility] duration-300 ease-in-out ${
           isOpen ? "left-0 opacity-100 visible" : "-left-[320px] opacity-0 invisible"
         }`}
       >
         {/* header */}
-        <div className="flex justify-between items-center mb-8 pb-4 border-b border-(--border)">
-          <h4 className="text-[0.85rem] uppercase font-bold tracking-wider text-(--text-muted) m-0">
+        <div className="flex justify-between items-center mb-4 pb-3 border-b border-(--border)">
+          <h4 className="text-[0.8rem] uppercase font-bold tracking-wider text-(--text-muted) m-0">
             Menu
           </h4>
           <button
-            className="bg-transparent border-none rounded-full w-11 h-11 flex items-center justify-center text-(--text-muted) cursor-pointer transition-all duration-200 hover:bg-red-600/10 hover:text-(--danger) hover:rotate-90"
+            className="bg-transparent border-none rounded-full w-8 h-8 flex items-center justify-center text-(--text-muted) cursor-pointer transition-all duration-200 hover:bg-red-600/10 hover:text-(--danger) hover:rotate-90"
             onClick={closeMenu}
             aria-label="Close menu"
           >
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -69,11 +76,11 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
         </div>
 
         {/* user info */}
-        <div className="bg-(--bg) p-4 rounded-xl mb-6 border border-(--border)">
-          <div className="font-bold text-base text-(--text-main) mb-2 break-all">
+        <div className="bg-(--bg) px-3 py-2.5 rounded-xl mb-3 border border-(--border)">
+          <div className="font-bold text-sm text-(--text-main) mb-1 break-all">
             {me.username} ({me.alias})
           </div>
-          <div className="text-[0.8rem] text-(--text-muted) flex flex-col gap-1">
+          <div className="text-[0.75rem] text-(--text-muted) flex flex-col gap-0.5">
             <div>
               <strong className="text-(--text-main) font-semibold">{t("role", lang)}:</strong>{" "}
               {me.role}
@@ -113,6 +120,22 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
 
           {me.role !== "client" && (
             <>
+              <NavLink
+                to="/calendar"
+                onClick={closeMenu}
+                className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}
+              >
+                {t("calendar", lang)}
+              </NavLink>
+
+              <NavLink
+                to="/admin/archive"
+                onClick={closeMenu}
+                className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ""}`}
+              >
+                {t("archive", lang)}
+              </NavLink>
+
               <NavLink
                 to="/generate"
                 onClick={closeMenu}
