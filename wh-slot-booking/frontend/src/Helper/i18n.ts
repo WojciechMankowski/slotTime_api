@@ -195,6 +195,19 @@ notice_pallet_count:  { pl: 'Ilość palet',                 en: 'Pallet count' 
 // notice_driver_name:   { pl: 'Kierowca (imię i nazwisko)',  en: 'Driver (name)' },
 // notice_driver_phone:  { pl: 'Telefon kierowcy',            en: 'Driver phone' },
 notice_notes:         { pl: 'Uwagi',                       en: 'Notes' },
+
+  // --- Szablony slotów ---
+  templates_section:     { pl: 'Szablony',                         en: 'Templates' },
+  templates_desc:        { pl: 'Zapisane szablony godzin pracy',   en: 'Saved work hour templates' },
+  template_create:       { pl: '+ Nowy szablon',                   en: '+ New template' },
+  template_edit:         { pl: 'Edytuj szablon',                   en: 'Edit template' },
+  no_templates:          { pl: 'Brak szablonów',                   en: 'No templates' },
+  no_templates_desc:     { pl: 'Utwórz pierwszy szablon, aby przyspieszyć generowanie slotów.', en: 'Create your first template to speed up slot generation.' },
+  template_hours:        { pl: 'Godziny',                          en: 'Hours' },
+  template_interval:     { pl: 'Interwał',                         en: 'Interval' },
+  template_interval_min: { pl: 'min',                              en: 'min' },
+  template_name_required:{ pl: 'Nazwa szablonu jest wymagana.',    en: 'Template name is required.' },
+  generate_section:      { pl: 'Generowanie slotów',               en: 'Generate slots' },
 }
 
 export function t(key: keyof typeof dict, lang: Lang): string {
