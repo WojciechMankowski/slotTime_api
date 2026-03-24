@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     APP_ENV: str = "dev"
     DATABASE_URL: str = "sqlite:///./app.db"
 
-    JWT_SECRET_KEY: str = "change_me_please"
+    JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_HOURS: int = 8
 

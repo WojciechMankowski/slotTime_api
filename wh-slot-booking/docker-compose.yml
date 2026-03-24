@@ -3,11 +3,8 @@ services:
     build: ./backend
     ports:
       - "8000:8000"
-    environment:
-      - DATABASE_URL=sqlite:///./app.db
-      - JWT_SECRET_KEY=change_me_please
-      - JWT_EXPIRE_HOURS=8
-      - APP_CORS_ORIGINS=http://localhost:5173
+    env_file:
+      - ./backend/.env
     volumes:
       - ./backend:/app
     command: bash -lc "pip install -r requirements.txt && python seed.py && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"

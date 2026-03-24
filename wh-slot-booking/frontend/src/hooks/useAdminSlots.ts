@@ -29,11 +29,6 @@ function getApiErrorMessage(error: unknown, lang: Lang): string {
 
 export default function useAdminSlots(lang: Lang, initialDate?: string) {
 
-  const getData = async () => {
-    const slots = await getSlotsAdmin(startOd, endDo)
-    return slots
-  }
-
   const now = new Date().toISOString().split("T")[0];
   const [startOd, setStartOd] = useState(initialDate ?? now);
   const [endDo, setEndDo] = useState(initialDate ?? now);
@@ -99,7 +94,6 @@ export default function useAdminSlots(lang: Lang, initialDate?: string) {
       if (!slot) return;
       await patchSlotStatus(slotId, newStatus);
       await loadDataSlot(startOd, endDo);
-      console.log(`Aktualizacja dla slotu: ${slot.id}`)
     } catch (error) {
       setErrorStatus(getApiErrorMessage(error, lang));
     }

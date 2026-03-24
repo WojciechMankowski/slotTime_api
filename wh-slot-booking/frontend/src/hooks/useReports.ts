@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { api } from "../API/api";
+import { getApiError } from "../Helper/helper";
 
 export interface ReportSummary {
   total: number;
@@ -96,8 +97,8 @@ export default function useReports(isSuperadmin = false) {
       setDaily(dailyRes.data);
       setByCompany(byCompanyRes.data);
       if (byWarehouseRes) setByWarehouse(byWarehouseRes.data);
-    } catch (err: any) {
-      setError(err?.response?.data?.detail?.error_code ?? "ERROR");
+    } catch (err) {
+      setError(getApiError(err));
     } finally {
       setLoading(false);
     }
