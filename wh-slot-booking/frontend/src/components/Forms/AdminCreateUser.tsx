@@ -9,6 +9,7 @@ import { getWarehouses } from "../../API/serviceWarehouse";
 import { CompanyResponse } from "../../Types/apiType";
 import { Warehouse } from "../../Types/types";
 import { t, getLang } from "../../Helper/i18n";
+import { getApiError } from "../../Helper/helper";
 
 const AdminCreateUser = ({ onSuccess, isSuperadmin }: { onSuccess?: () => void; isSuperadmin?: boolean }) => {
   const [username, setUsername] = useState("");
@@ -19,6 +20,8 @@ const AdminCreateUser = ({ onSuccess, isSuperadmin }: { onSuccess?: () => void; 
   const [role, setRole] = useState<"client" | "admin">("client");
   const [companies, setCompanies] = useState<CompanyResponse[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const roles = ["client", "admin"];
 
@@ -39,6 +42,10 @@ const AdminCreateUser = ({ onSuccess, isSuperadmin }: { onSuccess?: () => void; 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    if (!username.trim()) { setError(t("user_name", getLang()) + ": " + t("notice_required_field", getLang())); return; }
+    if (!password.trim()) { setError(t("password", getLang()) + ": " + t("notice_required_field", getLang())); return; }
+    setSubmitting(true);
     try {
       await createUser({
         username,
@@ -53,7 +60,9 @@ const AdminCreateUser = ({ onSuccess, isSuperadmin }: { onSuccess?: () => void; 
       setAlias("");
       if (onSuccess) onSuccess();
     } catch (err) {
-      console.error("Błąd tworzenia użytkownika:", err);
+      setError(getApiError(err));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -115,7 +124,7 @@ const AdminCreateUser = ({ onSuccess, isSuperadmin }: { onSuccess?: () => void; 
               <Select
                 name="warehouse_select"
                 options={[
-                  { value: "", label: "— brak —" },
+                  { value: "", label: t("none", getLang()) },
                   ...warehouses.map((w) => ({ value: String(w.id), label: `${w.name} (${w.alias})` })),
                 ]}
                 onChange={(val) => setWarehouseId(val ? Number(val) : null)}
@@ -123,11 +132,13 @@ const AdminCreateUser = ({ onSuccess, isSuperadmin }: { onSuccess?: () => void; 
             </div>
           )}
         </div>
+        {error && <p className="text-red-500 text-sm">{error}</p>}
         <div className="mt-4 text-right">
           <Button
             type="submit"
             className="w-full md:w-[200px] primary pt-5"
-            text={t('add_user', getLang())}
+            text={submitting ? t("saving", getLang()) : t("add_user", getLang())}
+            disabled={submitting}
           />
         </div>
       </form>

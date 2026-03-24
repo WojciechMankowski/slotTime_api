@@ -5,11 +5,14 @@ import Label from "../UI/Label";
 import Checkbox from "../UI/Checkbox";
 import { createDock } from "../../API/serviceDok";
 import { t, getLang } from "../../Helper/i18n";
+import { getApiError } from "../../Helper/helper";
 
 const AdminCreateDock = ({ onSuccess }: { onSuccess?: () => void }) => {
   const [name, setName] = useState("");
   const [alias, setAlias] = useState("");
   const [isActive, setIstActive] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleCheckboxChange = () => {
     setIstActive(!isActive);
@@ -17,18 +20,22 @@ const AdminCreateDock = ({ onSuccess }: { onSuccess?: () => void }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    if (!name.trim()) {
+      setError(t("date_required", getLang()).replace("Data", t("dock_name", getLang())));
+      return;
+    }
+    setSubmitting(true);
     try {
-      await createDock({
-        name: name,
-        alias: alias,
-        is_active: isActive,
-      });
+      await createDock({ name, alias, is_active: isActive });
       setName("");
       setAlias("");
       setIstActive(true);
       if (onSuccess) onSuccess();
     } catch (err) {
-      console.error("Błąd tworzenia doku:", err);
+      setError(getApiError(err));
+    } finally {
+      setSubmitting(false);
     }
   };
   return (
@@ -65,11 +72,13 @@ const AdminCreateDock = ({ onSuccess }: { onSuccess?: () => void }) => {
             />
           </div>
         </div>
+        {error && <p className="text-red-500 text-sm">{error}</p>}
         <div className="mt-4 text-right">
           <Button
             type="submit"
             className="w-full md:w-[200px] primary pt-5"
-            text={t("add_new_dock", getLang())}
+            text={submitting ? t("saving", getLang()) : t("add_new_dock", getLang())}
+            disabled={submitting}
           />
         </div>
       </form>

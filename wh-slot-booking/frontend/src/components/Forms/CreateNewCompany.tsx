@@ -5,6 +5,7 @@ import Button from "../UI/Button";
 import Label from "../UI/Label";
 import { createCompany } from "../../API/serviceCopany";
 import { t, getLang } from "../../Helper/i18n";
+import { getApiError } from "../../Helper/helper";
 
 const CreateNewCompany: React.FC<FormCompanyProps> = () => {
   const [nameCompany, setNameCompany] = useState("");
@@ -32,9 +33,13 @@ const CreateNewCompany: React.FC<FormCompanyProps> = () => {
       return;
     }
 
-    await createCompany(nameCompany, alias);
-    setNameCompany("");
-    setAlias("");
+    try {
+      await createCompany(nameCompany, alias);
+      setNameCompany("");
+      setAlias("");
+    } catch (err) {
+      setError(getApiError(err));
+    }
   };
 
   return (
