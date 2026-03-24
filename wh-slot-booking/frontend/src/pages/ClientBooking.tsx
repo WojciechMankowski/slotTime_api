@@ -3,6 +3,8 @@ import { t, Lang } from "../Helper/i18n";
 import type { Me, Dock } from "../Types/types";
 import type { Tab } from "../Types/SlotType";
 import { api } from "../API/api";
+import { toastBus } from "../Helper/toastBus";
+import { getApiError } from "../Helper/helper";
 
 import useFlash from "../hooks/useFlash";
 import useAvailableSlots from "../hooks/useAvailableSlots";
@@ -23,7 +25,9 @@ export default function ClientBooking({ lang, me }: { lang: Lang; me: Me }) {
   const [docks, setDocks] = useState<Dock[]>([]);
 
   useEffect(() => {
-    api.get<Dock[]>("/api/docks").then(res => setDocks(res.data)).catch(() => {});
+    api.get<Dock[]>("/api/docks")
+      .then(res => setDocks(res.data))
+      .catch(err => toastBus.emit("error", getApiError(err)));
   }, []);
 
   const { successMsg, flash, dismiss } = useFlash();
