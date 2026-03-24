@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { api, setToken } from '../API/api'
+import { api, setToken, setRefreshToken } from '../API/api'
 import { t, Lang, errorText } from '../Helper/i18n'
 
 export default function Login({
@@ -23,6 +23,7 @@ export default function Login({
     try {
       const res = await api.post('/api/login', { username, password })
       setToken(res.data.access_token)
+      setRefreshToken(res.data.refresh_token)
       await onLoggedIn()
     } catch (ex: any) {
       const code = ex?.response?.data?.detail?.error_code || 'BAD_CREDENTIALS'

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { NavLink, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
-import { api, setToken } from './API/api'
+import { api, setToken, setRefreshToken } from './API/api'
 import { getLang, setLang, t, Lang } from './Helper/i18n'
 import type { Me } from './Types/types'
 
@@ -44,6 +44,7 @@ export default function App() {
 
   const onLogout = () => {
     setToken(null)
+    setRefreshToken(null)
     setMe(null)
     nav('/login')
   }

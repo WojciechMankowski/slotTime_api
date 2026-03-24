@@ -15,7 +15,14 @@ class ErrorOut(BaseModel):
 
 class TokenOut(BaseModel):
     access_token: str
+    refresh_token: str
     role: Role
+
+class RefreshIn(BaseModel):
+    refresh_token: str
+
+class RefreshOut(BaseModel):
+    access_token: str
 
 class WarehouseOut(BaseModel):
     id: int

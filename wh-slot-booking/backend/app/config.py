@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_HOURS: int = 8
+    JWT_REFRESH_DAYS: int = 7
 
     APP_CORS_ORIGINS: str = "http://localhost:5173"
 
