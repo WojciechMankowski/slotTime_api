@@ -11,10 +11,8 @@ import type { Slot } from "../Types/SlotType";
 
 interface Props { lang: Lang }
 
-const MONTH_NAMES_PL = ["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec","Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"];
-const MONTH_NAMES_EN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-const DAY_NAMES_PL = ["Pn","Wt","Śr","Cz","Pt","Sb","Nd"];
-const DAY_NAMES_EN = ["Mo","Tu","We","Th","Fr","Sa","Su"];
+function getMonthNames(lang: Lang) { return t("cal_months", lang).split("|"); }
+function getDayNames(lang: Lang)   { return t("cal_days",   lang).split("|"); }
 
 const GRID_START = 6 * 60;  // 06:00
 const GRID_END   = 22 * 60; // 22:00
@@ -105,7 +103,7 @@ function WeekGrid({ slots, weekRef, lang, onDayClick }: {
   lang: Lang;
   onDayClick: (date: string) => void;
 }) {
-  const dayNames = lang === "pl" ? DAY_NAMES_PL : DAY_NAMES_EN;
+  const dayNames = getDayNames(lang);
   const today = new Date().toISOString().slice(0, 10);
 
   // Build 7-day column dates (Mon–Sun)
@@ -268,8 +266,8 @@ export default function AdminCalendar({ lang }: Props) {
 
   const summaryMap = Object.fromEntries(cal.days.map(d => [d.date, d]));
   const todayStr   = new Date().toISOString().slice(0, 10);
-  const monthNames = lang === "pl" ? MONTH_NAMES_PL : MONTH_NAMES_EN;
-  const dayNames   = lang === "pl" ? DAY_NAMES_PL   : DAY_NAMES_EN;
+  const monthNames = getMonthNames(lang);
+  const dayNames   = getDayNames(lang);
 
   // Week label
   const weekLabel = (() => {
@@ -369,10 +367,10 @@ export default function AdminCalendar({ lang }: Props) {
       {/* Legend (month only) */}
       {cal.mode === "month" && (
         <div className="mt-4 flex flex-wrap gap-4 text-xs font-medium text-gray-500">
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block" />{lang === "pl" ? "Wolne" : "Available"}</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block" />{lang === "pl" ? "Zajęte" : "Booked"}</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-gray-300 inline-block" />{lang === "pl" ? "Zakończone/Anulowane" : "Completed/Cancelled"}</span>
-          <span className="ml-2 flex items-center gap-1.5 text-gray-400">{lang === "pl" ? "Pasek = % zajętości" : "Bar = % occupancy"}</span>
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block" />{t("cal_legend_available", lang)}</span>
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block" />{t("cal_legend_booked", lang)}</span>
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-gray-300 inline-block" />{t("cal_legend_done", lang)}</span>
+          <span className="ml-2 flex items-center gap-1.5 text-gray-400">{t("cal_legend_bar", lang)}</span>
         </div>
       )}
     </div>

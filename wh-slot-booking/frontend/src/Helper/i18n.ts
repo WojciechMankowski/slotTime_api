@@ -249,6 +249,14 @@ notice_notes:         { pl: 'Uwagi',                       en: 'Notes' },
   all_types_opt:         { pl: 'Wszystkie typy',                           en: 'All types' },
   all_statuses_opt:      { pl: 'Domyślnie (AVAILABLE)',                    en: 'Default (AVAILABLE)' },
 
+  // --- Kalendarz ---
+  cal_months: { pl: 'Styczeń|Luty|Marzec|Kwiecień|Maj|Czerwiec|Lipiec|Sierpień|Wrzesień|Październik|Listopad|Grudzień', en: 'January|February|March|April|May|June|July|August|September|October|November|December' },
+  cal_days: { pl: 'Pn|Wt|Śr|Cz|Pt|Sb|Nd', en: 'Mo|Tu|We|Th|Fr|Sa|Su' },
+  cal_legend_available: { pl: 'Wolne', en: 'Available' },
+  cal_legend_booked: { pl: 'Zajęte', en: 'Booked' },
+  cal_legend_done: { pl: 'Zakończone/Anulowane', en: 'Completed/Cancelled' },
+  cal_legend_bar: { pl: 'Pasek = % zajętości', en: 'Bar = % occupancy' },
+
   // --- Globalna obsługa błędów ---
   error_forbidden:       { pl: 'Brak uprawnień',                          en: 'Access denied' },
   error_server:          { pl: 'Błąd serwera, spróbuj ponownie',          en: 'Server error, please try again' },
