@@ -3,7 +3,7 @@ import { getLang, t } from '../Helper/i18n'
 import { toastBus } from '../Helper/toastBus'
 
 export const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000',
+  baseURL: import.meta.env.VITE_API_URL ?? '',
 })
 
 api.interceptors.request.use((config) => {
@@ -63,7 +63,8 @@ api.interceptors.response.use(
       _isRefreshing = true
 
       try {
-        const res = await axios.post('http://127.0.0.1:8000/api/refresh', { refresh_token: refreshToken })
+        const refreshBase = import.meta.env.VITE_API_URL ?? ''
+        const res = await axios.post(`${refreshBase}/api/refresh`, { refresh_token: refreshToken })
         const newToken: string = res.data.access_token
         localStorage.setItem('token', newToken)
         api.defaults.headers.common.Authorization = `Bearer ${newToken}`

@@ -1,20 +1,46 @@
 services:
-  api:
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: slotbooking
+      POSTGRES_USER: slotuser
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U slotuser -d slotbooking"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
     build: ./backend
-    ports:
-      - "8000:8000"
-    env_file:
-      - ./backend/.env
-    volumes:
-      - ./backend:/app
-    command: bash -lc "pip install -r requirements.txt && python seed.py && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
-  ui:
-    image: node:20-alpine
-    working_dir: /app
-    volumes:
-      - ./frontend:/app
-    ports:
-      - "5173:5173"
-    command: sh -lc "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    restart: unless-stopped
+    env_file: ./backend/.env
     depends_on:
-      - api
+      db:
+        condition: service_healthy
+    expose:
+      - "8000"
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - frontend
+
+volumes:
+  postgres_data:
