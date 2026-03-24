@@ -28,7 +28,9 @@
       "Bash(done)",
       "Bash(cat:*)",
       "Read(//tmp/**)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(.venv/Scripts/python -m pytest tests/ -v --tb=short)",
+      "Bash(.venv/Scripts/python -m pytest tests/ -q)"
     ]
   }
 }
