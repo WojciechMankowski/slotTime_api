@@ -400,28 +400,31 @@ Dodać brakujące klucze do słowników PL i EN:
 
 ## Etap 8 Jakość i bezpieczeństwo
 
-- [ ] **J1. Testy integracyjne backendu** (pytest + TestClient)
+- [x] **J1. Testy integracyjne backendu** (pytest + TestClient) *done 24.03.2026*
   - Pokrycie: auth, slot workflow, company/user CRUD
-- [ ] **J2. Rate limiting** na `/api/login`
-- [ ] **J3. Refresh token** (obecny JWT wygasa, brak odświeżania)
+- [x] **J2. Rate limiting** na `/api/login` *done 24.03.2026*
+  - Sliding-window in-memory: max 10 prób / 60 s per IP
+  - Zwraca `429 TOO_MANY_REQUESTS`; przetłumaczony komunikat w i18n (PL/EN)
+- [x] **J3. Refresh token** *done 24.03.2026*
+  - Backend: `POST /api/refresh` — przyjmuje refresh_token (ważność 7 dni), zwraca nowy access_token
+  - Login zwraca oba tokeny (`access_token` + `refresh_token`)
+  - Frontend: interceptor Axios po 401 próbuje cicho odświeżyć token i ponowić żądanie; redirect do `/login` tylko przy niepowodzeniu lub braku refresh tokenu
+  - Logout czyści oba tokeny
 
 ### L — Naprawa konfiguracji testów frontendowych (Vitest)
 
-- [ ] **L1. `ReferenceError: expect is not defined` w setup.ts**
+- [x] **L1. `ReferenceError: expect is not defined` w setup.ts** *done 24.03.2026*
   - `@testing-library/jest-dom` importowany w `setup.ts` wymaga globalnego `expect`
-  - Dodać `globals: true` w konfiguracji Vitest (`vite.config.ts` lub `vitest.config.ts`)
-  - Dotyczy wszystkich testów: `helper.test.ts`, `i18n.test.ts`, komponentów raportów, `useReports.test.ts`
+  - Dodano `globals: true` w konfiguracji Vitest (`vite.config.ts`)
 
 ### K — Naprawa istniejących testów (fail_test.md)
 
-- [ ] **K1. Błędny kod HTTP przy braku tokenu** — `test_auth.py:47`, `test_warehouses.py:26`
-  - API zwraca `401`, testy oczekują `403`
-  - Poprawić asercje w testach na `== 401`
+- [x] **K1. Błędny kod HTTP przy braku tokenu** — `test_auth.py:47`, `test_warehouses.py:26` *done 24.03.2026*
+  - Zmieniono `HTTPBearer()` na `HTTPBearer(auto_error=False)` w `deps.py` — brak tokenu zwraca `401`
+  - Poprawiono asercje w testach na `== 401`
 
-- [ ] **K2. Brakujące pole `warehouse_id` w odpowiedzi** — `test_companies.py:58`, `test_docks.py:41`
-  - Schematy `CompanyOut` / `DockOut` w `schemas.py` nie zawierają pola `warehouse_id`
-  - Dodać pole do schematów lub zweryfikować, czy endpoint je zwraca
+- [x] **K2. Brakujące pole `warehouse_id` w odpowiedzi** — `test_companies.py:58`, `test_docks.py:41` *done 24.03.2026*
+  - Dodano `warehouse_id: Optional[int] = None` do schematów `CompanyOut` i `DockOut`
 
-- [ ] **K3. Filtrowanie slotów po statusie nie działa** — `test_slots.py:35`
-  - `GET /api/slots?status=AVAILABLE` zwraca sloty o innych statusach
-  - Sprawdzić i naprawić logikę filtrowania w `routers/slots.py`
+- [x] **K3. Filtrowanie slotów po statusie nie działa** — `test_slots.py:35` *done 24.03.2026*
+  - Dodano parametr `status: Optional[str] = Query(None)` do `GET /api/slots` w `routers/slots.py`
