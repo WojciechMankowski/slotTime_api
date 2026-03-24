@@ -1,7 +1,8 @@
 # Automatyzacje — WH Slot Booking
 
 Dokument opisuje wszystkie planowane i możliwe do wdrożenia automatyzacje w projekcie,
-podzielone na cztery obszary: CI/CD, operacje serwera, logika biznesowa i powiadomienia.
+podzielone na pięć obszarów: CI/CD, operacje serwera, logika biznesowa, powiadomienia
+oraz automatyzacje procesów biznesowych oparte na Microsoft Power Platform.
 
 ---
 
@@ -303,24 +304,312 @@ Treść:     Lista slotów czekających na zatwierdzenie
 
 ---
 
-## 5. Harmonogram wdrożenia automatyzacji
+## 5. Power Platform — automatyzacje procesów biznesowych
 
-| Priorytet | Automatyzacja | Złożoność | Wartość |
-|-----------|--------------|-----------|---------|
-| 🔴 Wysoki | CI — testy backend (GitHub Actions) | niska | krytyczna |
-| 🔴 Wysoki | Backup bazy danych (cron) | niska | krytyczna |
-| 🔴 Wysoki | Health check + auto-restart | niska | wysoka |
-| 🟡 Średni | CD — deploy na push do main | średnia | wysoka |
-| 🟡 Średni | Auto-Complete przeterminowanych slotów | średnia | wysoka |
-| 🟡 Średni | Powiadomienie e-mail: nowa rezerwacja | średnia | średnia |
-| 🟢 Niski | Auto-Cancel niepotwierdzonych | średnia | średnia |
-| 🟢 Niski | Generowanie slotów z szablonów | wysoka | średnia |
-| 🟢 Niski | Przypomnienie o awizacji (e-mail) | średnia | niska |
-| 🟢 Niski | Czyszczenie archiwum | niska | niska |
+Punkt wejścia dla wszystkich integracji Power Platform to REST API aplikacji
+(`https://slots.domena.pl/api`). Komunikacja odbywa się przez **Custom Connector**
+lub bezpośrednio przez akcję **HTTP** w Power Automate.
 
 ---
 
-## 6. Struktura plików automatyzacji
+### 5a. Custom Connector — baza dla wszystkich integracji
+
+**Gdzie:** Power Automate / Power Apps → Łączniki niestandardowe → Nowy łącznik
+
+Custom Connector definiuje raz autoryzację i dostępne operacje — potem używają go
+wszystkie flow'y i aplikacje bez konfigurowania nagłówków ręcznie.
+
+```
+Nazwa:         WH Slot Booking API
+Host:          slots.domena.pl
+Bazowy URL:    /api
+Uwierzytelnianie: Bearer Token (JWT)
+
+Operacje (wybrane):
+  ├── GetSlots          GET  /slots
+  ├── ReserveSlot       POST /slots/{id}/reserve
+  ├── GetMySlots        GET  /slots/mine
+  ├── GetCompanies      GET  /companies
+  ├── PatchSlotStatus   PATCH /slots/{id}/status
+  └── GetCalendar       GET  /calendar/summary
+```
+
+Connector eksportować jako plik `.swagger.json` i wersjonować w repozytorium.
+
+---
+
+### 5b. Power Automate — powiadomienia Teams przy zmianie statusu slotu
+
+**Typ flow:** Automated cloud flow
+**Wyzwalacz:** HTTP Webhook lub cykliczne odpytywanie API (co 5 minut)
+
+#### Flow 1 — Nowa rezerwacja → kanał Teams admina
+
+```
+Wyzwalacz: Scheduled (co 5 min)
+  └── HTTP GET /api/slots?status=BOOKED&modified_after=[last_run]
+        │
+        ├── [brak nowych] → zakończ
+        │
+        └── [są nowe sloty]
+              └── Teams: Post message in channel
+                    Kanał: "Magazyn — rezerwacje"
+                    Treść (Adaptive Card):
+                      🟡 Nowa rezerwacja
+                      Firma:  [company_alias]
+                      Slot:   [start_dt] – [end_dt]
+                      Typ:    [slot_type]
+                      [Przejdź do panelu →]
+```
+
+#### Flow 2 — Slot zatwierdzony → wiadomość Teams do klienta
+
+```
+Wyzwalacz: Scheduled (co 5 min)
+  └── HTTP GET /api/slots?status=APPROVED_WAITING_DETAILS&modified_after=[last_run]
+        └── Teams: Send a message to a user (chat 1:1)
+              Do:    [e-mail użytkownika z pola reserved_by]
+              Treść: ✅ Twój slot [data godzina] został zatwierdzony.
+                     Uzupełnij awizację w aplikacji.
+```
+
+---
+
+### 5c. Power Automate — zatwierdzanie slotów z poziomu Outlooka
+
+Admin może zatwierdzić lub odrzucić rezerwację bezpośrednio z e-maila,
+bez logowania do aplikacji.
+
+**Typ flow:** Automated cloud flow
+
+```
+Wyzwalacz: Scheduled (co 15 min)
+  └── HTTP GET /api/slots?status=BOOKED
+        └── [dla każdego slotu]
+              └── Outlook: Wyślij e-mail z możliwością działania (Actionable Message)
+                    Do:      admin@firma.pl
+                    Treść:   Rezerwacja od [firma] na [data godzina]
+                    Przyciski:
+                      [✅ Zatwierdź]  → HTTP PATCH /api/slots/{id}/status {status: APPROVED_WAITING_DETAILS}
+                      [❌ Odrzuć]    → HTTP PATCH /api/slots/{id}/status {status: CANCELLED}
+                    Po akcji: Teams: powiadom klienta o decyzji
+```
+
+> Wymaga rejestracji aplikacji w Microsoft Actionable Email Developer Dashboard.
+
+---
+
+### 5d. Power Automate — dzienny raport poranny do admina
+
+**Typ flow:** Scheduled cloud flow
+**Częstotliwość:** codziennie o 07:30
+
+```
+1. HTTP GET /api/slots?date_from=dziś&date_to=dziś
+   → zlicz: AVAILABLE, BOOKED, COMPLETED, CANCELLED
+
+2. HTTP GET /api/slots?status=BOOKED&date_from=dziś
+   → lista slotów czekających na zatwierdzenie
+
+3. Outlook: Wyślij e-mail z podsumowaniem dnia
+   Do: admin@firma.pl, kierownik@firma.pl
+   Temat: [data] — Plan dnia magazynu
+   Treść (tabela HTML):
+     Dostępnych slotów:       [X]
+     Zarezerwowanych:         [X]  ← czekają na zatwierdzenie
+     Zatwierdzonych:          [X]
+     Zakończonych (wczoraj):  [X]
+```
+
+---
+
+### 5e. Power Automate — tygodniowy raport wykorzystania → Excel na SharePoint
+
+**Typ flow:** Scheduled cloud flow
+**Częstotliwość:** poniedziałek 06:00 (za poprzedni tydzień)
+
+```
+1. HTTP GET /api/reports/daily?date_from=[pon]&date_to=[nd]
+   → dane dzienne: total_slots, booked, completed, cancelled, utilization_%
+
+2. SharePoint: Pobierz plik "Raporty tygodniowe.xlsx" z biblioteki dokumentów
+
+3. Excel Online: Dodaj wiersze do tabeli "Tygodniowe"
+   Kolumny: Tydzień | Magazyn | Dostępne | Zarezerwowane | Zakończone | Anulowane | Wykorzystanie%
+
+4. Outlook: Wyślij e-mail z linkiem do pliku
+   Do: zarząd@firma.pl
+   Temat: Raport tygodniowy — wykorzystanie slotów [data_od] – [data_do]
+```
+
+---
+
+### 5f. Power Automate — synchronizacja anulowań z kalendarzem Outlook
+
+Gdy klient anuluje slot (status → `CANCEL_PENDING` lub `CANCELLED`),
+admin otrzymuje zaktualizowany wpis w kalendarzu.
+
+```
+Wyzwalacz: Scheduled (co 30 min)
+  └── HTTP GET /api/slots?status=CANCELLED&modified_after=[last_run]
+        └── Outlook Calendar: Usuń zdarzenie (znajdź po tytule zawierającym [slot_id])
+              LUB aktualizuj tytuł na "❌ ANULOWANO — [firma] [godzina]"
+```
+
+---
+
+### 5g. Power BI — dashboard operacyjny magazynu
+
+**Źródło danych:** bezpośrednie połączenie z PostgreSQL
+(host serwera, port 5432, baza `slotbooking`, użytkownik tylko do odczytu)
+
+#### Strona 1 — Widok dzienny (odświeżanie co 1h)
+
+```
+Kafelki KPI (górny pasek):
+  ├── Sloty dzisiaj łącznie
+  ├── % zajętości (BOOKED+COMPLETED / AVAILABLE)
+  ├── Czekające na zatwierdzenie
+  └── Anulowane dzisiaj
+
+Wykres słupkowy poziomy:
+  └── Zajętość per dok (ile slotów / ile dostępnych)
+
+Tabela szczegółowa:
+  └── Lista slotów: godzina | firma | typ | status | dok
+```
+
+#### Strona 2 — Trendy tygodniowe / miesięczne
+
+```
+Wykres liniowy:
+  └── Liczba rezerwacji per dzień (ostatnie 30 dni)
+
+Wykres kołowy:
+  └── Podział INBOUND / OUTBOUND / ANY
+
+Wykres słupkowy:
+  └── Top 10 firm wg liczby rezerwacji (miesięcznie)
+```
+
+#### Strona 3 — Analiza anulowań
+
+```
+Wskaźnik:
+  └── % anulowań per firma (ostatnie 90 dni)
+
+Tabela:
+  └── Firmy z najwyższym wskaźnikiem anulowań
+      (sygnał do przeglądu umów / zmiany polityki rezerwacji)
+```
+
+**Odświeżanie danych:** Power BI Gateway na serwerze → automatyczne odświeżanie co 1h
+
+---
+
+### 5h. Power Apps — aplikacja mobilna dla kierowców
+
+Kierowca sprawdza swój slot na telefonie bez logowania do pełnej aplikacji webowej.
+
+**Typ:** Canvas App (Mobile)
+
+```
+Ekran 1 — Wyszukiwarka
+  └── Pole: numer rejestracyjny pojazdu
+        └── HTTP GET /api/slots?rejestracja=[nr]&status=RESERVED_CONFIRMED
+              └── Lista slotów:
+                    [data] [godzina] | [magazyn] | [dok] | [status]
+
+Ekran 2 — Szczegóły slotu
+  └── Dane awizacji (tylko odczyt):
+        numer zlecenia | typ | ilość palet | uwagi
+
+Ekran 3 — Nawigacja
+  └── Przycisk "Nawiguj do magazynu"
+        └── Otwiera Maps/Google Maps z adresem magazynu
+```
+
+**Dystrybucja:** link do aplikacji wysyłany SMS-em lub e-mailem przez flow 5b.
+
+---
+
+### 5i. Power Apps — panel admina osadzony w Microsoft Teams
+
+Admin zarządza slotami bez opuszczania Teams.
+
+**Typ:** Canvas App osadzona jako zakładka w kanale Teams
+
+```
+Zakładka "Sloty":
+  ├── Lista slotów na dziś (tabela z filtrami)
+  ├── Przyciski: Zatwierdź | Przypisz dok | Anuluj
+  └── Formularz szybkiej awizacji
+
+Zakładka "Kalendarz":
+  └── Widok tygodniowy z kolorami statusów (iframe lub natywny)
+```
+
+Połączenie z API przez Custom Connector (sekcja 5a).
+
+---
+
+### 5j. Copilot Studio — chatbot Teams „Asystent Magazynowy"
+
+Bot odpowiada na pytania admina i klienta w Teams bez otwierania aplikacji.
+
+**Wyzwalacz:** wiadomość do bota `@Asystent Magazynowy` w Teams
+
+```
+Scenariusze obsługiwane:
+
+Klient:
+  "Kiedy mam slot?"
+    → HTTP GET /api/slots/mine → wylistuj nadchodzące sloty
+  "Anuluj mój slot na [data]"
+    → HTTP PATCH /api/slots/{id}/status {status: CANCEL_PENDING}
+    → "Prośba o anulowanie wysłana do admina."
+
+Admin:
+  "Ile wolnych slotów jest na jutro?"
+    → HTTP GET /api/slots?date=jutro&status=AVAILABLE → podaj liczbę
+  "Pokaż rezerwacje czekające na zatwierdzenie"
+    → HTTP GET /api/slots?status=BOOKED → lista jako Adaptive Card
+  "Wygeneruj sloty na przyszły tydzień z szablonu X"
+    → HTTP POST /api/slots/generate → potwierdzenie
+```
+
+**Autoryzacja:** bot używa konta serwisowego z rolą `admin`
+(oddzielny user tylko do integracji Power Platform).
+
+---
+
+## 6. Harmonogram wdrożenia automatyzacji
+
+| Priorytet | Obszar | Automatyzacja | Złożoność | Wartość |
+|-----------|--------|--------------|-----------|---------|
+| 🔴 Wysoki | Serwer | CI — testy backend (GitHub Actions) | niska | krytyczna |
+| 🔴 Wysoki | Serwer | Backup bazy danych (cron) | niska | krytyczna |
+| 🔴 Wysoki | Serwer | Health check + auto-restart | niska | wysoka |
+| 🔴 Wysoki | Power Platform | Custom Connector (baza integracji) | niska | krytyczna |
+| 🟡 Średni | Serwer | CD — deploy na push do main | średnia | wysoka |
+| 🟡 Średni | Logika | Auto-Complete przeterminowanych slotów | średnia | wysoka |
+| 🟡 Średni | Power Platform | Power Automate — powiadomienia Teams | niska | wysoka |
+| 🟡 Średni | Power Platform | Power Automate — dzienny raport e-mail | niska | wysoka |
+| 🟡 Średni | Power Platform | Power BI — dashboard operacyjny | średnia | wysoka |
+| 🟡 Średni | E-mail | Powiadomienie: nowa rezerwacja → admin | średnia | średnia |
+| 🟢 Niski | Power Platform | Power Automate — zatwierdzanie z Outlooka | średnia | średnia |
+| 🟢 Niski | Power Platform | Power Automate — raport tygodniowy Excel | średnia | średnia |
+| 🟢 Niski | Power Platform | Power Apps — aplikacja mobilna kierowcy | wysoka | średnia |
+| 🟢 Niski | Power Platform | Power Apps — panel admina w Teams | wysoka | średnia |
+| 🟢 Niski | Logika | Auto-Cancel niepotwierdzonych rezerwacji | średnia | średnia |
+| 🟢 Niski | Logika | Generowanie slotów z szablonów (auto) | wysoka | średnia |
+| 🟢 Niski | E-mail | Przypomnienie o awizacji | średnia | niska |
+| 🟢 Niski | Power Platform | Copilot Studio — chatbot Teams | wysoka | niska |
+| 🟢 Niski | Logika | Czyszczenie archiwum | niska | niska |
+
+---
+
+## 7. Struktura plików automatyzacji
 
 ```
 wh-slot-booking/
@@ -332,6 +621,14 @@ wh-slot-booking/
 ├── scripts/
 │   ├── backup.sh               ← backup PostgreSQL
 │   └── healthcheck.sh          ← zewnętrzny health check + restart
+├── power-platform/
+│   ├── connector/
+│   │   └── wh-slot-booking.swagger.json   ← definicja Custom Connector
+│   └── flows/
+│       ├── notyfikacje-teams.json         ← export flow 5b
+│       ├── raport-dzienny.json            ← export flow 5d
+│       ├── raport-tygodniowy.json         ← export flow 5e
+│       └── zatwierdzanie-outlook.json     ← export flow 5c
 └── backend/
     └── app/
         └── scheduler.py        ← APScheduler: auto-complete, auto-cancel, e-maile
