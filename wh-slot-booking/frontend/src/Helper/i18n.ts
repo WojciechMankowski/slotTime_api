@@ -279,5 +279,41 @@ export const errorText: Dict = {
   COMPANY_HAS_USERS: { pl: 'Nie można usunąć firmy z przypisanymi użytkownikami.', en: 'Cannot delete a company with assigned users.' },
   DOCK_HAS_ACTIVE_SLOTS: { pl: 'Nie można usunąć doku z aktywnymi slotami.', en: 'Cannot delete a dock with active slots.' },
   CANNOT_DELETE_SELF: { pl: 'Nie możesz usunąć własnego konta.', en: 'You cannot delete your own account.' },
+
+  // Zasoby — nie znaleziono
+  SLOT_NOT_FOUND: { pl: 'Slot nie został znaleziony.', en: 'Slot not found.' },
+  DOCK_NOT_FOUND: { pl: 'Dok nie został znaleziony.', en: 'Dock not found.' },
+  COMPANY_NOT_FOUND: { pl: 'Firma nie została znaleziona.', en: 'Company not found.' },
+  USER_NOT_FOUND: { pl: 'Użytkownik nie został znaleziony.', en: 'User not found.' },
+  WAREHOUSE_NOT_FOUND: { pl: 'Magazyn nie został znaleziony.', en: 'Warehouse not found.' },
+  NOTICE_NOT_FOUND: { pl: 'Awizacja nie została znaleziona.', en: 'Notice not found.' },
+  TEMPLATE_NOT_FOUND: { pl: 'Szablon nie został znaleziony.', en: 'Template not found.' },
+
+  // Walidacja pól i formatów
+  ALIAS_TAKEN: { pl: 'Ten alias jest już zajęty.', en: 'This alias is already taken.' },
+  USERNAME_TAKEN: { pl: 'Ta nazwa użytkownika jest już zajęta.', en: 'This username is already taken.' },
+  FIELD_INVALID: { pl: 'Nieprawidłowa wartość pola.', en: 'Invalid field value.' },
+  INVALID_TIME: { pl: 'Nieprawidłowy format czasu.', en: 'Invalid time format.' },
+  INVALID_TIME_RANGE: { pl: 'Czas zakończenia musi być po czasie rozpoczęcia.', en: 'End time must be after start time.' },
+  INVALID_DATE_RANGE: { pl: 'Nieprawidłowy zakres dat.', en: 'Invalid date range.' },
+  INVALID_INTERVAL: { pl: 'Nieprawidłowy interwał slotu.', en: 'Invalid slot interval.' },
+  INVALID_PARALLEL_SLOTS: { pl: 'Nieprawidłowa liczba równoległych slotów.', en: 'Invalid number of parallel slots.' },
+  INVALID_STATUS_FILTER: { pl: 'Nieprawidłowy filtr statusu.', en: 'Invalid status filter.' },
+
+  // Wymagane pola / brakujący kontekst
+  COMPANY_REQUIRED: { pl: 'Wymagane przypisanie do firmy.', en: 'Company assignment is required.' },
+  WAREHOUSE_REQUIRED: { pl: 'Wymagane przypisanie do magazynu.', en: 'Warehouse assignment is required.' },
+  USER_WAREHOUSE_MISSING: { pl: 'Użytkownik nie ma przypisanego magazynu.', en: 'User has no assigned warehouse.' },
+  USER_COMPANY_MISSING: { pl: 'Użytkownik nie ma przypisanej firmy.', en: 'User has no assigned company.' },
+  WAREHOUSE_CONTEXT_REQUIRED: { pl: 'Wymagany kontekst magazynu.', en: 'Warehouse context is required.' },
+  ROLE_NOT_ALLOWED: { pl: 'Ta rola nie jest dozwolona w tej operacji.', en: 'This role is not allowed for this operation.' },
+
+  // Stan slotu
+  SLOT_NOT_EDITABLE: { pl: 'Slot nie może być edytowany w obecnym statusie.', en: 'Slot cannot be edited in its current status.' },
+  SLOT_IN_PAST: { pl: 'Nie można modyfikować slotów w przeszłości.', en: 'Cannot modify slots in the past.' },
+  NO_PREVIOUS_STATUS: { pl: 'Brak poprzedniego statusu do przywrócenia.', en: 'No previous status to restore.' },
+  TEMPLATE_INACTIVE: { pl: 'Wybrany szablon jest nieaktywny.', en: 'The selected template is inactive.' },
+  USE_REQUEST_CANCEL_ENDPOINT: { pl: 'Użyj dedykowanego endpointu do anulowania.', en: 'Use the dedicated cancellation endpoint.' },
+
   test: { pl: 'Test', en: 'Test' },
 }
