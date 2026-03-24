@@ -248,6 +248,13 @@ notice_notes:         { pl: 'Uwagi',                       en: 'Notes' },
   bulk_status_default:   { pl: 'domyślnie: Dostępne',                      en: 'default: Available' },
   all_types_opt:         { pl: 'Wszystkie typy',                           en: 'All types' },
   all_statuses_opt:      { pl: 'Domyślnie (AVAILABLE)',                    en: 'Default (AVAILABLE)' },
+
+  // --- Globalna obsługa błędów ---
+  error_forbidden:       { pl: 'Brak uprawnień',                          en: 'Access denied' },
+  error_server:          { pl: 'Błąd serwera, spróbuj ponownie',          en: 'Server error, please try again' },
+  error_offline:         { pl: 'Brak połączenia z serwerem',              en: 'Cannot reach the server' },
+  error_boundary_title:  { pl: 'Coś poszło nie tak',                      en: 'Something went wrong' },
+  error_boundary_refresh:{ pl: 'Odśwież stronę',                         en: 'Refresh page' },
 }
 
 export function t(key: keyof typeof dict, lang: Lang): string {

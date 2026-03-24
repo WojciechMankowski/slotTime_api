@@ -20,6 +20,7 @@ import AdminWarehouses from './pages/AdminWarehouses'
 import AdminReports from './pages/AdminReports'
 import Header from './components/Header'
 import CompanyBlocked from './pages/CompanyBlocked'
+import ToastContainer from './components/UI/ToastContainer'
 
 
 export default function App() {
@@ -132,6 +133,7 @@ export default function App() {
           </Routes>
         </div>
       </div>
+      <ToastContainer />
     </div>
   )
 }

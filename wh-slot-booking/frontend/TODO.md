@@ -316,7 +316,7 @@
   - Dokumentacja w README opisuje jak ustawić bezpieczny sekret
   - Sekret ma minimum 32 znaki
 
-- [ ] **Brak testów (unit / integration)**
+- [x] **Brak testów (unit / integration)** *done 24.03.2026*
   - Testy endpointów: tworzenie/edycja firmy, rezerwacja slotu, zmiana statusu, zmiana hasła
   - Testy walidacji: niepoprawne dane wejściowe, brakujące pola, duplikaty
   - Testy uprawnień: klient nie ma dostępu do zasobów admina, admin nie zmieni superadmina
@@ -330,3 +330,97 @@
   - Obsługa 403 (komunikat "Brak uprawnień")
   - Obsługa 500 (komunikat "Błąd serwera, spróbuj ponownie")
   - Obsługa braku połączenia z API (komunikat offline)
+
+### Plan implementacji — obsługa błędów na frontendzie
+
+#### Krok 1 — Globalny system toast/flash dla błędów
+
+**Kontekst:** `useFlash` obsługuje tylko sukces i jest per-komponent. Potrzebny jest globalny system widoczny z dowolnego miejsca w drzewie.
+
+**Pliki do stworzenia/modyfikacji:**
+- `src/hooks/useToast.ts` — nowy hook: `{ toasts, addToast, removeToast }`, typy: `success | error | warning | info`
+- `src/components/UI/ToastContainer.tsx` — nowy komponent: fixed w prawym dolnym rogu, renderuje listę toastów z auto-dismiss (4s)
+- `src/App.tsx` — opakować w `<ToastContainer />` i wyeksportować `addToast` przez Context lub event emitter
+
+> **Uwaga:** Zamiast Context można użyć prostego event emittera (np. `mitt`) lub globalnego modułu `toastBus.ts` — unika przepuszczania propsów przez całe drzewo i jest prostsze niż Context API.
+
+---
+
+#### Krok 2 — Interceptor response w `api.ts`
+
+**Plik:** `src/API/api.ts`
+
+Dodać `api.interceptors.response.use(onFulfilled, onRejected)`:
+
+| Kod HTTP | Akcja |
+|----------|-------|
+| `401` | Wyczyść token (`setToken(null)`), przekieruj na `/login` via `window.location.href` lub event |
+| `403` | Toast error: `t('error_forbidden')` |
+| `500` / `502` / `503` | Toast error: `t('error_server')` |
+| Brak odpowiedzi (`error.request`) | Toast error: `t('error_offline')` |
+| Inne błędy API | Toast error: przetłumaczony `error_code` z `errorText` w `i18n.ts` (już istnieje) |
+
+> **Uwaga:** Błędy walidacji (422) i biznesowe (400 z `error_code`) **nie** powinny być obsługiwane globalnie — każdy komponent/hook obsługuje je lokalnie przez `ErrorBanner` (jak jest teraz). Interceptor łapie tylko błędy infrastrukturalne.
+
+---
+
+#### Krok 3 — Error Boundary
+
+**Plik do stworzenia:** `src/components/ErrorBoundary.tsx`
+
+- Class component (React wymaga class dla Error Boundary)
+- `componentDidCatch` loguje błąd do konsoli
+- Fallback UI: ekran "Coś poszło nie tak" z przyciskiem "Odśwież stronę" (`window.location.reload()`)
+- Obsługuje i18n (props `lang` lub odczyt z localStorage)
+
+**Plik:** `src/main.tsx` — opakować `<App />` w `<ErrorBoundary>`
+
+---
+
+#### Krok 4 — Klucze i18n
+
+**Plik:** `src/Helper/i18n.ts`
+
+Dodać brakujące klucze do słowników PL i EN:
+- `error_forbidden` — "Brak uprawnień" / "Access denied"
+- `error_server` — "Błąd serwera, spróbuj ponownie" / "Server error, please try again"
+- `error_offline` — "Brak połączenia z serwerem" / "Cannot reach the server"
+- `error_boundary_title` — "Coś poszło nie tak" / "Something went wrong"
+- `error_boundary_refresh` — "Odśwież stronę" / "Refresh page"
+
+---
+
+#### Kolejność wykonania
+
+1. Krok 4 (i18n) — bez zależności
+2. Krok 1 (toast system) — potrzebny przez interceptor
+3. Krok 2 (interceptor) — zależy od toast
+4. Krok 3 (Error Boundary) — niezależne, można równolegle z 1-2
+
+## Etap 8 Jakość i bezpieczeństwo
+
+- [ ] **J1. Testy integracyjne backendu** (pytest + TestClient)
+  - Pokrycie: auth, slot workflow, company/user CRUD
+- [ ] **J2. Rate limiting** na `/api/login`
+- [ ] **J3. Refresh token** (obecny JWT wygasa, brak odświeżania)
+
+### L — Naprawa konfiguracji testów frontendowych (Vitest)
+
+- [ ] **L1. `ReferenceError: expect is not defined` w setup.ts**
+  - `@testing-library/jest-dom` importowany w `setup.ts` wymaga globalnego `expect`
+  - Dodać `globals: true` w konfiguracji Vitest (`vite.config.ts` lub `vitest.config.ts`)
+  - Dotyczy wszystkich testów: `helper.test.ts`, `i18n.test.ts`, komponentów raportów, `useReports.test.ts`
+
+### K — Naprawa istniejących testów (fail_test.md)
+
+- [ ] **K1. Błędny kod HTTP przy braku tokenu** — `test_auth.py:47`, `test_warehouses.py:26`
+  - API zwraca `401`, testy oczekują `403`
+  - Poprawić asercje w testach na `== 401`
+
+- [ ] **K2. Brakujące pole `warehouse_id` w odpowiedzi** — `test_companies.py:58`, `test_docks.py:41`
+  - Schematy `CompanyOut` / `DockOut` w `schemas.py` nie zawierają pola `warehouse_id`
+  - Dodać pole do schematów lub zweryfikować, czy endpoint je zwraca
+
+- [ ] **K3. Filtrowanie slotów po statusie nie działa** — `test_slots.py:35`
+  - `GET /api/slots?status=AVAILABLE` zwraca sloty o innych statusach
+  - Sprawdzić i naprawić logikę filtrowania w `routers/slots.py`
