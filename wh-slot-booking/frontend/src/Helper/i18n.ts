@@ -322,6 +322,7 @@ export const errorText: Dict = {
   NO_PREVIOUS_STATUS: { pl: 'Brak poprzedniego statusu do przywrócenia.', en: 'No previous status to restore.' },
   TEMPLATE_INACTIVE: { pl: 'Wybrany szablon jest nieaktywny.', en: 'The selected template is inactive.' },
   USE_REQUEST_CANCEL_ENDPOINT: { pl: 'Użyj dedykowanego endpointu do anulowania.', en: 'Use the dedicated cancellation endpoint.' },
+  TOO_MANY_REQUESTS: { pl: 'Zbyt wiele prób logowania. Spróbuj ponownie za chwilę.', en: 'Too many login attempts. Please try again later.' },
 
   test: { pl: 'Test', en: 'Test' },
 }
