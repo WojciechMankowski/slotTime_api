@@ -6,12 +6,14 @@ from .db import get_db
 from .security import decode_token
 from . import models
 
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
 def get_current_user(
-    cred: HTTPAuthorizationCredentials = Depends(security),
+    cred: Optional[HTTPAuthorizationCredentials] = Depends(security),
     db: Session = Depends(get_db),
 ) -> models.User:
+    if not cred:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"error_code": "INVALID_TOKEN"})
     payload = decode_token(cred.credentials)
     user_id = int(payload.get("sub"))
     user = db.get(models.User, user_id)

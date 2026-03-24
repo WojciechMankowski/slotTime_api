@@ -42,6 +42,7 @@ class CompanyOut(BaseModel):
     name: str
     alias: str
     is_active: bool
+    warehouse_id: Optional[int] = None
 
 class CompanyCreate(BaseModel):
     name: str
@@ -79,6 +80,7 @@ class DockOut(BaseModel):
     name: str
     alias: str
     is_active: bool
+    warehouse_id: Optional[int] = None
 
 class DockCreate(BaseModel):
     name: str

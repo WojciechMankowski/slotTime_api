@@ -13,7 +13,7 @@ export default defineConfig({
     },
   },
   test: {
-    globals: false,
+    globals: true,
     environment: "jsdom",
     setupFiles: ["./src/__tests__/setup.ts"],
     css: false,

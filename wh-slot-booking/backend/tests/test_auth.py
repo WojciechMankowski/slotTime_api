@@ -44,4 +44,4 @@ def test_login_inactive_company_blocked(api, db, company, client_user):
 
 def test_login_no_bearer_returns_401(api):
     resp = api.get("/api/me")
-    assert resp.status_code == 403  # HTTPBearer returns 403 when no credentials
+    assert resp.status_code == 401

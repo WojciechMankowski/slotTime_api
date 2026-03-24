@@ -23,7 +23,7 @@ def test_admin_sees_only_own_warehouse(api, wh, wh2, admin_h):
 
 def test_unauthenticated_list_denied(api):
     resp = api.get("/api/warehouses")
-    assert resp.status_code == 403
+    assert resp.status_code == 401
 
 
 # ---------------------------------------------------------------------------

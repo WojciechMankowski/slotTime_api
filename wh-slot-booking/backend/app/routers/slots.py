@@ -157,6 +157,7 @@ def _resolve_generate_params(
 def list_slots(
     date_from: date,
     date_to: date,
+    status: Optional[str] = Query(None),
     user: models.User = Depends(get_current_user),
     wh: models.Warehouse = Depends(get_context_warehouse),
     db: Session = Depends(get_db),
@@ -164,16 +165,20 @@ def list_slots(
     start = datetime.combine(date_from, dtime.min)
     end = datetime.combine(date_to, dtime.max)
 
-    slots = (
-        db.query(models.Slot)
-        .filter(
-            models.Slot.warehouse_id == wh.id,
-            models.Slot.start_dt >= start,
-            models.Slot.start_dt <= end,
-        )
-        .order_by(models.Slot.start_dt)
-        .all()
+    query = db.query(models.Slot).filter(
+        models.Slot.warehouse_id == wh.id,
+        models.Slot.start_dt >= start,
+        models.Slot.start_dt <= end,
     )
+
+    if status:
+        try:
+            parsed_status = models.SlotStatus[status.upper()]
+        except KeyError:
+            raise HTTPException(status_code=400, detail={"error_code": "INVALID_STATUS_FILTER"})
+        query = query.filter(models.Slot.status == parsed_status)
+
+    slots = query.order_by(models.Slot.start_dt).all()
 
     if user.role == models.Role.client:
         company = db.get(models.Company, user.company_id) if user.company_id else None
