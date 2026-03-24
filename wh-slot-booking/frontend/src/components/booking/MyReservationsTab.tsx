@@ -1,9 +1,9 @@
 import React from "react";
-import FilterField from "../ui/FilterField";
+import FilterField from "../UI/FilterField";
 import Spinner from "../UI/Spinner";
 import ErrorBanner from "../UI/ErrorBanner";
-import EmptyState from "../ui/EmptyState";
-import { SearchIcon, UserIcon } from "../ui/Icons";
+import EmptyState from "../UI/EmptyState";
+import { SearchIcon, UserIcon } from "../UI/Icons";
 import DayGroup from "./DayGroup";
 import MyReservationCard from "./MyReservationCard";
 import { t, Lang } from "../../Helper/i18n";

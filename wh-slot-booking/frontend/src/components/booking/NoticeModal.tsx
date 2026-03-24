@@ -1,8 +1,8 @@
 import React from "react";
-import Overlay from "../ui/Overlay";
-import Spinner from "../ui/Spinner";
-import ErrorBanner from "../ui/ErrorBanner";
-import NoticeField from "../ui/NoticeField";
+import Overlay from "../UI/Overlay";
+import Spinner from "../UI/Spinner";
+import ErrorBanner from "../UI/ErrorBanner";
+import NoticeField from "../UI/NoticeField";
 import { t, Lang } from "../../Helper/i18n";
 import type { Slot } from "../../Types/SlotType";
 import type { NoticePayload } from "../../API/serviceSlot";

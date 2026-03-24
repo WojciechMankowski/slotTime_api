@@ -1,5 +1,5 @@
 import React from "react";
-import { ClockIcon } from "../ui/Icons";
+import { ClockIcon } from "../UI/Icons";
 import { TYPE_STYLE } from "../../Helper/helper";
 import type { Slot } from "../../Types/SlotType";
 import { Lang, t } from "../../Helper/i18n";

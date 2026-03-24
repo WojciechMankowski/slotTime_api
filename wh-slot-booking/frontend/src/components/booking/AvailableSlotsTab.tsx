@@ -1,9 +1,9 @@
 import React from "react";
-import FilterField from "../ui/FilterField";
-import Spinner from "../ui/Spinner";
-import ErrorBanner from "../ui/ErrorBanner";
-import EmptyState from "../ui/EmptyState";
-import { SearchIcon, CalendarIcon } from "../ui/Icons";
+import FilterField from "../UI/FilterField";
+import Spinner from "../UI/Spinner";
+import ErrorBanner from "../UI/ErrorBanner";
+import EmptyState from "../UI/EmptyState";
+import { SearchIcon, CalendarIcon } from "../UI/Icons";
 import DayGroup from "./DayGroup";
 import SlotCard from "./SlotCard";
 import { t, Lang } from "../../Helper/i18n";

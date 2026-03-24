@@ -1,7 +1,7 @@
 import React from "react";
-import Overlay from "../ui/Overlay";
-import Spinner from "../ui/Spinner";
-import ErrorBanner from "../ui/ErrorBanner";
+import Overlay from "../UI/Overlay";
+import Spinner from "../UI/Spinner";
+import ErrorBanner from "../UI/ErrorBanner";
 import { t, Lang } from "../../Helper/i18n";
 
 interface CancelModalProps {
