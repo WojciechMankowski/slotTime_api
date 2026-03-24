@@ -17,7 +17,17 @@
       "Bash(cmd /c \"where python 2>&1 && python --version 2>&1\")",
       "Bash(powershell -Command \"& { Set-Location 'C:\\\\Users\\\\Wojciech.M\\\\OneDrive - MCG-Logistics sp. z o.o\\\\Narzędzia\\\\Time slot\\\\wh-slot-booking\\\\backend'; .\\\\.venv\\\\Scripts\\\\python.exe --version 2>&1 }\")",
       "Bash(powershell -Command \"Get-ChildItem 'C:\\\\Users\\\\Wojciech.M\\\\OneDrive - MCG-Logistics sp. z o.o\\\\Narzędzia\\\\Time slot\\\\wh-slot-booking\\\\backend\\\\.venv\\\\Scripts\\\\' -Filter '*.exe' | Select-Object Name\")",
-      "Bash(powershell -NoProfile -NonInteractive -Command \"Start-Process -FilePath 'C:\\\\Users\\\\Wojciech.M\\\\OneDrive - MCG-Logistics sp. z o.o\\\\Narzędzia\\\\Time slot\\\\wh-slot-booking\\\\backend\\\\.venv\\\\Scripts\\\\pip.exe' -ArgumentList 'install','pytest','httpx' -Wait -PassThru | Select-Object -ExpandProperty ExitCode\")"
+      "Bash(powershell -NoProfile -NonInteractive -Command \"Start-Process -FilePath 'C:\\\\Users\\\\Wojciech.M\\\\OneDrive - MCG-Logistics sp. z o.o\\\\Narzędzia\\\\Time slot\\\\wh-slot-booking\\\\backend\\\\.venv\\\\Scripts\\\\pip.exe' -ArgumentList 'install','pytest','httpx' -Wait -PassThru | Select-Object -ExpandProperty ExitCode\")",
+      "Bash(python:*)",
+      "Bash(grep -n '\"\"Styczeń\\\\|\"\"Styczeń\\\\|const MONTH\\\\|const DAY' AdminCalendar.tsx)",
+      "Bash(grep -n 'lang === \"\"\"\"pl\"\"\"\" ?' *.tsx)",
+      "Bash(grep -n 'lang === \"\"\"\"pl\"\"\"\"' *.tsx)",
+      "Bash(for file:*)",
+      "Bash(do echo:*)",
+      "Read(//c/Users/Wojciech.M/OneDrive - MCG-Logistics sp. z o.o/Narzędzia/Time slot/wh-slot-booking/**)",
+      "Bash(done)",
+      "Bash(cat:*)",
+      "Read(//tmp/**)"
     ]
   }
 }

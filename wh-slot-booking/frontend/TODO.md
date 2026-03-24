@@ -310,7 +310,7 @@
 - Minimum 80% pokrycia testami kluczowych endpointów
 - Frontend nigdy nie pokazuje surowego błędu API (zawsze przyjazny komunikat)
 
-- [ ] **JWT_SECRET_KEY hardcoded jako "change_me_please" w .env**
+- [x] **JWT_SECRET_KEY hardcoded jako "change_me_please" w .env** *done 24.03.2026*
   - `.env.example` zawiera placeholder z komentarzem jak wygenerować sekret
   - Aplikacja nie startuje, jeśli JWT_SECRET_KEY == "change_me_please" (fail-fast)
   - Dokumentacja w README opisuje jak ustawić bezpieczny sekret
@@ -323,7 +323,7 @@
   - Testy uruchamiane w CI (GitHub Actions lub analogiczne)
   - Minimum 80% pokrycia kodu kluczowych modułów
 
-- [ ] **Obsługa błędów na frontendzie**
+- [x] **Obsługa błędów na frontendzie** *done 24.03.2026*
   - Error Boundary łapiący nieoczekiwane crashe komponentów (ekran "Coś poszło nie tak" z opcją odświeżenia)
   - Interceptor HTTP (axios/fetch) przechwytujący błędy API i wyświetlający toast z komunikatem
   - Obsługa 401 (automatyczny redirect do logowania)
