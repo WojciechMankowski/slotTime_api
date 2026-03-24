@@ -52,15 +52,40 @@ def test_client_sees_slots_in_own_warehouse(api, db, wh, company, client_user, c
 # ---------------------------------------------------------------------------
 
 def test_client_reserves_available_slot(api, db, wh, company, client_user, client_h):
+    # INBOUND slot — requested_type not needed (only required for ANY)
     slot = make_slot(db, wh.id, slot_type=models.SlotType.INBOUND)
 
     resp = api.post(
         f"/api/slots/{slot.id}/reserve",
-        json={"slot_type": "INBOUND"},
+        json={},
         headers=client_h,
     )
     assert resp.status_code == 200
     assert resp.json()["status"] == "BOOKED"
+
+
+def test_client_reserves_any_slot_with_type(api, db, wh, company, client_user, client_h):
+    slot = make_slot(db, wh.id, slot_type=models.SlotType.ANY)
+
+    resp = api.post(
+        f"/api/slots/{slot.id}/reserve",
+        json={"requested_type": "INBOUND"},
+        headers=client_h,
+    )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "BOOKED"
+
+
+def test_reserve_any_slot_without_type_fails(api, db, wh, company, client_user, client_h):
+    slot = make_slot(db, wh.id, slot_type=models.SlotType.ANY)
+
+    resp = api.post(
+        f"/api/slots/{slot.id}/reserve",
+        json={},
+        headers=client_h,
+    )
+    assert resp.status_code == 400
+    assert resp.json()["detail"]["error_code"] == "TYPE_REQUIRED"
 
 
 def test_reserve_already_booked_slot_fails(api, db, wh, company, client_user, client_h):
@@ -68,7 +93,7 @@ def test_reserve_already_booked_slot_fails(api, db, wh, company, client_user, cl
 
     resp = api.post(
         f"/api/slots/{slot.id}/reserve",
-        json={"slot_type": "INBOUND"},
+        json={},
         headers=client_h,
     )
     assert resp.status_code == 409
