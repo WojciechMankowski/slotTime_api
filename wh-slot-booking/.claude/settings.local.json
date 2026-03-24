@@ -6,7 +6,18 @@
       "Bash(.venv/Scripts/python seed.py)",
       "Bash(.venv/Scripts/python -c \":*)",
       "Bash(npm run:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(python -m pytest tests/ -v --tb=short)",
+      "Bash(python -m pytest tests/test_auth.py -v)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(python -m pytest tests/test_auth.py)",
+      "Bash(python -c \"import pytest; print\\(pytest.__version__\\)\")",
+      "Bash(cmd /c \"cd \\\\\"C:\\\\Users\\\\Wojciech.M\\\\OneDrive - MCG-Logistics sp. z o.o\\\\Narzędzia\\\\Time slot\\\\wh-slot-booking\\\\backend\\\\\" && .venv\\\\Scripts\\\\python.exe -c \\\\\"import pytest; print\\(pytest.__version__\\)\\\\\" 2>&1\")",
+      "Bash(cmd /c \"cd /d \\\\\"C:\\\\Users\\\\Wojciech.M\\\\OneDrive - MCG-Logistics sp. z o.o\\\\Narzędzia\\\\Time slot\\\\wh-slot-booking\\\\backend\\\\\" && .venv\\\\Scripts\\\\python.exe -m pytest --version\")",
+      "Bash(cmd /c \"where python 2>&1 && python --version 2>&1\")",
+      "Bash(powershell -Command \"& { Set-Location 'C:\\\\Users\\\\Wojciech.M\\\\OneDrive - MCG-Logistics sp. z o.o\\\\Narzędzia\\\\Time slot\\\\wh-slot-booking\\\\backend'; .\\\\.venv\\\\Scripts\\\\python.exe --version 2>&1 }\")",
+      "Bash(powershell -Command \"Get-ChildItem 'C:\\\\Users\\\\Wojciech.M\\\\OneDrive - MCG-Logistics sp. z o.o\\\\Narzędzia\\\\Time slot\\\\wh-slot-booking\\\\backend\\\\.venv\\\\Scripts\\\\' -Filter '*.exe' | Select-Object Name\")",
+      "Bash(powershell -NoProfile -NonInteractive -Command \"Start-Process -FilePath 'C:\\\\Users\\\\Wojciech.M\\\\OneDrive - MCG-Logistics sp. z o.o\\\\Narzędzia\\\\Time slot\\\\wh-slot-booking\\\\backend\\\\.venv\\\\Scripts\\\\pip.exe' -ArgumentList 'install','pytest','httpx' -Wait -PassThru | Select-Object -ExpandProperty ExitCode\")"
     ]
   }
 }
