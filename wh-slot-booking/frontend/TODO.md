@@ -311,6 +311,7 @@
 - Frontend nigdy nie pokazuje surowego błędu API (zawsze przyjazny komunikat)
 
 - [x] **JWT_SECRET_KEY hardcoded jako "change_me_please" w .env** *done 24.03.2026*
+
   - `.env.example` zawiera placeholder z komentarzem jak wygenerować sekret
   - Aplikacja nie startuje, jeśli JWT_SECRET_KEY == "change_me_please" (fail-fast)
   - Dokumentacja w README opisuje jak ustawić bezpieczny sekret

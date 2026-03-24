@@ -27,7 +27,8 @@
       "Read(//c/Users/Wojciech.M/OneDrive - MCG-Logistics sp. z o.o/Narzędzia/Time slot/wh-slot-booking/**)",
       "Bash(done)",
       "Bash(cat:*)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(cd:*)"
     ]
   }
 }
