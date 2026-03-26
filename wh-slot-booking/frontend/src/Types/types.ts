@@ -18,7 +18,7 @@ export interface Company {
 
 export interface Me {
   id: number
-  username: string
+  email: string
   alias: string
   role: Role
   company: Company | null
@@ -48,7 +48,7 @@ export interface Dock {
 
 export interface UserOut {
   id: number
-  username: string
+  email: string
   alias: string
   role: Role
   warehouse_id: number | null

@@ -20,6 +20,7 @@ export const dict: Dict = {
   edit_user: { pl: 'Edytuj użytkownika', en: 'Edit user' },
   login_title: { pl: 'Logowanie', en: 'Login' },
   username: { pl: 'Użytkownik', en: 'Username' },
+  email: { pl: 'Email', en: 'Email' },
   password: { pl: 'Hasło', en: 'Password' },
   leave_empty_to_keep: { pl: 'zostaw puste, aby zachować', en: 'leave empty to keep' },
   sign_in: { pl: 'Zaloguj', en: 'Sign in' },
@@ -270,7 +271,7 @@ export function t(key: keyof typeof dict, lang: Lang): string {
 }
 
 export const errorText: Dict = {
-  BAD_CREDENTIALS: { pl: 'Błędny login lub hasło.', en: 'Invalid username or password.' },
+  BAD_CREDENTIALS: { pl: 'Błędny email lub hasło.', en: 'Invalid email or password.' },
   INVALID_TOKEN: { pl: 'Sesja wygasła. Zaloguj się ponownie.', en: 'Session expired. Please sign in again.' },
   FORBIDDEN: { pl: 'Brak uprawnień.', en: 'Access denied.' },
   TYPE_REQUIRED: { pl: 'Dla typu ANY wybierz INBOUND/OUTBOUND.', en: 'For ANY type you must choose INBOUND/OUTBOUND.' },
@@ -300,6 +301,7 @@ export const errorText: Dict = {
   // Walidacja pól i formatów
   ALIAS_TAKEN: { pl: 'Ten alias jest już zajęty.', en: 'This alias is already taken.' },
   USERNAME_TAKEN: { pl: 'Ta nazwa użytkownika jest już zajęta.', en: 'This username is already taken.' },
+  EMAIL_TAKEN: { pl: 'Ten adres email jest już zajęty.', en: 'This email address is already taken.' },
   FIELD_INVALID: { pl: 'Nieprawidłowa wartość pola.', en: 'Invalid field value.' },
   INVALID_TIME: { pl: 'Nieprawidłowy format czasu.', en: 'Invalid time format.' },
   INVALID_TIME_RANGE: { pl: 'Czas zakończenia musi być po czasie rozpoczęcia.', en: 'End time must be after start time.' },

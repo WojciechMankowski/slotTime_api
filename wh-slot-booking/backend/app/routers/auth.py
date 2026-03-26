@@ -31,14 +31,14 @@ def _check_rate_limit(ip: str) -> None:
 
 
 class LoginIn(BaseModel):
-    username: str
+    email: str
     password: str
 
 @router.post("/login", response_model=TokenOut)
 def login(data: LoginIn, request: Request, db: Session = Depends(get_db)):
     ip = request.client.host if request.client else "unknown"
     _check_rate_limit(ip)
-    user = db.query(models.User).filter(models.User.username == data.username).first()
+    user = db.query(models.User).filter(models.User.email == data.email).first()
     if not user or not verify_password(data.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"error_code": "BAD_CREDENTIALS"})
     if user.company_id is not None and user.company and not user.company.is_active:

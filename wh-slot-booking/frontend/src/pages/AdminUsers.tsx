@@ -75,7 +75,7 @@ export default function AdminUsers({ lang, me }: { lang: Lang; me: Me }) {
           setUser={setUser}
           onDelete={me.role === "superadmin" ? (id) => {
             const u = users.find(u => u.id === id);
-            setDeleteTarget({ id, name: u?.username ?? String(id) });
+            setDeleteTarget({ id, name: u?.email ?? String(id) });
             setDeleteErr(null);
           } : undefined}
         />

@@ -65,12 +65,12 @@ export default function AdminUsersTable({
           <div className="flex items-center gap-3 mb-3">
             <div className="flex items-center justify-center min-w-[48px] h-12 px-3 bg-indigo-600 text-white rounded-xl shadow-sm">
               <span className="text-lg font-black leading-none">
-                {(row.alias || row.username).slice(0, 2).toUpperCase()}
+                {(row.alias || row.email).slice(0, 2).toUpperCase()}
               </span>
             </div>
             <div className="min-w-0">
               <div className="text-base font-bold text-gray-900 truncate">
-                {row.username}
+                {row.email}
               </div>
               {row.alias && (
                 <div className="text-xs text-gray-400 font-medium truncate">

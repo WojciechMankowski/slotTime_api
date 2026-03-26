@@ -12,7 +12,7 @@ import { t, getLang } from "../../Helper/i18n";
 import { getApiError } from "../../Helper/helper";
 
 const AdminCreateUser = ({ onSuccess, isSuperadmin }: { onSuccess?: () => void; isSuperadmin?: boolean }) => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [alias, setAlias] = useState("");
   const [companyId, setCompanyId] = useState<number | null>(null);
@@ -43,19 +43,19 @@ const AdminCreateUser = ({ onSuccess, isSuperadmin }: { onSuccess?: () => void; 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!username.trim()) { setError(t("user_name", getLang()) + ": " + t("notice_required_field", getLang())); return; }
+    if (!email.trim()) { setError(t("email", getLang()) + ": " + t("notice_required_field", getLang())); return; }
     if (!password.trim()) { setError(t("password", getLang()) + ": " + t("notice_required_field", getLang())); return; }
     setSubmitting(true);
     try {
       await createUser({
-        username,
+        email,
         password,
         alias,
         role,
         company_id: role === "client" ? companyId : null,
         warehouse_id: role === "admin" ? warehouseId : null,
       });
-      setUsername("");
+      setEmail("");
       setPassword("");
       setAlias("");
       if (onSuccess) onSuccess();
@@ -74,12 +74,12 @@ const AdminCreateUser = ({ onSuccess, isSuperadmin }: { onSuccess?: () => void; 
       <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="form-group w-full">
-            <Label label={t('user_name_login', getLang())} />
+            <Label label={t('email', getLang())} />
             <Input
-              type="text"
-              name="username"
-              value={username}
-              onChange={(val) => setUsername(String(val))}
+              type="email"
+              name="email"
+              value={email}
+              onChange={(val) => setEmail(String(val))}
             />
           </div>
           <div className="form-group w-full">

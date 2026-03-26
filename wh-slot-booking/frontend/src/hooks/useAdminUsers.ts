@@ -5,7 +5,7 @@ import type { UserOut } from "../Types/types";
 
 const emptyUser: UserOut = {
   id: 0,
-  username: "",
+  email: "",
   alias: "",
   role: "client",
   warehouse_id: null,
