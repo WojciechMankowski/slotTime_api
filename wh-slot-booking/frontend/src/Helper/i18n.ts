@@ -271,7 +271,7 @@ export function t(key: keyof typeof dict, lang: Lang): string {
 }
 
 export const errorText: Dict = {
-  BAD_CREDENTIALS: { pl: 'Błędny email lub hasło.', en: 'Invalid email or password.' },
+  BAD_CREDENTIALS: { pl: 'Błędna nazwa użytkownika lub hasło.', en: 'Invalid username or password.' },
   INVALID_TOKEN: { pl: 'Sesja wygasła. Zaloguj się ponownie.', en: 'Session expired. Please sign in again.' },
   FORBIDDEN: { pl: 'Brak uprawnień.', en: 'Access denied.' },
   TYPE_REQUIRED: { pl: 'Dla typu ANY wybierz INBOUND/OUTBOUND.', en: 'For ANY type you must choose INBOUND/OUTBOUND.' },

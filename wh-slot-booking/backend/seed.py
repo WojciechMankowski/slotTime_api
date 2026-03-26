@@ -4,13 +4,9 @@ from app.security import get_password_hash
 from datetime import datetime, timedelta
 
 def run():
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
-
-    # only seed if empty
-    if db.query(models.User).count() > 0:
-        print("DB already seeded.")
-        return
 
     wh = models.Warehouse(name="Warehouse Demo", alias="WHDemo", location="PL", is_active=True, logo_path="/static/warehouses/1.png")
     db.add(wh)
@@ -22,9 +18,9 @@ def run():
     db.commit()
     db.refresh(c)
 
-    superadmin = models.User(email="superadmin@demo.com", password_hash=get_password_hash("superadmin"), alias="Super Admin", role=models.Role.superadmin)
-    admin = models.User(email="admin@demo.com", password_hash=get_password_hash("admin"), alias="Admin WH", role=models.Role.admin, warehouse_id=wh.id)
-    client = models.User(email="client@demo.com", password_hash=get_password_hash("client"), alias="Jan Kowalski", role=models.Role.client, company_id=c.id)
+    superadmin = models.User(username="superadmin", email="superadmin@demo.com", password_hash=get_password_hash("superadmin"), alias="Super Admin", role=models.Role.superadmin)
+    admin = models.User(username="admin", email="admin@demo.com", password_hash=get_password_hash("admin"), alias="Admin WH", role=models.Role.admin, warehouse_id=wh.id)
+    client = models.User(username="client", email="client@demo.com", password_hash=get_password_hash("client"), alias="Jan Kowalski", role=models.Role.client, company_id=c.id)
 
     db.add_all([superadmin, admin, client])
     db.commit()
@@ -39,9 +35,9 @@ def run():
     db.commit()
 
     print("Seeded:")
-    print("  superadmin@demo.com / superadmin")
-    print("  admin@demo.com / admin")
-    print("  client@demo.com / client")
+    print("  superadmin / superadmin")
+    print("  admin / admin")
+    print("  client / client")
     print(f"  warehouse_id={wh.id}, template_id={templ.id}")
 
 if __name__ == "__main__":

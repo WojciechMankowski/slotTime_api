@@ -12,6 +12,7 @@ import { t, getLang } from "../../Helper/i18n";
 import { getApiError } from "../../Helper/helper";
 
 const AdminCreateUser = ({ onSuccess, isSuperadmin }: { onSuccess?: () => void; isSuperadmin?: boolean }) => {
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [alias, setAlias] = useState("");
@@ -43,18 +44,20 @@ const AdminCreateUser = ({ onSuccess, isSuperadmin }: { onSuccess?: () => void; 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!email.trim()) { setError(t("email", getLang()) + ": " + t("notice_required_field", getLang())); return; }
+    if (!username.trim()) { setError(t("username", getLang()) + ": " + t("notice_required_field", getLang())); return; }
     if (!password.trim()) { setError(t("password", getLang()) + ": " + t("notice_required_field", getLang())); return; }
     setSubmitting(true);
     try {
       await createUser({
-        email,
+        username,
+        email: email || null,
         password,
         alias,
         role,
         company_id: role === "client" ? companyId : null,
         warehouse_id: role === "admin" ? warehouseId : null,
       });
+      setUsername("");
       setEmail("");
       setPassword("");
       setAlias("");
@@ -73,6 +76,15 @@ const AdminCreateUser = ({ onSuccess, isSuperadmin }: { onSuccess?: () => void; 
       </h2>
       <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="form-group w-full">
+            <Label label={t('username', getLang())} />
+            <Input
+              type="text"
+              name="username"
+              value={username}
+              onChange={(val) => setUsername(String(val))}
+            />
+          </div>
           <div className="form-group w-full">
             <Label label={t('email', getLang())} />
             <Input

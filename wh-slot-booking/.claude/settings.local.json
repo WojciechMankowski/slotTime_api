@@ -30,7 +30,12 @@
       "Read(//tmp/**)",
       "Bash(cd:*)",
       "Bash(.venv/Scripts/python -m pytest tests/ -v --tb=short)",
-      "Bash(.venv/Scripts/python -m pytest tests/ -q)"
+      "Bash(.venv/Scripts/python -m pytest tests/ -q)",
+      "Bash(docker compose:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/api/health)",
+      "Bash(curl:*)",
+      "Bash(docker exec:*)"
     ]
   }
 }

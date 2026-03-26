@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+from fastapi.responses import HTMLResponse
 from pathlib import Path
 
 from .config import settings
@@ -9,7 +11,13 @@ from .routers import auth, me, warehouses, companies, users, docks, slots, notic
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="WH Slot Booking API", version="2.1")
+    app = FastAPI(
+        title="WH Slot Booking API",
+        version="2.5",
+        openapi_url="/openapi.json",
+        docs_url=None,
+        redoc_url=None,
+    )
 
     app.add_middleware(
         CORSMiddleware,
@@ -44,6 +52,22 @@ def create_app() -> FastAPI:
     app.include_router(calendar.router)
     app.include_router(seed.router)
     app.include_router(reports.router)
+
+    @app.get("/docs", include_in_schema=False)
+    async def swagger_ui() -> HTMLResponse:
+        return get_swagger_ui_html(
+            openapi_url="/openapi.json",
+            title="WH Slot Booking API – Swagger UI",
+            swagger_js_url="/static/swagger-ui/swagger-ui-bundle.js",
+            swagger_css_url="/static/swagger-ui/swagger-ui.css",
+        )
+
+    @app.get("/redoc", include_in_schema=False)
+    async def redoc_ui() -> HTMLResponse:
+        return get_redoc_html(
+            openapi_url="/openapi.json",
+            title="WH Slot Booking API – ReDoc",
+        )
 
     @app.get("/health")
     def health():

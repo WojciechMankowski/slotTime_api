@@ -40,7 +40,7 @@ def list_users(
             w = db.get(models.Warehouse, u.warehouse_id)
             warehouse_alias = w.alias if w else warehouse_alias
         out.append(UserOut(
-            id=u.id, email=u.email, alias=u.alias, role=u.role,
+            id=u.id, username=u.username, email=u.email, alias=u.alias, role=u.role,
             warehouse_id=u.warehouse_id, company_id=u.company_id,
             company_alias=company_alias, warehouse_alias=warehouse_alias
         ))
@@ -52,7 +52,9 @@ def create_user(
     actor: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if db.query(models.User).filter(models.User.email==data.email).first():
+    if db.query(models.User).filter(models.User.username==data.username).first():
+        raise HTTPException(status_code=400, detail={"error_code":"USERNAME_TAKEN", "field":"username"})
+    if data.email and db.query(models.User).filter(models.User.email==data.email).first():
         raise HTTPException(status_code=400, detail={"error_code":"EMAIL_TAKEN", "field":"email"})
 
     if actor.role == models.Role.admin:
@@ -66,7 +68,7 @@ def create_user(
             if company.warehouse_id != actor.warehouse_id:
                 raise HTTPException(status_code=403, detail={"error_code":"FORBIDDEN"})
             user = models.User(
-                email=data.email, password_hash=get_password_hash(data.password),
+                username=data.username, email=data.email, password_hash=get_password_hash(data.password),
                 alias=data.alias, role=models.Role.client,
                 company_id=company.id, warehouse_id=None
             )
@@ -74,7 +76,7 @@ def create_user(
             if not actor.warehouse_id:
                 raise HTTPException(status_code=400, detail={"error_code":"USER_WAREHOUSE_MISSING"})
             user = models.User(
-                email=data.email, password_hash=get_password_hash(data.password),
+                username=data.username, email=data.email, password_hash=get_password_hash(data.password),
                 alias=data.alias, role=models.Role.admin,
                 warehouse_id=actor.warehouse_id, company_id=None
             )
@@ -90,7 +92,7 @@ def create_user(
         if not wh:
             raise HTTPException(status_code=404, detail={"error_code":"WAREHOUSE_NOT_FOUND"})
         user = models.User(
-            email=data.email, password_hash=get_password_hash(data.password),
+            username=data.username, email=data.email, password_hash=get_password_hash(data.password),
             alias=data.alias, role=models.Role.admin,
             warehouse_id=wh.id, company_id=None
         )
@@ -111,7 +113,7 @@ def create_user(
         warehouse_alias = w.alias if w else warehouse_alias
 
     return UserOut(
-        id=user.id, email=user.email, alias=user.alias, role=user.role,
+        id=user.id, username=user.username, email=user.email, alias=user.alias, role=user.role,
         warehouse_id=user.warehouse_id, company_id=user.company_id,
         company_alias=company_alias, warehouse_alias=warehouse_alias
     )
@@ -155,8 +157,15 @@ def patch_user(
 
     payload = data.model_dump(exclude_unset=True)
 
-    # zmiana email -> sprawdzenie unikalności
-    if "email" in payload:
+    # zmiana username -> sprawdzenie unikalności
+    if "username" in payload:
+        taken = db.query(models.User).filter(
+            models.User.username == payload["username"],
+            models.User.id != user_id
+        ).first()
+        if taken:
+            raise HTTPException(status_code=400, detail={"error_code": "USERNAME_TAKEN", "field": "username"})
+    if "email" in payload and payload["email"]:
         taken = db.query(models.User).filter(
             models.User.email == payload["email"],
             models.User.id != user_id
@@ -201,7 +210,7 @@ def patch_user(
         warehouse_alias = w.alias if w else warehouse_alias
 
     return UserOut(
-        id=user.id, email=user.email, alias=user.alias, role=user.role,
+        id=user.id, username=user.username, email=user.email, alias=user.alias, role=user.role,
         warehouse_id=user.warehouse_id, company_id=user.company_id,
         company_alias=company_alias, warehouse_alias=warehouse_alias,
     )

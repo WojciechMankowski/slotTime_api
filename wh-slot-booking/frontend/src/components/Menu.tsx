@@ -92,7 +92,7 @@ const Menu = ({ lang, me }: { lang: Lang; me: Me }) => {
         {/* user info */}
         <div className="bg-(--bg) px-3 py-2.5 rounded-xl mb-3 border border-(--border)">
           <div className="font-bold text-sm text-(--text-main) mb-1 break-all">
-            {me.email} ({me.alias})
+            {me.username} ({me.alias})
           </div>
           <div className="text-[0.75rem] text-(--text-muted) flex flex-col gap-0.5">
             <div>

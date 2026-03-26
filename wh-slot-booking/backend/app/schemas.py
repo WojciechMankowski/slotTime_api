@@ -58,7 +58,8 @@ class CompanyCreate(BaseModel):
 
 class MeOut(BaseModel):
     id: int
-    email: str
+    username: str
+    email: Optional[str] = None
     alias: str
     role: Role
     company: Optional[CompanyOut] = None
@@ -66,7 +67,8 @@ class MeOut(BaseModel):
 
 class UserOut(BaseModel):
     id: int
-    email: str
+    username: str
+    email: Optional[str] = None
     alias: str
     role: Role
     warehouse_id: Optional[int] = None
@@ -75,7 +77,8 @@ class UserOut(BaseModel):
     warehouse_alias: Optional[str] = None
 
 class UserCreate(BaseModel):
-    email: str
+    username: str
+    email: Optional[str] = None
     password: str
     alias: str
     role: Role
@@ -214,6 +217,7 @@ class CompanyPatch(BaseModel):
     is_active: Optional[bool] = None
 
 class UserPatch(BaseModel):
+    username: Optional[str] = None
     email: Optional[str] = None
     alias: Optional[str] = None
     password: Optional[str] = None

@@ -29,7 +29,8 @@ export default function UpdateFormUser({
   onClose,
   onSuccess,
 }: UpdateFormUserProps) {
-  const [email, setEmail] = useState(user.email);
+  const [username, setUsername] = useState(user.username);
+  const [email, setEmail] = useState(user.email ?? "");
   const [password, setPassword] = useState("");
   const [alias, setAlias] = useState(user.alias);
   const [role, setRole] = useState(user.role);
@@ -61,7 +62,8 @@ export default function UpdateFormUser({
     try {
       await patchUser(user.id, {
         ...user,
-        email,
+        username,
+        email: email || null,
         alias,
         role: role as any,
         company_id: role === "client" ? companyId : null,
@@ -84,12 +86,19 @@ export default function UpdateFormUser({
           <h3 className="text-xl font-bold text-white mb-0.5">
             {t("edit_user", lang)}
           </h3>
-          <p className="text-indigo-200 text-sm">{user.email}</p>
+          <p className="text-indigo-200 text-sm">{user.username}</p>
         </div>
 
         {/* Body */}
         <form className="px-7 py-6" onSubmit={handleSubmit}>
           <div className="space-y-4 mb-5">
+            <Input
+              label={t("username", lang)}
+              type="text"
+              name="username"
+              value={username}
+              onChange={(val) => setUsername(String(val))}
+            />
             <Input
               label={t("email", lang)}
               type="email"

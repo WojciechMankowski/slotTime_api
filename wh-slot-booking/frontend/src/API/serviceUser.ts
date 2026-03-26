@@ -7,7 +7,8 @@ export const getUsers = async () => {
 };
 
 export const createUser = async (payload: {
-  email: string;
+  username: string;
+  email?: string | null;
   password: string;
   alias: string;
   role: "client" | "admin";
