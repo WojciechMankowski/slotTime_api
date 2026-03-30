@@ -4,9 +4,12 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from .config import settings
 
 # Supabase (i inne providery) mogą zwracać "postgres://" — SQLAlchemy wymaga "postgresql://"
+# pg8000 = czysty Python, działa na Vercel (psycopg2 wymaga rozszerzeń C)
 _url = settings.DATABASE_URL
 if _url.startswith("postgres://"):
-    _url = _url.replace("postgres://", "postgresql://", 1)
+    _url = _url.replace("postgres://", "postgresql+pg8000://", 1)
+elif _url.startswith("postgresql://"):
+    _url = _url.replace("postgresql://", "postgresql+pg8000://", 1)
 
 _is_sqlite = _url.startswith("sqlite")
 
