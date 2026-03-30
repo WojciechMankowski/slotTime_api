@@ -3,11 +3,23 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 
 from .config import settings
 
-connect_args = {}
-if settings.DATABASE_URL.startswith("sqlite"):
-    connect_args = {"check_same_thread": False}
+# Supabase (i inne providery) mogą zwracać "postgres://" — SQLAlchemy wymaga "postgresql://"
+_url = settings.DATABASE_URL
+if _url.startswith("postgres://"):
+    _url = _url.replace("postgres://", "postgresql://", 1)
 
-engine = create_engine(settings.DATABASE_URL, connect_args=connect_args, future=True)
+_is_sqlite = _url.startswith("sqlite")
+
+connect_args = {"check_same_thread": False} if _is_sqlite else {}
+engine_kwargs: dict = {"connect_args": connect_args, "future": True}
+
+if not _is_sqlite:
+    # connection pool dla PostgreSQL / Supabase
+    engine_kwargs["pool_pre_ping"] = True
+    engine_kwargs["pool_size"] = 5
+    engine_kwargs["max_overflow"] = 10
+
+engine = create_engine(_url, **engine_kwargs)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, future=True)
 
 class Base(DeclarativeBase):

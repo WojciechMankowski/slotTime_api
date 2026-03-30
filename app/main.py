@@ -19,6 +19,10 @@ def create_app() -> FastAPI:
         # redoc_url=None,
     )
 
+    @app.on_event("startup")
+    def _create_tables() -> None:
+        Base.metadata.create_all(bind=engine)
+
     origins = settings.cors_origins
     app.add_middleware(
         CORSMiddleware,
