@@ -2,12 +2,14 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# 1. Zależności osobno - cache Dockera nie przebuduje tej warstwy
+#    jeśli zmienisz tylko kod aplikacji
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
 
-COPY . .
-
-# Pobierz pliki Swagger UI do katalogu static (brak zależności od CDN)
+# 2. Swagger UI - pobierz PRZED kopiowaniem kodu
+#    (ta warstwa też będzie cache'owana)
 RUN mkdir -p /app/app/static/swagger-ui && \
     python -c "\
 import urllib.request; \
@@ -17,4 +19,14 @@ urllib.request.urlretrieve(base+'/swagger-ui.css', '/app/app/static/swagger-ui/s
 print('Swagger UI downloaded') \
 "
 
-CMD ["sh", "-c", "python seed.py && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+# 3. Kod aplikacji kopiuj na końcu
+COPY . .
+
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+
+ENV PYTHONUNBUFFERED=1
+
+EXPOSE 8000
+
+CMD ["./entrypoint.sh"]
