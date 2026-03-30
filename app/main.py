@@ -15,8 +15,8 @@ def create_app() -> FastAPI:
         title="WH Slot Booking API",
         version="2.5",
         openapi_url="/openapi.json",
-        docs_url=None,
-        redoc_url=None,
+        # docs_url=None,
+        # redoc_url=None,
     )
 
     origins = settings.cors_origins
@@ -33,11 +33,11 @@ def create_app() -> FastAPI:
     static_dir = base_dir / "static"
     static_dir.mkdir(parents=True, exist_ok=True)
 
-    # app.mount(
-    #     "/static",
-    #     StaticFiles(directory=static_dir),
-    #     name="static",
-    # )
+    app.mount(
+        "/static",
+        StaticFiles(directory=static_dir),
+        name="static",
+    )
 
     # === ROUTERS ===
     app.include_router(auth.router)
