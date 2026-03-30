@@ -3,7 +3,7 @@ from pydantic import AnyHttpUrl
 from typing import List
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_file=None, extra="ignore")
 
     APP_ENV: str = "dev"
     DATABASE_URL: str = "sqlite:///./app.db"
