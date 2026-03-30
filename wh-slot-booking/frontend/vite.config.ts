@@ -6,6 +6,7 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
+    allowedHosts: ['https://nonforbearingly-unanswering-vera.ngrok-free.dev/'],
     port: 5173,
     proxy: {
       "/api": process.env.BACKEND_URL ?? "http://localhost:8000",
