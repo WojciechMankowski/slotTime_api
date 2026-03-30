@@ -26,7 +26,6 @@ COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
 ENV PYTHONUNBUFFERED=1
-
 EXPOSE 8000
 
 CMD ["./entrypoint.sh"]
