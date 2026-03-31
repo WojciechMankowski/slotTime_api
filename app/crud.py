@@ -1,6 +1,6 @@
 
 """
-CRUD utilities — funkcje pobierania danych oraz zarządzania tabelami.
+CRUD utilities — funkcje pobierania danych, tworzenia rekordów oraz zarządzania tabelami.
 Każda funkcja przyjmuje sesję SQLAlchemy i opcjonalne filtry.
 """
 from __future__ import annotations
@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from .db import Base, engine
 from . import models
+from .security import get_password_hash
 
 
 # ---------------------------------------------------------------------------
@@ -52,6 +53,25 @@ def get_warehouse_by_alias(db: Session, alias: str) -> models.Warehouse | None:
     return db.query(models.Warehouse).filter(models.Warehouse.alias == alias).first()
 
 
+def create_warehouse(
+    db: Session,
+    *,
+    name: str,
+    alias: str,
+    location: str | None = None,
+    is_active: bool = True,
+    logo_path: str | None = None,
+) -> models.Warehouse:
+    obj = models.Warehouse(
+        name=name, alias=alias, location=location,
+        is_active=is_active, logo_path=logo_path,
+    )
+    db.add(obj)
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+
 # ---------------------------------------------------------------------------
 # Companies
 # ---------------------------------------------------------------------------
@@ -87,6 +107,23 @@ def get_company_by_alias(
     )
 
 
+def create_company(
+    db: Session,
+    *,
+    warehouse_id: int,
+    name: str,
+    alias: str,
+    is_active: bool = True,
+) -> models.Company:
+    obj = models.Company(
+        warehouse_id=warehouse_id, name=name, alias=alias, is_active=is_active,
+    )
+    db.add(obj)
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+
 # ---------------------------------------------------------------------------
 # Users
 # ---------------------------------------------------------------------------
@@ -116,6 +153,32 @@ def get_user_by_username(db: Session, username: str) -> models.User | None:
     return db.query(models.User).filter(models.User.username == username).first()
 
 
+def create_user(
+    db: Session,
+    *,
+    username: str,
+    password: str,
+    alias: str,
+    role: models.Role,
+    email: str | None = None,
+    warehouse_id: int | None = None,
+    company_id: int | None = None,
+) -> models.User:
+    obj = models.User(
+        username=username,
+        email=email,
+        password_hash=get_password_hash(password),
+        alias=alias,
+        role=role,
+        warehouse_id=warehouse_id,
+        company_id=company_id,
+    )
+    db.add(obj)
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+
 # ---------------------------------------------------------------------------
 # Docks
 # ---------------------------------------------------------------------------
@@ -136,6 +199,23 @@ def get_docks(
 
 def get_dock(db: Session, dock_id: int) -> models.Dock | None:
     return db.query(models.Dock).filter(models.Dock.id == dock_id).first()
+
+
+def create_dock(
+    db: Session,
+    *,
+    warehouse_id: int,
+    name: str,
+    alias: str,
+    is_active: bool = True,
+) -> models.Dock:
+    obj = models.Dock(
+        warehouse_id=warehouse_id, name=name, alias=alias, is_active=is_active,
+    )
+    db.add(obj)
+    db.commit()
+    db.refresh(obj)
+    return obj
 
 
 # ---------------------------------------------------------------------------
@@ -175,6 +255,31 @@ def get_slot(db: Session, slot_id: int) -> models.Slot | None:
     return db.query(models.Slot).filter(models.Slot.id == slot_id).first()
 
 
+def create_slot(
+    db: Session,
+    *,
+    warehouse_id: int,
+    start_dt: datetime,
+    end_dt: datetime,
+    slot_type: models.SlotType,
+    dock_id: int | None = None,
+    status: models.SlotStatus = models.SlotStatus.AVAILABLE,
+) -> models.Slot:
+    obj = models.Slot(
+        warehouse_id=warehouse_id,
+        dock_id=dock_id,
+        start_dt=start_dt,
+        end_dt=end_dt,
+        slot_type=slot_type,
+        original_slot_type=slot_type,
+        status=status,
+    )
+    db.add(obj)
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+
 # ---------------------------------------------------------------------------
 # SlotNotices
 # ---------------------------------------------------------------------------
@@ -196,6 +301,36 @@ def get_slot_notice(db: Session, slot_id: int) -> models.SlotNotice | None:
         .filter(models.SlotNotice.slot_id == slot_id)
         .first()
     )
+
+
+def create_slot_notice(
+    db: Session,
+    *,
+    slot_id: int,
+    numer_zlecenia: str,
+    referencja: str,
+    rejestracja_auta: str,
+    rejestracja_naczepy: str,
+    ilosc_palet: int,
+    kierowca_imie_nazwisko: str | None = None,
+    kierowca_tel: str | None = None,
+    uwagi: str | None = None,
+) -> models.SlotNotice:
+    obj = models.SlotNotice(
+        slot_id=slot_id,
+        numer_zlecenia=numer_zlecenia,
+        referencja=referencja,
+        rejestracja_auta=rejestracja_auta,
+        rejestracja_naczepy=rejestracja_naczepy,
+        ilosc_palet=ilosc_palet,
+        kierowca_imie_nazwisko=kierowca_imie_nazwisko,
+        kierowca_tel=kierowca_tel,
+        uwagi=uwagi,
+    )
+    db.add(obj)
+    db.commit()
+    db.refresh(obj)
+    return obj
 
 
 # ---------------------------------------------------------------------------
@@ -236,6 +371,26 @@ def get_day_capacity(
     )
 
 
+def create_day_capacity(
+    db: Session,
+    *,
+    warehouse_id: int,
+    cap_date: date,
+    slot_type: models.SlotType,
+    capacity: int,
+) -> models.DayCapacity:
+    obj = models.DayCapacity(
+        warehouse_id=warehouse_id,
+        date=cap_date,
+        slot_type=slot_type,
+        capacity=capacity,
+    )
+    db.add(obj)
+    db.commit()
+    db.refresh(obj)
+    return obj
+
+
 # ---------------------------------------------------------------------------
 # SlotTemplates
 # ---------------------------------------------------------------------------
@@ -260,3 +415,29 @@ def get_slot_template(db: Session, template_id: int) -> models.SlotTemplate | No
         .filter(models.SlotTemplate.id == template_id)
         .first()
     )
+
+
+def create_slot_template(
+    db: Session,
+    *,
+    warehouse_id: int,
+    name: str,
+    start_hour: int,
+    end_hour: int,
+    slot_minutes: int,
+    slot_type: models.SlotType,
+    is_active: bool = True,
+) -> models.SlotTemplate:
+    obj = models.SlotTemplate(
+        warehouse_id=warehouse_id,
+        name=name,
+        start_hour=start_hour,
+        end_hour=end_hour,
+        slot_minutes=slot_minutes,
+        slot_type=slot_type,
+        is_active=is_active,
+    )
+    db.add(obj)
+    db.commit()
+    db.refresh(obj)
+    return obj
