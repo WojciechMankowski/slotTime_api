@@ -15,6 +15,9 @@ class Settings(BaseSettings):
 
     APP_CORS_ORIGINS: str = "http://localhost:5173,https://slot-time.vercel.app"
 
+    SUPABASE_URL: str = ""
+    SUPABASE_SERVICE_ROLE_KEY: str = ""
+
     @property
     def cors_origins(self) -> List[str]:
         return [o.strip() for o in self.APP_CORS_ORIGINS.split(",") if o.strip()]
