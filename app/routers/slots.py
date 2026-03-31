@@ -361,9 +361,6 @@ def generate_slots(
                 if remaining_capacity is not None:
                     remaining_capacity -= 1
 
-            # skipped due to duplicates (i.e. already existed)
-            dup_skipped = (parallel_slots - existing_interval_count) - max(0, parallel_slots - existing_interval_count)
-            # powyższe jest „0”, więc liczymy wprost:
             skipped += max(0, parallel_slots - existing_interval_count - to_create)
 
             cur += delta

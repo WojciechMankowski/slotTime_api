@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from .. import models
+from .. import models, crud
 from ..deps import require_role, get_context_warehouse
 from ..schemas import SlotTemplateOut, SlotTemplateCreate, SlotTemplatePatch
 
@@ -21,11 +21,7 @@ def create_template(
     wh: models.Warehouse = Depends(get_context_warehouse),
     db: Session = Depends(get_db),
 ):
-    t = models.SlotTemplate(warehouse_id=wh.id, **data.model_dump())
-    db.add(t)
-    db.commit()
-    db.refresh(t)
-    return t
+    return crud.create_slot_template(db, warehouse_id=wh.id, **data.model_dump())
 
 @router.patch("/{template_id}", response_model=SlotTemplateOut)
 def patch_template(

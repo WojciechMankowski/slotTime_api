@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from ..db import get_db
-from .. import models
+from .. import models, crud
 from ..deps import require_role, get_current_user, get_context_warehouse
 from ..schemas import CompanyOut, CompanyCreate, CompanyPatch
 from ..utils import next_company_alias
@@ -26,14 +26,9 @@ def create_company(
     db: Session = Depends(get_db),
 ):
     alias = data.alias or next_company_alias(db, wh.id, data.name)
-    exists = db.query(models.Company).filter(models.Company.warehouse_id==wh.id, models.Company.alias==alias).first()
-    if exists:
+    if crud.get_company_by_alias(db, wh.id, alias):
         raise HTTPException(status_code=400, detail={"error_code":"ALIAS_TAKEN", "field":"alias"})
-    company = models.Company(warehouse_id=wh.id, name=data.name, alias=alias, is_active=data.is_active)
-    db.add(company)
-    db.commit()
-    db.refresh(company)
-    return company
+    return crud.create_company(db, warehouse_id=wh.id, name=data.name, alias=alias, is_active=data.is_active)
 
 @router.delete("/{company_id}", status_code=204, dependencies=[Depends(require_role(models.Role.superadmin))])
 def delete_company(

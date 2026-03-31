@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from .. import models
-from ..deps import get_current_user, require_role, get_context_warehouse
+from .. import models, crud
+from ..deps import get_current_user, require_role
 from ..schemas import UserOut, UserCreate, UserPatch
 from ..security import get_password_hash
 
@@ -52,7 +52,7 @@ def create_user(
     actor: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if db.query(models.User).filter(models.User.username==data.username).first():
+    if crud.get_user_by_username(db, data.username):
         raise HTTPException(status_code=400, detail={"error_code":"USERNAME_TAKEN", "field":"username"})
     if data.email and db.query(models.User).filter(models.User.email==data.email).first():
         raise HTTPException(status_code=400, detail={"error_code":"EMAIL_TAKEN", "field":"email"})
@@ -67,19 +67,15 @@ def create_user(
                 raise HTTPException(status_code=404, detail={"error_code":"COMPANY_NOT_FOUND"})
             if company.warehouse_id != actor.warehouse_id:
                 raise HTTPException(status_code=403, detail={"error_code":"FORBIDDEN"})
-            user = models.User(
-                username=data.username, email=data.email, password_hash=get_password_hash(data.password),
+            user = crud.create_user(db, username=data.username, password=data.password,
                 alias=data.alias, role=models.Role.client,
-                company_id=company.id, warehouse_id=None
-            )
+                email=data.email, company_id=company.id)
         elif data.role == models.Role.admin:
             if not actor.warehouse_id:
                 raise HTTPException(status_code=400, detail={"error_code":"USER_WAREHOUSE_MISSING"})
-            user = models.User(
-                username=data.username, email=data.email, password_hash=get_password_hash(data.password),
+            user = crud.create_user(db, username=data.username, password=data.password,
                 alias=data.alias, role=models.Role.admin,
-                warehouse_id=actor.warehouse_id, company_id=None
-            )
+                email=data.email, warehouse_id=actor.warehouse_id)
         else:
             raise HTTPException(status_code=403, detail={"error_code":"FORBIDDEN"})
     else:
@@ -91,15 +87,9 @@ def create_user(
         wh = db.get(models.Warehouse, data.warehouse_id)
         if not wh:
             raise HTTPException(status_code=404, detail={"error_code":"WAREHOUSE_NOT_FOUND"})
-        user = models.User(
-            username=data.username, email=data.email, password_hash=get_password_hash(data.password),
+        user = crud.create_user(db, username=data.username, password=data.password,
             alias=data.alias, role=models.Role.admin,
-            warehouse_id=wh.id, company_id=None
-        )
-
-    db.add(user)
-    db.commit()
-    db.refresh(user)
+            email=data.email, warehouse_id=wh.id)
 
     company_alias = None
     warehouse_alias = None

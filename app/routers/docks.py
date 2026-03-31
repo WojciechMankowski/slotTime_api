@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from .. import models
+from .. import models, crud
 from ..deps import get_current_user, require_role, get_context_warehouse
 from ..schemas import DockOut, DockCreate, DockPatch
 
@@ -25,14 +25,9 @@ def create_dock(
     wh: models.Warehouse = Depends(get_context_warehouse),
     db: Session = Depends(get_db),
 ):
-    exists = db.query(models.Dock).filter(models.Dock.warehouse_id==wh.id, models.Dock.alias==data.alias).first()
-    if exists:
+    if db.query(models.Dock).filter(models.Dock.warehouse_id==wh.id, models.Dock.alias==data.alias).first():
         raise HTTPException(status_code=400, detail={"error_code":"ALIAS_TAKEN", "field":"alias"})
-    dock = models.Dock(warehouse_id=wh.id, name=data.name, alias=data.alias, is_active=data.is_active)
-    db.add(dock)
-    db.commit()
-    db.refresh(dock)
-    return dock
+    return crud.create_dock(db, warehouse_id=wh.id, name=data.name, alias=data.alias, is_active=data.is_active)
 
 @router.delete("/{dock_id}", status_code=204, dependencies=[Depends(require_role(models.Role.superadmin))])
 def delete_dock(

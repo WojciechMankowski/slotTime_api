@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from pathlib import Path
 import shutil
 
 from ..db import get_db
-from .. import models
+from .. import models, crud
 from ..deps import get_current_user, require_role
 from ..schemas import WarehouseOut, WarehouseCreate, WarehousePatch
 
@@ -26,14 +26,9 @@ def list_warehouses(user: models.User = Depends(get_current_user), db: Session =
 
 @router.post("", response_model=WarehouseOut, dependencies=[Depends(require_role(models.Role.superadmin))])
 def create_warehouse(data: WarehouseCreate, db: Session = Depends(get_db)):
-    exists = db.query(models.Warehouse).filter(models.Warehouse.alias == data.alias).first()
-    if exists:
+    if crud.get_warehouse_by_alias(db, data.alias):
         raise HTTPException(status_code=400, detail={"error_code": "ALIAS_TAKEN", "field": "alias"})
-    wh = models.Warehouse(**data.model_dump())
-    db.add(wh)
-    db.commit()
-    db.refresh(wh)
-    return wh
+    return crud.create_warehouse(db, **data.model_dump())
 
 @router.patch("/{warehouse_id}", response_model=WarehouseOut, dependencies=[Depends(require_role(models.Role.superadmin))])
 def patch_warehouse(warehouse_id: int, data: WarehousePatch, db: Session = Depends(get_db)):
