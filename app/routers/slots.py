@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from supabase import Client
 from datetime import datetime, date, timedelta, time as dtime
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict, Any
 
 from ..supabase_client import get_supabase
 from ..deps import get_current_user, require_role, get_context_warehouse
@@ -28,33 +28,66 @@ router = APIRouter(prefix="/api/slots", tags=["slots"])
 # Helpers
 # =========================================================
 
-def _slot_to_out(slot: dict, supa: Client) -> SlotOut:
+def _enrich_single_slot(slot: dict, supa: Client) -> SlotOut:
+    """Helper dla pojedynczych mutacji - pobiera relacje tylko dla jednego slotu."""
     dock_alias = None
     if slot.get("dock_id"):
         dock_rows = supa.table("docks").select("alias").eq("id", slot["dock_id"]).execute().data
-        dock_alias = dock_rows[0]["alias"] if dock_rows else None
+        dock_alias = dock_rows[0].get("alias") if dock_rows else None
 
     reserved_by_alias = None
     reserved_by_company_alias = None
-    if slot.get("reserved_by_user_id"):
-        user_rows = supa.table("users").select("alias,company_id").eq("id", slot["reserved_by_user_id"]).execute().data
+    u_id = slot.get("reserved_by_user_id")
+    if u_id:
+        user_rows = supa.table("users").select("alias,company_id").eq("id", u_id).execute().data
         if user_rows:
             u = user_rows[0]
-            reserved_by_alias = u["alias"]
-            if u.get("company_id"):
-                company_rows = supa.table("companies").select("alias").eq("id", u["company_id"]).execute().data
-                reserved_by_company_alias = company_rows[0]["alias"] if company_rows else None
+            reserved_by_alias = u.get("alias")
+            c_id = u.get("company_id")
+            if c_id:
+                company_rows = supa.table("companies").select("alias").eq("id", c_id).execute().data
+                reserved_by_company_alias = company_rows[0].get("alias") if company_rows else None
 
     return SlotOut(
         id=slot["id"],
-        start_dt=slot["start_dt"],
-        end_dt=slot["end_dt"],
-        slot_type=slot["slot_type"],
-        original_slot_type=slot["original_slot_type"],
-        status=slot["status"],
+        start_dt=slot.get("start_dt"),
+        end_dt=slot.get("end_dt"),
+        slot_type=slot.get("slot_type"),
+        original_slot_type=slot.get("original_slot_type"),
+        status=slot.get("status"),
         dock_id=slot.get("dock_id"),
         dock_alias=dock_alias,
-        reserved_by_user_id=slot.get("reserved_by_user_id"),
+        reserved_by_user_id=u_id,
+        reserved_by_alias=reserved_by_alias,
+        reserved_by_company_alias=reserved_by_company_alias,
+    )
+
+
+def _format_slot_from_maps(slot: dict, docks_map: dict, users_map: dict, companies_map: dict) -> SlotOut:
+    """Helper dla list - używa danych pobranych hurtowo do mapowania bez zapytań N+1."""
+    dock_alias = docks_map.get(slot.get("dock_id"))
+    
+    reserved_by_alias = None
+    reserved_by_company_alias = None
+    
+    u_id = slot.get("reserved_by_user_id")
+    if u_id and u_id in users_map:
+        user_info = users_map[u_id]
+        reserved_by_alias = user_info.get("alias")
+        c_id = user_info.get("company_id")
+        if c_id and c_id in companies_map:
+            reserved_by_company_alias = companies_map[c_id]
+
+    return SlotOut(
+        id=slot["id"],
+        start_dt=slot.get("start_dt"),
+        end_dt=slot.get("end_dt"),
+        slot_type=slot.get("slot_type"),
+        original_slot_type=slot.get("original_slot_type"),
+        status=slot.get("status"),
+        dock_id=slot.get("dock_id"),
+        dock_alias=dock_alias,
+        reserved_by_user_id=u_id,
         reserved_by_alias=reserved_by_alias,
         reserved_by_company_alias=reserved_by_company_alias,
     )
@@ -90,7 +123,7 @@ def _resolve_generate_params(
     if template_id is not None:
         tmpl_rows = supa.table("slot_templates").select("*").eq("id", template_id).execute().data
         t = tmpl_rows[0] if tmpl_rows else None
-        if not t or t["warehouse_id"] != wh.id:
+        if not t or t.get("warehouse_id") != wh.id:
             raise HTTPException(status_code=404, detail={"error_code": "TEMPLATE_NOT_FOUND"})
         if not t.get("is_active", True):
             raise HTTPException(status_code=409, detail={"error_code": "TEMPLATE_INACTIVE"})
@@ -150,31 +183,60 @@ def list_slots(
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
 ):
-    start = datetime.combine(date_from, dtime.min)
-    end = datetime.combine(date_to, dtime.max)
+    try:
+        start = datetime.combine(date_from, dtime.min)
+        end = datetime.combine(date_to, dtime.max)
 
-    q = (
-        supa.table("slots").select("*")
-        .eq("warehouse_id", wh.id)
-        .gte("start_dt", start.isoformat())
-        .lte("start_dt", end.isoformat())
-    )
+        q = (
+            supa.table("slots").select("*")
+            .eq("warehouse_id", wh.id)
+            .gte("start_dt", start.isoformat())
+            .lte("start_dt", end.isoformat())
+        )
 
-    if status:
-        try:
-            SlotStatus[status.upper()]
-        except KeyError:
-            raise HTTPException(status_code=400, detail={"error_code": "INVALID_STATUS_FILTER"})
-        q = q.eq("status", status.upper())
+        if status:
+            try:
+                SlotStatus[status.upper()]
+            except KeyError:
+                raise HTTPException(status_code=400, detail={"error_code": "INVALID_STATUS_FILTER"})
+            q = q.eq("status", status.upper())
 
-    slots = q.order("start_dt").execute().data
+        slots = q.order("start_dt").execute().data
 
-    if user.role == Role.client:
-        company_rows = supa.table("companies").select("is_active").eq("id", user.company_id).execute().data if user.company_id else []
-        if not company_rows or not company_rows[0]["is_active"]:
-            raise HTTPException(status_code=403, detail={"error_code": "COMPANY_INACTIVE"})
+        if user.role == Role.client:
+            company_rows = supa.table("companies").select("is_active").eq("id", user.company_id).execute().data if user.company_id else []
+            if not company_rows or not company_rows[0].get("is_active"):
+                raise HTTPException(status_code=403, detail={"error_code": "COMPANY_INACTIVE"})
 
-    return [_slot_to_out(s, supa) for s in slots]
+        if not slots:
+            return []
+
+        # Optymalizacja N+1: Pobieranie hurtowe relacji
+        user_ids = list({s["reserved_by_user_id"] for s in slots if s.get("reserved_by_user_id")})
+        dock_ids = list({s["dock_id"] for s in slots if s.get("dock_id")})
+
+        users_map = {}
+        companies_map = {}
+        if user_ids:
+            users_data = supa.table("users").select("id, alias, company_id").in_("id", user_ids).execute().data
+            users_map = {u["id"]: u for u in users_data}
+            
+            company_ids = list({u["company_id"] for u in users_data if u.get("company_id")})
+            if company_ids:
+                comp_data = supa.table("companies").select("id, alias").in_("id", company_ids).execute().data
+                companies_map = {c["id"]: c.get("alias") for c in comp_data}
+
+        docks_map = {}
+        if dock_ids:
+            docks_data = supa.table("docks").select("id, alias").in_("id", dock_ids).execute().data
+            docks_map = {d["id"]: d.get("alias") for d in docks_data}
+
+        return [_format_slot_from_maps(s, docks_map, users_map, companies_map) for s in slots]
+        
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
 # =========================================================
@@ -194,34 +256,64 @@ def list_archive(
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
 ):
-    ARCHIVE_STATUSES = {"COMPLETED", "CANCELLED"}
+    try:
+        ARCHIVE_STATUSES = {"COMPLETED", "CANCELLED"}
 
-    if status and status.upper() == "ALL":
-        filter_statuses = list(ARCHIVE_STATUSES)
-    elif status:
-        s = status.upper()
-        if s not in ARCHIVE_STATUSES:
-            raise HTTPException(status_code=400, detail={"error_code": "INVALID_STATUS"})
-        filter_statuses = [s]
-    else:
-        filter_statuses = ["COMPLETED"]
+        if status and status.upper() == "ALL":
+            filter_statuses = list(ARCHIVE_STATUSES)
+        elif status:
+            s = status.upper()
+            if s not in ARCHIVE_STATUSES:
+                raise HTTPException(status_code=400, detail={"error_code": "INVALID_STATUS"})
+            filter_statuses = [s]
+        else:
+            filter_statuses = ["COMPLETED"]
 
-    q = (
-        supa.table("slots").select("*")
-        .eq("warehouse_id", wh.id)
-        .in_("status", filter_statuses)
-    )
+        q = (
+            supa.table("slots").select("*")
+            .eq("warehouse_id", wh.id)
+            .in_("status", filter_statuses)
+        )
 
-    if date_from:
-        q = q.gte("start_dt", datetime.combine(date_from, dtime.min).isoformat())
-    if date_to:
-        q = q.lte("start_dt", datetime.combine(date_to, dtime.max).isoformat())
+        if date_from:
+            q = q.gte("start_dt", datetime.combine(date_from, dtime.min).isoformat())
+        if date_to:
+            q = q.lte("start_dt", datetime.combine(date_to, dtime.max).isoformat())
 
-    if user.role == Role.client:
-        q = q.eq("reserved_by_user_id", user.id)
+        if user.role == Role.client:
+            q = q.eq("reserved_by_user_id", user.id)
 
-    slots = q.order("start_dt", desc=True).execute().data
-    return [_slot_to_out(s, supa) for s in slots]
+        slots = q.order("start_dt", desc=True).execute().data
+        
+        if not slots:
+            return []
+
+        # Optymalizacja N+1 dla archiwum
+        user_ids = list({s["reserved_by_user_id"] for s in slots if s.get("reserved_by_user_id")})
+        dock_ids = list({s["dock_id"] for s in slots if s.get("dock_id")})
+
+        users_map = {}
+        companies_map = {}
+        if user_ids:
+            users_data = supa.table("users").select("id, alias, company_id").in_("id", user_ids).execute().data
+            users_map = {u["id"]: u for u in users_data}
+            
+            company_ids = list({u["company_id"] for u in users_data if u.get("company_id")})
+            if company_ids:
+                comp_data = supa.table("companies").select("id, alias").in_("id", company_ids).execute().data
+                companies_map = {c["id"]: c.get("alias") for c in comp_data}
+
+        docks_map = {}
+        if dock_ids:
+            docks_data = supa.table("docks").select("id, alias").in_("id", dock_ids).execute().data
+            docks_map = {d["id"]: d.get("alias") for d in docks_data}
+
+        return [_format_slot_from_maps(s, docks_map, users_map, companies_map) for s in slots]
+
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
 # =========================================================
@@ -238,123 +330,128 @@ def generate_slots(
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
 ):
-    if data.date_from > data.date_to:
-        raise HTTPException(status_code=400, detail={"error_code": "INVALID_DATE_RANGE"})
+    try:
+        if data.date_from > data.date_to:
+            raise HTTPException(status_code=400, detail={"error_code": "INVALID_DATE_RANGE"})
 
-    start_time, end_time, interval_minutes, slot_type, parallel_slots, template_id, template_name = _resolve_generate_params(
-        data, wh, supa
-    )
-
-    total_generated = 0
-    total_skipped = 0
-    day_reports: list[SlotGenerateDayReport] = []
-
-    delta = timedelta(minutes=int(interval_minutes))
-
-    d = data.date_from
-    while d <= data.date_to:
-        day_start = datetime.combine(d, start_time)
-        day_end = datetime.combine(d, end_time)
-
-        requested = 0
-        generated = 0
-        skipped = 0
-
-        # optional daily capacity
-        cap_rows = (
-            supa.table("day_capacities").select("capacity")
-            .eq("warehouse_id", wh.id)
-            .eq("date", d.isoformat())
-            .eq("slot_type", slot_type.value)
-            .execute().data
+        start_time, end_time, interval_minutes, slot_type, parallel_slots, template_id, template_name = _resolve_generate_params(
+            data, wh, supa
         )
-        cap_val: Optional[int] = int(cap_rows[0]["capacity"]) if cap_rows else None
 
-        # existing slots for that day+type (no dock) -> counts against capacity
-        day_start_iso = datetime.combine(d, dtime.min).isoformat()
-        day_end_iso = datetime.combine(d, dtime.max).isoformat()
-        existing_day_result = (
-            supa.table("slots").select("id", count="exact")
-            .eq("warehouse_id", wh.id)
-            .filter("dock_id", "is", "null")
-            .eq("slot_type", slot_type.value)
-            .gte("start_dt", day_start_iso)
-            .lte("start_dt", day_end_iso)
-            .execute()
-        )
-        existing_day_count = existing_day_result.count or 0
+        total_generated = 0
+        total_skipped = 0
+        day_reports: list[SlotGenerateDayReport] = []
 
-        remaining_capacity = None if cap_val is None else max(0, cap_val - existing_day_count)
+        delta = timedelta(minutes=int(interval_minutes))
+        d = data.date_from
+        
+        while d <= data.date_to:
+            day_start = datetime.combine(d, start_time)
+            day_end = datetime.combine(d, end_time)
 
-        cur = day_start
-        batch: list[dict] = []
+            requested = 0
+            generated = 0
+            skipped = 0
 
-        while cur + delta <= day_end:
-            requested += parallel_slots
+            cap_rows = (
+                supa.table("day_capacities").select("capacity")
+                .eq("warehouse_id", wh.id)
+                .eq("date", d.isoformat())
+                .eq("slot_type", slot_type.value)
+                .execute().data
+            )
+            cap_val: Optional[int] = int(cap_rows[0]["capacity"]) if cap_rows else None
 
-            existing_interval_result = (
+            day_start_iso = datetime.combine(d, dtime.min).isoformat()
+            day_end_iso = datetime.combine(d, dtime.max).isoformat()
+            
+            existing_day_result = (
                 supa.table("slots").select("id", count="exact")
                 .eq("warehouse_id", wh.id)
                 .filter("dock_id", "is", "null")
-                .eq("start_dt", cur.isoformat())
-                .eq("end_dt", (cur + delta).isoformat())
                 .eq("slot_type", slot_type.value)
+                .gte("start_dt", day_start_iso)
+                .lte("start_dt", day_end_iso)
+                .limit(0)
                 .execute()
             )
-            existing_interval_count = existing_interval_result.count or 0
+            existing_day_count = existing_day_result.count or 0
+            remaining_capacity = None if cap_val is None else max(0, cap_val - existing_day_count)
 
-            to_create = max(0, parallel_slots - existing_interval_count)
+            cur = day_start
+            batch: list[dict] = []
 
-            if remaining_capacity is not None:
-                if remaining_capacity <= 0:
-                    skipped += to_create
-                    cur += delta
-                    continue
-                if to_create > remaining_capacity:
-                    skipped += (to_create - remaining_capacity)
-                    to_create = remaining_capacity
+            while cur + delta <= day_end:
+                requested += parallel_slots
 
-            for _ in range(to_create):
-                batch.append({
-                    "warehouse_id": wh.id,
-                    "dock_id": None,
-                    "start_dt": cur.isoformat(),
-                    "end_dt": (cur + delta).isoformat(),
-                    "slot_type": slot_type.value,
-                    "original_slot_type": slot_type.value,
-                    "status": "AVAILABLE",
-                    "reserved_by_user_id": None,
-                })
-                generated += 1
+                existing_interval_result = (
+                    supa.table("slots").select("id", count="exact")
+                    .eq("warehouse_id", wh.id)
+                    .filter("dock_id", "is", "null")
+                    .eq("start_dt", cur.isoformat())
+                    .eq("end_dt", (cur + delta).isoformat())
+                    .eq("slot_type", slot_type.value)
+                    .limit(0)
+                    .execute()
+                )
+                existing_interval_count = existing_interval_result.count or 0
+
+                to_create = max(0, parallel_slots - existing_interval_count)
+
                 if remaining_capacity is not None:
-                    remaining_capacity -= 1
+                    if remaining_capacity <= 0:
+                        skipped += to_create
+                        cur += delta
+                        continue
+                    if to_create > remaining_capacity:
+                        skipped += (to_create - remaining_capacity)
+                        to_create = remaining_capacity
 
-            skipped += max(0, parallel_slots - existing_interval_count - to_create)
-            cur += delta
+                for _ in range(to_create):
+                    batch.append({
+                        "warehouse_id": wh.id,
+                        "dock_id": None,
+                        "start_dt": cur.isoformat(),
+                        "end_dt": (cur + delta).isoformat(),
+                        "slot_type": slot_type.value,
+                        "original_slot_type": slot_type.value,
+                        "status": "AVAILABLE",
+                        "reserved_by_user_id": None,
+                    })
+                    generated += 1
+                    if remaining_capacity is not None:
+                        remaining_capacity -= 1
 
-        if batch:
-            supa.table("slots").insert(batch).execute()
+                skipped += max(0, parallel_slots - existing_interval_count - to_create)
+                cur += delta
 
-        total_generated += generated
-        total_skipped += skipped
+            if batch:
+                supa.table("slots").insert(batch).execute()
 
-        day_reports.append(
-            SlotGenerateDayReport(
-                date=d,
-                requested=requested,
-                generated=generated,
-                skipped_due_to_capacity=skipped,
-                capacity=cap_val,
+            total_generated += generated
+            total_skipped += skipped
+
+            day_reports.append(
+                SlotGenerateDayReport(
+                    date=d,
+                    requested=requested,
+                    generated=generated,
+                    skipped_due_to_capacity=skipped,
+                    capacity=cap_val,
+                )
             )
+
+            d += timedelta(days=1)
+
+        return SlotGenerateOut(
+            generated_count=total_generated,
+            skipped_due_to_capacity=total_skipped,
+            days=day_reports,
         )
-
-        d += timedelta(days=1)
-
-    return SlotGenerateOut(
-        generated_count=total_generated,
-        skipped_due_to_capacity=total_skipped,
-        days=day_reports,
-    )
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
 # =========================================================
@@ -373,30 +470,38 @@ def reserve_slot(
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
 ):
-    slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
-    slot = slot_rows[0] if slot_rows else None
-    if not slot or slot["warehouse_id"] != wh.id:
-        raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
+    try:
+        slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+        slot = slot_rows[0] if slot_rows else None
+        if not slot or slot.get("warehouse_id") != wh.id:
+            raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
 
-    if user.company_id:
-        company_rows = supa.table("companies").select("is_active").eq("id", user.company_id).execute().data
-        if not company_rows or not company_rows[0]["is_active"]:
+        if user.company_id:
+            company_rows = supa.table("companies").select("is_active").eq("id", user.company_id).execute().data
+            if not company_rows or not company_rows[0].get("is_active"):
+                raise HTTPException(status_code=403, detail={"error_code": "COMPANY_INACTIVE"})
+        else:
             raise HTTPException(status_code=403, detail={"error_code": "COMPANY_INACTIVE"})
-    else:
-        raise HTTPException(status_code=403, detail={"error_code": "COMPANY_INACTIVE"})
 
-    if slot["status"] != "AVAILABLE":
-        raise HTTPException(status_code=409, detail={"error_code": "SLOT_NOT_AVAILABLE"})
+        if slot.get("status") != "AVAILABLE":
+            raise HTTPException(status_code=409, detail={"error_code": "SLOT_NOT_AVAILABLE"})
 
-    update = {"status": "BOOKED", "reserved_by_user_id": user.id}
-    if slot["slot_type"] == "ANY":
-        if not data.requested_type:
-            raise HTTPException(status_code=400, detail={"error_code": "TYPE_REQUIRED"})
-        update["slot_type"] = data.requested_type
+        update = {"status": "BOOKED", "reserved_by_user_id": user.id}
+        if slot.get("slot_type") == "ANY":
+            if not data.requested_type:
+                raise HTTPException(status_code=400, detail={"error_code": "TYPE_REQUIRED"})
+            update["slot_type"] = data.requested_type
 
-    supa.table("slots").update(update).eq("id", slot_id).execute()
-    updated = supa.table("slots").select("*").eq("id", slot_id).execute().data
-    return _slot_to_out(updated[0], supa)
+        # Zwracamy od razu zaktualizowany obiekt
+        response = supa.table("slots").update(update).eq("id", slot_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
+            
+        return _enrich_single_slot(response.data[0], supa)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
 @router.post(
@@ -409,16 +514,23 @@ def approve_slot(
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
 ):
-    slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
-    slot = slot_rows[0] if slot_rows else None
-    if not slot or slot["warehouse_id"] != wh.id:
-        raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
-    if slot["status"] != "BOOKED":
-        raise HTTPException(status_code=409, detail={"error_code": "INVALID_STATUS"})
+    try:
+        slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+        slot = slot_rows[0] if slot_rows else None
+        if not slot or slot.get("warehouse_id") != wh.id:
+            raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
+        if slot.get("status") != "BOOKED":
+            raise HTTPException(status_code=409, detail={"error_code": "INVALID_STATUS"})
 
-    supa.table("slots").update({"status": "APPROVED_WAITING_DETAILS"}).eq("id", slot_id).execute()
-    updated = supa.table("slots").select("*").eq("id", slot_id).execute().data
-    return _slot_to_out(updated[0], supa)
+        response = supa.table("slots").update({"status": "APPROVED_WAITING_DETAILS"}).eq("id", slot_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
+            
+        return _enrich_single_slot(response.data[0], supa)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
 @router.post(
@@ -432,32 +544,41 @@ def assign_dock(
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
 ):
-    slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
-    slot = slot_rows[0] if slot_rows else None
-    if not slot or slot["warehouse_id"] != wh.id:
-        raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
+    try:
+        slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+        slot = slot_rows[0] if slot_rows else None
+        if not slot or slot.get("warehouse_id") != wh.id:
+            raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
 
-    dock_rows = supa.table("docks").select("*").eq("id", data.dock_id).execute().data
-    dock = dock_rows[0] if dock_rows else None
-    if not dock or dock["warehouse_id"] != wh.id:
-        raise HTTPException(status_code=404, detail={"error_code": "DOCK_NOT_FOUND"})
+        dock_rows = supa.table("docks").select("*").eq("id", data.dock_id).execute().data
+        dock = dock_rows[0] if dock_rows else None
+        if not dock or dock.get("warehouse_id") != wh.id:
+            raise HTTPException(status_code=404, detail={"error_code": "DOCK_NOT_FOUND"})
 
-    conflict = (
-        supa.table("slots").select("id")
-        .eq("warehouse_id", wh.id)
-        .eq("dock_id", data.dock_id)
-        .neq("id", slot_id)
-        .in_("status", ["BOOKED", "APPROVED_WAITING_DETAILS", "RESERVED_CONFIRMED"])
-        .lt("start_dt", slot["end_dt"])
-        .gt("end_dt", slot["start_dt"])
-        .execute().data
-    )
-    if conflict:
-        raise HTTPException(status_code=409, detail={"error_code": "DOCK_CONFLICT"})
+        # Optymalizacja sprawdzenia konfliktu (count exact)
+        conflict = (
+            supa.table("slots").select("id", count="exact")
+            .eq("warehouse_id", wh.id)
+            .eq("dock_id", data.dock_id)
+            .neq("id", slot_id)
+            .in_("status", ["BOOKED", "APPROVED_WAITING_DETAILS", "RESERVED_CONFIRMED"])
+            .lt("start_dt", slot.get("end_dt"))
+            .gt("end_dt", slot.get("start_dt"))
+            .limit(0)
+            .execute()
+        )
+        if conflict.count and conflict.count > 0:
+            raise HTTPException(status_code=409, detail={"error_code": "DOCK_CONFLICT"})
 
-    supa.table("slots").update({"dock_id": data.dock_id}).eq("id", slot_id).execute()
-    updated = supa.table("slots").select("*").eq("id", slot_id).execute().data
-    return _slot_to_out(updated[0], supa)
+        response = supa.table("slots").update({"dock_id": data.dock_id}).eq("id", slot_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
+            
+        return _enrich_single_slot(response.data[0], supa)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
 @router.post(
@@ -471,20 +592,27 @@ def request_cancel_slot(
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
 ):
-    slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
-    slot = slot_rows[0] if slot_rows else None
-    if not slot or slot["warehouse_id"] != wh.id:
-        raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
-    if slot["reserved_by_user_id"] != user.id:
-        raise HTTPException(status_code=403, detail={"error_code": "FORBIDDEN"})
+    try:
+        slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+        slot = slot_rows[0] if slot_rows else None
+        if not slot or slot.get("warehouse_id") != wh.id:
+            raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
+        if slot.get("reserved_by_user_id") != user.id:
+            raise HTTPException(status_code=403, detail={"error_code": "FORBIDDEN"})
 
-    CANCELLABLE = {"BOOKED", "APPROVED_WAITING_DETAILS", "RESERVED_CONFIRMED"}
-    if slot["status"] not in CANCELLABLE:
-        raise HTTPException(status_code=409, detail={"error_code": "INVALID_STATUS"})
+        CANCELLABLE = {"BOOKED", "APPROVED_WAITING_DETAILS", "RESERVED_CONFIRMED"}
+        if slot.get("status") not in CANCELLABLE:
+            raise HTTPException(status_code=409, detail={"error_code": "INVALID_STATUS"})
 
-    supa.table("slots").update({"previous_status": slot["status"], "status": "CANCEL_PENDING"}).eq("id", slot_id).execute()
-    updated = supa.table("slots").select("*").eq("id", slot_id).execute().data
-    return _slot_to_out(updated[0], supa)
+        response = supa.table("slots").update({"previous_status": slot.get("status"), "status": "CANCEL_PENDING"}).eq("id", slot_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
+            
+        return _enrich_single_slot(response.data[0], supa)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
 @router.post(
@@ -497,18 +625,25 @@ def reject_cancel_slot(
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
 ):
-    slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
-    slot = slot_rows[0] if slot_rows else None
-    if not slot or slot["warehouse_id"] != wh.id:
-        raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
-    if slot["status"] != "CANCEL_PENDING":
-        raise HTTPException(status_code=409, detail={"error_code": "INVALID_STATUS"})
-    if not slot.get("previous_status"):
-        raise HTTPException(status_code=409, detail={"error_code": "NO_PREVIOUS_STATUS"})
+    try:
+        slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+        slot = slot_rows[0] if slot_rows else None
+        if not slot or slot.get("warehouse_id") != wh.id:
+            raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
+        if slot.get("status") != "CANCEL_PENDING":
+            raise HTTPException(status_code=409, detail={"error_code": "INVALID_STATUS"})
+        if not slot.get("previous_status"):
+            raise HTTPException(status_code=409, detail={"error_code": "NO_PREVIOUS_STATUS"})
 
-    supa.table("slots").update({"status": slot["previous_status"], "previous_status": None}).eq("id", slot_id).execute()
-    updated = supa.table("slots").select("*").eq("id", slot_id).execute().data
-    return _slot_to_out(updated[0], supa)
+        response = supa.table("slots").update({"status": slot.get("previous_status"), "previous_status": None}).eq("id", slot_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
+            
+        return _enrich_single_slot(response.data[0], supa)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
 @router.post(
@@ -522,16 +657,23 @@ def cancel_slot(
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
 ):
-    slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
-    slot = slot_rows[0] if slot_rows else None
-    if not slot or slot["warehouse_id"] != wh.id:
-        raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
-    if user.role == Role.client and slot["reserved_by_user_id"] != user.id:
-        raise HTTPException(status_code=403, detail={"error_code": "FORBIDDEN"})
+    try:
+        slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+        slot = slot_rows[0] if slot_rows else None
+        if not slot or slot.get("warehouse_id") != wh.id:
+            raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
+        if user.role == Role.client and slot.get("reserved_by_user_id") != user.id:
+            raise HTTPException(status_code=403, detail={"error_code": "FORBIDDEN"})
 
-    supa.table("slots").update({"status": "CANCELLED", "previous_status": None}).eq("id", slot_id).execute()
-    updated = supa.table("slots").select("*").eq("id", slot_id).execute().data
-    return _slot_to_out(updated[0], supa)
+        response = supa.table("slots").update({"status": "CANCELLED", "previous_status": None}).eq("id", slot_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
+            
+        return _enrich_single_slot(response.data[0], supa)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
 @router.patch(
@@ -545,35 +687,45 @@ def patch_slot(
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
 ):
-    slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
-    slot = slot_rows[0] if slot_rows else None
-    if not slot or slot["warehouse_id"] != wh.id:
-        raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
+    try:
+        slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+        slot = slot_rows[0] if slot_rows else None
+        if not slot or slot.get("warehouse_id") != wh.id:
+            raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
 
-    if slot["status"] != "AVAILABLE":
-        raise HTTPException(status_code=409, detail={"error_code": "SLOT_NOT_EDITABLE"})
+        if slot.get("status") != "AVAILABLE":
+            raise HTTPException(status_code=409, detail={"error_code": "SLOT_NOT_EDITABLE"})
 
-    start_dt = datetime.fromisoformat(slot["start_dt"])
-    if start_dt.date() < date.today():
-        raise HTTPException(status_code=409, detail={"error_code": "SLOT_IN_PAST"})
+        start_dt = datetime.fromisoformat(slot.get("start_dt").replace("Z", "+00:00"))
+        if start_dt.date() < date.today():
+            raise HTTPException(status_code=409, detail={"error_code": "SLOT_IN_PAST"})
 
-    payload = data.model_dump(exclude_unset=True)
+        payload = data.model_dump(exclude_unset=True)
+        
+        # Zabezpieczenie przed błędem z pustym payloadem (np. {})
+        if not payload:
+            return _enrich_single_slot(slot, supa)
 
-    if "start_dt" in payload and "end_dt" in payload:
-        if payload["start_dt"] >= payload["end_dt"]:
-            raise HTTPException(status_code=400, detail={"error_code": "INVALID_TIME_RANGE"})
+        if "start_dt" in payload and "end_dt" in payload:
+            if payload["start_dt"] >= payload["end_dt"]:
+                raise HTTPException(status_code=400, detail={"error_code": "INVALID_TIME_RANGE"})
 
-    # serialize enums and datetimes for Supabase
-    if "slot_type" in payload and hasattr(payload["slot_type"], "value"):
-        payload["slot_type"] = payload["slot_type"].value
-    if "start_dt" in payload and isinstance(payload["start_dt"], datetime):
-        payload["start_dt"] = payload["start_dt"].isoformat()
-    if "end_dt" in payload and isinstance(payload["end_dt"], datetime):
-        payload["end_dt"] = payload["end_dt"].isoformat()
+        if "slot_type" in payload and hasattr(payload["slot_type"], "value"):
+            payload["slot_type"] = payload["slot_type"].value
+        if "start_dt" in payload and isinstance(payload["start_dt"], datetime):
+            payload["start_dt"] = payload["start_dt"].isoformat()
+        if "end_dt" in payload and isinstance(payload["end_dt"], datetime):
+            payload["end_dt"] = payload["end_dt"].isoformat()
 
-    supa.table("slots").update(payload).eq("id", slot_id).execute()
-    updated = supa.table("slots").select("*").eq("id", slot_id).execute().data
-    return _slot_to_out(updated[0], supa)
+        response = supa.table("slots").update(payload).eq("id", slot_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
+            
+        return _enrich_single_slot(response.data[0], supa)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
 @router.patch(
@@ -587,22 +739,29 @@ def change_slot_status(
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
 ):
-    slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
-    slot = slot_rows[0] if slot_rows else None
-    if not slot or slot["warehouse_id"] != wh.id:
-        raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
+    try:
+        slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+        slot = slot_rows[0] if slot_rows else None
+        if not slot or slot.get("warehouse_id") != wh.id:
+            raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
 
-    if data.status == SlotStatus.CANCEL_PENDING:
-        raise HTTPException(status_code=400, detail={"error_code": "USE_REQUEST_CANCEL_ENDPOINT"})
+        if data.status == SlotStatus.CANCEL_PENDING:
+            raise HTTPException(status_code=400, detail={"error_code": "USE_REQUEST_CANCEL_ENDPOINT"})
 
-    update: dict = {"status": data.status.value}
-    if data.status == SlotStatus.AVAILABLE:
-        update["reserved_by_user_id"] = None
-        update["dock_id"] = None
+        update: dict = {"status": data.status.value}
+        if data.status == SlotStatus.AVAILABLE:
+            update["reserved_by_user_id"] = None
+            update["dock_id"] = None
 
-    supa.table("slots").update(update).eq("id", slot_id).execute()
-    updated = supa.table("slots").select("*").eq("id", slot_id).execute().data
-    return _slot_to_out(updated[0], supa)
+        response = supa.table("slots").update(update).eq("id", slot_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
+            
+        return _enrich_single_slot(response.data[0], supa)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
 @router.delete(
@@ -619,28 +778,33 @@ def bulk_delete_slots(
     supa: Client = Depends(get_supabase),
 ):
     try:
-        dt_from = date.fromisoformat(date_from)
-        dt_to = date.fromisoformat(date_to)
-    except ValueError:
-        raise HTTPException(400, detail={"error_code": "INVALID_DATE_RANGE"})
+        try:
+            dt_from = date.fromisoformat(date_from)
+            dt_to = date.fromisoformat(date_to)
+        except ValueError:
+            raise HTTPException(400, detail={"error_code": "INVALID_DATE_RANGE"})
 
-    start_iso = datetime.combine(dt_from, dtime.min).isoformat()
-    end_iso = datetime.combine(dt_to, dtime.max).isoformat()
+        start_iso = datetime.combine(dt_from, dtime.min).isoformat()
+        end_iso = datetime.combine(dt_to, dtime.max).isoformat()
 
-    q = (
-        supa.table("slots").select("id")
-        .eq("warehouse_id", wh.id)
-        .gte("start_dt", start_iso)
-        .lte("start_dt", end_iso)
-    )
-    if slot_type:
-        q = q.eq("slot_type", slot_type)
-    q = q.eq("status", status if status else "AVAILABLE")
+        q = (
+            supa.table("slots").select("id")
+            .eq("warehouse_id", wh.id)
+            .gte("start_dt", start_iso)
+            .lte("start_dt", end_iso)
+        )
+        if slot_type:
+            q = q.eq("slot_type", slot_type)
+        q = q.eq("status", status if status else "AVAILABLE")
 
-    slot_ids = [s["id"] for s in q.execute().data]
-    if slot_ids:
-        supa.table("slots").delete().in_("id", slot_ids).execute()
-    return {"deleted": len(slot_ids)}
+        slot_ids = [s["id"] for s in q.execute().data]
+        if slot_ids:
+            supa.table("slots").delete().in_("id", slot_ids).execute()
+        return {"deleted": len(slot_ids)}
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
 @router.delete(
@@ -653,10 +817,16 @@ def delete_slot(
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
 ):
-    slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
-    slot = slot_rows[0] if slot_rows else None
-    if not slot or slot["warehouse_id"] != wh.id:
-        raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
-    if slot["status"] != "AVAILABLE":
-        raise HTTPException(status_code=409, detail={"error_code": "SLOT_NOT_AVAILABLE"})
-    supa.table("slots").delete().eq("id", slot_id).execute()
+    try:
+        slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+        slot = slot_rows[0] if slot_rows else None
+        if not slot or slot.get("warehouse_id") != wh.id:
+            raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
+        if slot.get("status") != "AVAILABLE":
+            raise HTTPException(status_code=409, detail={"error_code": "SLOT_NOT_AVAILABLE"})
+            
+        supa.table("slots").delete().eq("id", slot_id).execute()
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})

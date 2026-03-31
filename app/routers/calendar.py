@@ -5,12 +5,11 @@ from typing import List
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from sqlalchemy import func
-from sqlalchemy.orm import Session
+from supabase import Client
 
-from ..db import get_db
+from ..supabase_client import get_supabase
 from .. import models
-from ..deps import get_current_user, require_role, get_context_warehouse
+from ..deps import require_role, get_context_warehouse
 
 router = APIRouter(prefix="/api/calendar", tags=["calendar"])
 
@@ -35,27 +34,23 @@ def calendar_summary(
     date_from: date,
     date_to: date,
     wh: models.Warehouse = Depends(get_context_warehouse),
-    db: Session = Depends(get_db),
+    supa: Client = Depends(get_supabase),
 ):
     start_dt = datetime.combine(date_from, dtime.min)
     end_dt = datetime.combine(date_to, dtime.max)
 
-    rows = (
-        db.query(
-            func.date(models.Slot.start_dt).label("day"),
-            models.Slot.status,
-            func.count(models.Slot.id).label("cnt"),
-        )
-        .filter(
-            models.Slot.warehouse_id == wh.id,
-            models.Slot.start_dt >= start_dt,
-            models.Slot.start_dt <= end_dt,
-        )
-        .group_by(func.date(models.Slot.start_dt), models.Slot.status)
-        .all()
+    # Pobieramy tylko potrzebne kolumny, aby zminimalizować transfer danych
+    response = (
+        supa.table("slots")
+        .select("start_dt, status")
+        .eq("warehouse_id", wh.id)
+        .gte("start_dt", start_dt.isoformat())
+        .lte("start_dt", end_dt.isoformat())
+        .execute()
     )
+    rows = response.data
 
-    # Aggregate per day
+    # Agregacja per dzień
     agg: dict[date, dict] = {}
     d = date_from
     while d <= date_to:
@@ -70,19 +65,29 @@ def calendar_summary(
     }
 
     for row in rows:
-        day = row.day if isinstance(row.day, date) else date.fromisoformat(str(row.day))
+        # Supabase zwraca daty jako stringi ISO (np. "2026-03-31T10:00:00+00:00")
+        dt_str = row["start_dt"].replace("Z", "+00:00")
+        dt_obj = datetime.fromisoformat(dt_str)
+        day = dt_obj.date()
+        
         if day not in agg:
             continue
-        cnt = row.cnt
-        agg[day]["total"] += cnt
-        if row.status == models.SlotStatus.AVAILABLE:
-            agg[day]["available"] += cnt
-        elif row.status in BOOKED_STATUSES:
-            agg[day]["booked"] += cnt
-        elif row.status == models.SlotStatus.COMPLETED:
-            agg[day]["completed"] += cnt
-        elif row.status == models.SlotStatus.CANCELLED:
-            agg[day]["cancelled"] += cnt
+            
+        try:
+            status = models.SlotStatus(row["status"])
+        except ValueError:
+            continue  # Pomijamy w przypadku nieznanego statusu w bazie
+            
+        agg[day]["total"] += 1
+        
+        if status == models.SlotStatus.AVAILABLE:
+            agg[day]["available"] += 1
+        elif status in BOOKED_STATUSES:
+            agg[day]["booked"] += 1
+        elif status == models.SlotStatus.COMPLETED:
+            agg[day]["completed"] += 1
+        elif status == models.SlotStatus.CANCELLED:
+            agg[day]["cancelled"] += 1
 
     return [
         CalendarDaySummary(date=d, **agg[d])
