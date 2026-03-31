@@ -2,7 +2,27 @@
 from pydantic import BaseModel, Field
 from datetime import datetime, date, time
 from typing import Optional, List, Literal
-from .models import Role, SlotType, SlotStatus
+from .enums import Role, SlotType, SlotStatus
+
+
+class UserRow(BaseModel):
+    id: int
+    username: str
+    email: Optional[str] = None
+    alias: str
+    role: Role
+    warehouse_id: Optional[int] = None
+    company_id: Optional[int] = None
+    password_hash: str
+
+
+class WarehouseRow(BaseModel):
+    id: int
+    name: str
+    alias: str
+    location: Optional[str] = None
+    is_active: bool = True
+    logo_path: Optional[str] = None
 
 
 class SlotStatusPatch(BaseModel):
@@ -228,5 +248,3 @@ class SlotPatch(BaseModel):
     slot_type: Optional[SlotType] = None
     start_dt: Optional[datetime] = None
     end_dt: Optional[datetime] = None
-
-# SlotStatusPatch.model_rebuild()

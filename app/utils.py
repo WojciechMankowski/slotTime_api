@@ -1,6 +1,6 @@
 import re
-from sqlalchemy.orm import Session
-from . import models
+from supabase import Client
+
 
 def slugify_alias(name: str) -> str:
     s = name.strip().lower()
@@ -8,11 +8,20 @@ def slugify_alias(name: str) -> str:
     s = re.sub(r"-+", "-", s).strip("-")
     return s or "x"
 
-def next_company_alias(db: Session, warehouse_id: int, name: str) -> str:
+
+def next_company_alias(supa: Client, warehouse_id: int, name: str) -> str:
     base = slugify_alias(name)[:20]
     alias = base.upper()
     i = 1
-    while db.query(models.Company).filter(models.Company.warehouse_id==warehouse_id, models.Company.alias==alias).first():
+    while True:
+        rows = (
+            supa.table("companies").select("id")
+            .eq("warehouse_id", warehouse_id)
+            .eq("alias", alias)
+            .execute().data
+        )
+        if not rows:
+            break
         i += 1
         alias = f"{base[:18]}{i}".upper()
     return alias

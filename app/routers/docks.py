@@ -1,76 +1,82 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from supabase import Client
 
-from ..db import get_db
-from .. import models, crud
+from ..supabase_client import get_supabase
+from .. import crud
 from ..deps import get_current_user, require_role, get_context_warehouse
-from ..schemas import DockOut, DockCreate, DockPatch
+from ..schemas import DockOut, DockCreate, DockPatch, UserRow, WarehouseRow
+from ..enums import Role
 
 router = APIRouter(prefix="/api/docks", tags=["docks"])
 
-@router.get("", response_model=list[DockOut], dependencies=[Depends(require_role(models.Role.admin, models.Role.client))])
-def list_docks(
-    user: models.User = Depends(get_current_user),
-    wh: models.Warehouse = Depends(get_context_warehouse),
-    db: Session = Depends(get_db),
-):
-    q = db.query(models.Dock).filter(models.Dock.warehouse_id == wh.id)
-    if user.role == models.Role.client:
-        q = q.filter(models.Dock.is_active == True)
-    return q.order_by(models.Dock.id).all()
+_ACTIVE_STATUSES = ["AVAILABLE", "BOOKED", "APPROVED_WAITING_DETAILS", "RESERVED_CONFIRMED", "CANCEL_PENDING"]
 
-@router.post("", response_model=DockOut, dependencies=[Depends(require_role(models.Role.admin))])
+
+@router.get("", response_model=list[DockOut], dependencies=[Depends(require_role(Role.admin, Role.client))])
+def list_docks(
+    user: UserRow = Depends(get_current_user),
+    wh: WarehouseRow = Depends(get_context_warehouse),
+    supa: Client = Depends(get_supabase),
+):
+    q = supa.table("docks").select("*").eq("warehouse_id", wh.id)
+    if user.role == Role.client:
+        q = q.eq("is_active", True)
+    return q.order("id").execute().data
+
+
+@router.post("", response_model=DockOut, dependencies=[Depends(require_role(Role.admin))])
 def create_dock(
     data: DockCreate,
-    wh: models.Warehouse = Depends(get_context_warehouse),
-    db: Session = Depends(get_db),
+    wh: WarehouseRow = Depends(get_context_warehouse),
+    supa: Client = Depends(get_supabase),
 ):
-    if db.query(models.Dock).filter(models.Dock.warehouse_id==wh.id, models.Dock.alias==data.alias).first():
-        raise HTTPException(status_code=400, detail={"error_code":"ALIAS_TAKEN", "field":"alias"})
-    return crud.create_dock(db, warehouse_id=wh.id, name=data.name, alias=data.alias, is_active=data.is_active)
+    exists = supa.table("docks").select("id").eq("warehouse_id", wh.id).eq("alias", data.alias).execute().data
+    if exists:
+        raise HTTPException(status_code=400, detail={"error_code": "ALIAS_TAKEN", "field": "alias"})
+    return crud.create_dock(supa, warehouse_id=wh.id, name=data.name, alias=data.alias, is_active=data.is_active)
 
-@router.delete("/{dock_id}", status_code=204, dependencies=[Depends(require_role(models.Role.superadmin))])
+
+@router.delete("/{dock_id}", status_code=204, dependencies=[Depends(require_role(Role.superadmin))])
 def delete_dock(
     dock_id: int,
-    wh: models.Warehouse = Depends(get_context_warehouse),
-    db: Session = Depends(get_db),
+    wh: WarehouseRow = Depends(get_context_warehouse),
+    supa: Client = Depends(get_supabase),
 ):
-    dock = db.get(models.Dock, dock_id)
-    if not dock or dock.warehouse_id != wh.id:
+    dock = crud.get_dock(supa, dock_id)
+    if not dock or dock["warehouse_id"] != wh.id:
         raise HTTPException(status_code=404, detail={"error_code": "DOCK_NOT_FOUND"})
-    active_statuses = [
-        models.SlotStatus.AVAILABLE, models.SlotStatus.BOOKED,
-        models.SlotStatus.APPROVED_WAITING_DETAILS, models.SlotStatus.RESERVED_CONFIRMED,
-        models.SlotStatus.CANCEL_PENDING,
-    ]
-    has_active = db.query(models.Slot).filter(
-        models.Slot.dock_id == dock_id,
-        models.Slot.status.in_(active_statuses),
-    ).first()
+    has_active = (
+        supa.table("slots").select("id")
+        .eq("dock_id", dock_id)
+        .in_("status", _ACTIVE_STATUSES)
+        .execute().data
+    )
     if has_active:
         raise HTTPException(status_code=409, detail={"error_code": "DOCK_HAS_ACTIVE_SLOTS"})
-    db.delete(dock)
-    db.commit()
+    supa.table("docks").delete().eq("id", dock_id).execute()
 
-@router.patch("/{dock_id}", response_model=DockOut, dependencies=[Depends(require_role(models.Role.admin))])
+
+@router.patch("/{dock_id}", response_model=DockOut, dependencies=[Depends(require_role(Role.admin))])
 def patch_dock(
     dock_id: int,
     data: DockPatch,
-    wh: models.Warehouse = Depends(get_context_warehouse),
-    db: Session = Depends(get_db),
+    wh: WarehouseRow = Depends(get_context_warehouse),
+    supa: Client = Depends(get_supabase),
 ):
-    dock = db.get(models.Dock, dock_id)
-    if not dock or dock.warehouse_id != wh.id:
-        raise HTTPException(status_code=404, detail={"error_code":"DOCK_NOT_FOUND"})
+    dock = crud.get_dock(supa, dock_id)
+    if not dock or dock["warehouse_id"] != wh.id:
+        raise HTTPException(status_code=404, detail={"error_code": "DOCK_NOT_FOUND"})
     payload = data.model_dump(exclude_unset=True)
     if "alias" in payload:
-        exists = db.query(models.Dock).filter(models.Dock.warehouse_id==wh.id, models.Dock.alias==payload["alias"], models.Dock.id!=dock.id).first()
+        exists = (
+            supa.table("docks").select("id")
+            .eq("warehouse_id", wh.id)
+            .eq("alias", payload["alias"])
+            .neq("id", dock_id)
+            .execute().data
+        )
         if exists:
-            raise HTTPException(status_code=400, detail={"error_code":"ALIAS_TAKEN", "field":"alias"})
-    for k,v in payload.items():
-        setattr(dock, k, v)
-    db.commit()
-    db.refresh(dock)
-    return dock
-
-
+            raise HTTPException(status_code=400, detail={"error_code": "ALIAS_TAKEN", "field": "alias"})
+    supa.table("docks").update(payload).eq("id", dock_id).execute()
+    rows = supa.table("docks").select("*").eq("id", dock_id).execute().data
+    return rows[0]

@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func
+from supabase import Client
 from datetime import datetime, date, timedelta, time as dtime
 from typing import List, Optional, Tuple
 
-from ..db import get_db
-from .. import models
+from ..supabase_client import get_supabase
 from ..deps import get_current_user, require_role, get_context_warehouse
 from ..schemas import (
     SlotOut,
@@ -16,8 +14,12 @@ from ..schemas import (
     SlotAssignDockIn,
     SlotGenerateIn,
     SlotGenerateOut,
-    SlotGenerateDayReport, SlotStatusPatch,
+    SlotGenerateDayReport,
+    SlotStatusPatch,
+    UserRow,
+    WarehouseRow,
 )
+from ..enums import Role, SlotType, SlotStatus
 
 router = APIRouter(prefix="/api/slots", tags=["slots"])
 
@@ -26,41 +28,39 @@ router = APIRouter(prefix="/api/slots", tags=["slots"])
 # Helpers
 # =========================================================
 
-def slot_to_out(slot: models.Slot, db: Session) -> SlotOut:
-    dock_alias = slot.dock.alias if slot.dock else None
+def _slot_to_out(slot: dict, supa: Client) -> SlotOut:
+    dock_alias = None
+    if slot.get("dock_id"):
+        dock_rows = supa.table("docks").select("alias").eq("id", slot["dock_id"]).execute().data
+        dock_alias = dock_rows[0]["alias"] if dock_rows else None
 
     reserved_by_alias = None
     reserved_by_company_alias = None
-    if slot.reserved_by_user_id:
-        u = db.get(models.User, slot.reserved_by_user_id)
-        if u:
-            reserved_by_alias = u.alias
-            if u.company_id:
-                c = db.get(models.Company, u.company_id)
-                reserved_by_company_alias = c.alias if c else None
+    if slot.get("reserved_by_user_id"):
+        user_rows = supa.table("users").select("alias,company_id").eq("id", slot["reserved_by_user_id"]).execute().data
+        if user_rows:
+            u = user_rows[0]
+            reserved_by_alias = u["alias"]
+            if u.get("company_id"):
+                company_rows = supa.table("companies").select("alias").eq("id", u["company_id"]).execute().data
+                reserved_by_company_alias = company_rows[0]["alias"] if company_rows else None
 
     return SlotOut(
-        id=slot.id,
-        start_dt=slot.start_dt,
-        end_dt=slot.end_dt,
-        slot_type=slot.slot_type,
-        original_slot_type=slot.original_slot_type,
-        status=slot.status,
-        dock_id=slot.dock_id,
+        id=slot["id"],
+        start_dt=slot["start_dt"],
+        end_dt=slot["end_dt"],
+        slot_type=slot["slot_type"],
+        original_slot_type=slot["original_slot_type"],
+        status=slot["status"],
+        dock_id=slot.get("dock_id"),
         dock_alias=dock_alias,
-        reserved_by_user_id=slot.reserved_by_user_id,
+        reserved_by_user_id=slot.get("reserved_by_user_id"),
         reserved_by_alias=reserved_by_alias,
         reserved_by_company_alias=reserved_by_company_alias,
     )
 
 
 def _parse_time(value: Optional[object], field_name: str) -> Optional[dtime]:
-    """
-    We accept:
-    - None
-    - string "HH:MM" or "HH:MM:SS"
-    - datetime.time (if pydantic ever gives you that)
-    """
     if value is None:
         return None
     if isinstance(value, dtime):
@@ -75,16 +75,9 @@ def _parse_time(value: Optional[object], field_name: str) -> Optional[dtime]:
 
 def _resolve_generate_params(
     data: SlotGenerateIn,
-    wh: models.Warehouse,
-    db: Session,
-) -> Tuple[dtime, dtime, int, models.SlotType, int, Optional[int], Optional[str]]:
-    """
-    Returns:
-      start_time, end_time, interval_minutes, slot_type, parallel_slots, template_id, template_name
-    Logic:
-      - If template_id provided -> base params from template
-      - Manual fields override template fields (if provided)
-    """
+    wh: WarehouseRow,
+    supa: Client,
+) -> Tuple[dtime, dtime, int, SlotType, int, Optional[int], Optional[str]]:
     template_id = data.template_id
     template_name = None
 
@@ -95,23 +88,20 @@ def _resolve_generate_params(
     parallel_slots = data.parallel_slots if data.parallel_slots is not None else 1
 
     if template_id is not None:
-        t = db.get(models.SlotTemplate, template_id)
-        if not t or t.warehouse_id != wh.id:
+        tmpl_rows = supa.table("slot_templates").select("*").eq("id", template_id).execute().data
+        t = tmpl_rows[0] if tmpl_rows else None
+        if not t or t["warehouse_id"] != wh.id:
             raise HTTPException(status_code=404, detail={"error_code": "TEMPLATE_NOT_FOUND"})
-        if hasattr(t, "is_active") and not t.is_active:
+        if not t.get("is_active", True):
             raise HTTPException(status_code=409, detail={"error_code": "TEMPLATE_INACTIVE"})
 
-        template_name = getattr(t, "name", None)
-
-        # template base
-        tpl_start = dtime(hour=int(t.start_hour), minute=0)
-        tpl_end_hour = int(t.end_hour)
+        template_name = t.get("name")
+        tpl_start = dtime(hour=int(t["start_hour"]), minute=0)
+        tpl_end_hour = int(t["end_hour"])
         tpl_end = dtime(hour=23, minute=59) if tpl_end_hour >= 24 else dtime(hour=tpl_end_hour, minute=0)
+        tpl_interval = int(t["slot_minutes"])
+        tpl_type = SlotType(t["slot_type"])
 
-        tpl_interval = int(t.slot_minutes)
-        tpl_type = t.slot_type  # SlotType enum
-
-        # apply base if manual not provided
         if start_time is None:
             start_time = tpl_start
         if end_time is None:
@@ -121,7 +111,6 @@ def _resolve_generate_params(
         if slot_type is None:
             slot_type = tpl_type
 
-    # If still missing -> manual mode requires them
     if start_time is None:
         raise HTTPException(status_code=400, detail={"error_code": "FIELD_REQUIRED", "field": "start_time"})
     if end_time is None:
@@ -134,7 +123,6 @@ def _resolve_generate_params(
     if parallel_slots is None:
         parallel_slots = 1
 
-    # validate
     if interval <= 0:
         raise HTTPException(status_code=400, detail={"error_code": "INVALID_INTERVAL"})
     if parallel_slots <= 0:
@@ -152,119 +140,109 @@ def _resolve_generate_params(
 @router.get(
     "",
     response_model=list[SlotOut],
-    dependencies=[Depends(require_role(models.Role.admin, getattr(models.Role, "superadmin", models.Role.admin), models.Role.client))],
+    dependencies=[Depends(require_role(Role.admin, Role.superadmin, Role.client))],
 )
 def list_slots(
     date_from: date,
     date_to: date,
     status: Optional[str] = Query(None),
-    user: models.User = Depends(get_current_user),
-    wh: models.Warehouse = Depends(get_context_warehouse),
-    db: Session = Depends(get_db),
+    user: UserRow = Depends(get_current_user),
+    wh: WarehouseRow = Depends(get_context_warehouse),
+    supa: Client = Depends(get_supabase),
 ):
     start = datetime.combine(date_from, dtime.min)
     end = datetime.combine(date_to, dtime.max)
 
-    query = db.query(models.Slot).filter(
-        models.Slot.warehouse_id == wh.id,
-        models.Slot.start_dt >= start,
-        models.Slot.start_dt <= end,
+    q = (
+        supa.table("slots").select("*")
+        .eq("warehouse_id", wh.id)
+        .gte("start_dt", start.isoformat())
+        .lte("start_dt", end.isoformat())
     )
 
     if status:
         try:
-            parsed_status = models.SlotStatus[status.upper()]
+            SlotStatus[status.upper()]
         except KeyError:
             raise HTTPException(status_code=400, detail={"error_code": "INVALID_STATUS_FILTER"})
-        query = query.filter(models.Slot.status == parsed_status)
+        q = q.eq("status", status.upper())
 
-    slots = query.order_by(models.Slot.start_dt).all()
+    slots = q.order("start_dt").execute().data
 
-    if user.role == models.Role.client:
-        company = db.get(models.Company, user.company_id) if user.company_id else None
-        if not company or not company.is_active:
+    if user.role == Role.client:
+        company_rows = supa.table("companies").select("is_active").eq("id", user.company_id).execute().data if user.company_id else []
+        if not company_rows or not company_rows[0]["is_active"]:
             raise HTTPException(status_code=403, detail={"error_code": "COMPANY_INACTIVE"})
 
-    return [slot_to_out(s, db) for s in slots]
+    return [_slot_to_out(s, supa) for s in slots]
 
 
 # =========================================================
-# ARCHIVE (COMPLETED / CANCELLED)
+# ARCHIVE
 # =========================================================
 
 @router.get(
     "/archive",
     response_model=List[SlotOut],
-    dependencies=[Depends(require_role(models.Role.admin, models.Role.superadmin, models.Role.client))],
+    dependencies=[Depends(require_role(Role.admin, Role.superadmin, Role.client))],
 )
 def list_archive(
     date_from: Optional[date] = Query(None),
     date_to: Optional[date] = Query(None),
-    status: Optional[str] = Query(None, description="COMPLETED | CANCELLED | ALL (domyślnie COMPLETED)"),
-    user: models.User = Depends(get_current_user),
-    wh: models.Warehouse = Depends(get_context_warehouse),
-    db: Session = Depends(get_db),
+    status: Optional[str] = Query(None),
+    user: UserRow = Depends(get_current_user),
+    wh: WarehouseRow = Depends(get_context_warehouse),
+    supa: Client = Depends(get_supabase),
 ):
-    # dozwolone statusy archiwum
-    ARCHIVE_STATUSES = {models.SlotStatus.COMPLETED, models.SlotStatus.CANCELLED}
+    ARCHIVE_STATUSES = {"COMPLETED", "CANCELLED"}
 
     if status and status.upper() == "ALL":
         filter_statuses = list(ARCHIVE_STATUSES)
     elif status:
-        try:
-            parsed = models.SlotStatus[status.upper()]
-        except KeyError:
+        s = status.upper()
+        if s not in ARCHIVE_STATUSES:
             raise HTTPException(status_code=400, detail={"error_code": "INVALID_STATUS"})
-        if parsed not in ARCHIVE_STATUSES:
-            raise HTTPException(status_code=400, detail={"error_code": "INVALID_STATUS"})
-        filter_statuses = [parsed]
+        filter_statuses = [s]
     else:
-        filter_statuses = [models.SlotStatus.COMPLETED]
+        filter_statuses = ["COMPLETED"]
 
-    filters = [
-        models.Slot.warehouse_id == wh.id,
-        models.Slot.status.in_(filter_statuses),
-    ]
-
-    if date_from:
-        filters.append(models.Slot.start_dt >= datetime.combine(date_from, dtime.min))
-    if date_to:
-        filters.append(models.Slot.start_dt <= datetime.combine(date_to, dtime.max))
-
-    # klient widzi tylko swoje sloty
-    if user.role == models.Role.client:
-        filters.append(models.Slot.reserved_by_user_id == user.id)
-
-    slots = (
-        db.query(models.Slot)
-        .filter(*filters)
-        .order_by(models.Slot.start_dt.desc())
-        .all()
+    q = (
+        supa.table("slots").select("*")
+        .eq("warehouse_id", wh.id)
+        .in_("status", filter_statuses)
     )
 
-    return [slot_to_out(s, db) for s in slots]
+    if date_from:
+        q = q.gte("start_dt", datetime.combine(date_from, dtime.min).isoformat())
+    if date_to:
+        q = q.lte("start_dt", datetime.combine(date_to, dtime.max).isoformat())
+
+    if user.role == Role.client:
+        q = q.eq("reserved_by_user_id", user.id)
+
+    slots = q.order("start_dt", desc=True).execute().data
+    return [_slot_to_out(s, supa) for s in slots]
 
 
 # =========================================================
-# GENERATE (MANUAL + TEMPLATE, NO DUPLICATES)
+# GENERATE
 # =========================================================
 
 @router.post(
     "/generate",
     response_model=SlotGenerateOut,
-    dependencies=[Depends(require_role(models.Role.admin, getattr(models.Role, "superadmin", models.Role.admin)))],
+    dependencies=[Depends(require_role(Role.admin, Role.superadmin))],
 )
 def generate_slots(
     data: SlotGenerateIn,
-    wh: models.Warehouse = Depends(get_context_warehouse),
-    db: Session = Depends(get_db),
+    wh: WarehouseRow = Depends(get_context_warehouse),
+    supa: Client = Depends(get_supabase),
 ):
-    # date validation
     if data.date_from > data.date_to:
         raise HTTPException(status_code=400, detail={"error_code": "INVALID_DATE_RANGE"})
 
     start_time, end_time, interval_minutes, slot_type, parallel_slots, template_id, template_name = _resolve_generate_params(
-        data, wh, db
+        data, wh, supa
     )
 
     total_generated = 0
@@ -282,90 +260,80 @@ def generate_slots(
         generated = 0
         skipped = 0
 
-        # optional daily capacity per (date, slot_type)
-        cap_val: Optional[int] = None
-        cap_obj = None
-        if hasattr(models, "DayCapacity"):
-            cap_obj = (
-                db.query(models.DayCapacity)
-                .filter(
-                    models.DayCapacity.warehouse_id == wh.id,
-                    models.DayCapacity.date == d,
-                    models.DayCapacity.slot_type == slot_type,
-                )
-                .first()
-            )
-            cap_val = int(cap_obj.capacity) if cap_obj else None
-
-        # how many already exist for that day+type (dock NULL) -> counts against capacity
-        existing_day_count = (
-            db.query(models.Slot)
-            .filter(
-                models.Slot.warehouse_id == wh.id,
-                models.Slot.dock_id.is_(None),
-                models.Slot.slot_type == slot_type,
-                models.Slot.start_dt >= datetime.combine(d, dtime.min),
-                models.Slot.start_dt <= datetime.combine(d, dtime.max),
-            )
-            .count()
+        # optional daily capacity
+        cap_rows = (
+            supa.table("day_capacities").select("capacity")
+            .eq("warehouse_id", wh.id)
+            .eq("date", d.isoformat())
+            .eq("slot_type", slot_type.value)
+            .execute().data
         )
+        cap_val: Optional[int] = int(cap_rows[0]["capacity"]) if cap_rows else None
+
+        # existing slots for that day+type (no dock) -> counts against capacity
+        day_start_iso = datetime.combine(d, dtime.min).isoformat()
+        day_end_iso = datetime.combine(d, dtime.max).isoformat()
+        existing_day_result = (
+            supa.table("slots").select("id", count="exact")
+            .eq("warehouse_id", wh.id)
+            .filter("dock_id", "is", "null")
+            .eq("slot_type", slot_type.value)
+            .gte("start_dt", day_start_iso)
+            .lte("start_dt", day_end_iso)
+            .execute()
+        )
+        existing_day_count = existing_day_result.count or 0
 
         remaining_capacity = None if cap_val is None else max(0, cap_val - existing_day_count)
 
         cur = day_start
+        batch: list[dict] = []
+
         while cur + delta <= day_end:
-            # user "requests" parallel_slots for each interval
             requested += parallel_slots
 
-            # duplicates check: how many already exist for this exact interval/type (dock NULL)
-            existing_interval_count = (
-                db.query(models.Slot)
-                .filter(
-                    models.Slot.warehouse_id == wh.id,
-                    models.Slot.dock_id.is_(None),
-                    models.Slot.start_dt == cur,
-                    models.Slot.end_dt == cur + delta,
-                    models.Slot.slot_type == slot_type,
-                )
-                .count()
+            existing_interval_result = (
+                supa.table("slots").select("id", count="exact")
+                .eq("warehouse_id", wh.id)
+                .filter("dock_id", "is", "null")
+                .eq("start_dt", cur.isoformat())
+                .eq("end_dt", (cur + delta).isoformat())
+                .eq("slot_type", slot_type.value)
+                .execute()
             )
+            existing_interval_count = existing_interval_result.count or 0
 
             to_create = max(0, parallel_slots - existing_interval_count)
 
-            # capacity clamp
             if remaining_capacity is not None:
                 if remaining_capacity <= 0:
-                    # no capacity left => skip all requested in this interval
                     skipped += to_create
                     cur += delta
                     continue
                 if to_create > remaining_capacity:
-                    # create only part
                     skipped += (to_create - remaining_capacity)
                     to_create = remaining_capacity
 
-            # create
             for _ in range(to_create):
-                slot = models.Slot(
-                    warehouse_id=wh.id,
-                    dock_id=None,
-                    start_dt=cur,
-                    end_dt=cur + delta,
-                    slot_type=slot_type,
-                    original_slot_type=slot_type,
-                    status=models.SlotStatus.AVAILABLE,
-                    reserved_by_user_id=None,
-                )
-                db.add(slot)
+                batch.append({
+                    "warehouse_id": wh.id,
+                    "dock_id": None,
+                    "start_dt": cur.isoformat(),
+                    "end_dt": (cur + delta).isoformat(),
+                    "slot_type": slot_type.value,
+                    "original_slot_type": slot_type.value,
+                    "status": "AVAILABLE",
+                    "reserved_by_user_id": None,
+                })
                 generated += 1
                 if remaining_capacity is not None:
                     remaining_capacity -= 1
 
             skipped += max(0, parallel_slots - existing_interval_count - to_create)
-
             cur += delta
 
-        db.commit()
+        if batch:
+            supa.table("slots").insert(batch).execute()
 
         total_generated += generated
         total_skipped += skipped
@@ -396,212 +364,197 @@ def generate_slots(
 @router.post(
     "/{slot_id}/reserve",
     response_model=SlotOut,
-    dependencies=[Depends(require_role(models.Role.client))],
+    dependencies=[Depends(require_role(Role.client))],
 )
 def reserve_slot(
     slot_id: int,
     data: SlotReserveIn,
-    user: models.User = Depends(get_current_user),
-    wh: models.Warehouse = Depends(get_context_warehouse),
-    db: Session = Depends(get_db),
+    user: UserRow = Depends(get_current_user),
+    wh: WarehouseRow = Depends(get_context_warehouse),
+    supa: Client = Depends(get_supabase),
 ):
-    slot = db.get(models.Slot, slot_id)
-    if not slot or slot.warehouse_id != wh.id:
+    slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+    slot = slot_rows[0] if slot_rows else None
+    if not slot or slot["warehouse_id"] != wh.id:
         raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
 
-    company = db.get(models.Company, user.company_id) if user.company_id else None
-    if not company or not company.is_active:
+    if user.company_id:
+        company_rows = supa.table("companies").select("is_active").eq("id", user.company_id).execute().data
+        if not company_rows or not company_rows[0]["is_active"]:
+            raise HTTPException(status_code=403, detail={"error_code": "COMPANY_INACTIVE"})
+    else:
         raise HTTPException(status_code=403, detail={"error_code": "COMPANY_INACTIVE"})
 
-    if slot.status != models.SlotStatus.AVAILABLE:
+    if slot["status"] != "AVAILABLE":
         raise HTTPException(status_code=409, detail={"error_code": "SLOT_NOT_AVAILABLE"})
 
-    # ANY needs requested_type
-    if slot.slot_type == models.SlotType.ANY:
+    update = {"status": "BOOKED", "reserved_by_user_id": user.id}
+    if slot["slot_type"] == "ANY":
         if not data.requested_type:
             raise HTTPException(status_code=400, detail={"error_code": "TYPE_REQUIRED"})
-        slot.slot_type = models.SlotType[data.requested_type]
+        update["slot_type"] = data.requested_type
 
-    slot.status = models.SlotStatus.BOOKED
-    slot.reserved_by_user_id = user.id
-    db.commit()
-    db.refresh(slot)
-    return slot_to_out(slot, db)
+    supa.table("slots").update(update).eq("id", slot_id).execute()
+    updated = supa.table("slots").select("*").eq("id", slot_id).execute().data
+    return _slot_to_out(updated[0], supa)
 
 
 @router.post(
     "/{slot_id}/approve",
     response_model=SlotOut,
-    dependencies=[Depends(require_role(models.Role.admin, getattr(models.Role, "superadmin", models.Role.admin)))],
+    dependencies=[Depends(require_role(Role.admin, Role.superadmin))],
 )
 def approve_slot(
     slot_id: int,
-    wh: models.Warehouse = Depends(get_context_warehouse),
-    db: Session = Depends(get_db),
+    wh: WarehouseRow = Depends(get_context_warehouse),
+    supa: Client = Depends(get_supabase),
 ):
-    slot = db.get(models.Slot, slot_id)
-    if not slot or slot.warehouse_id != wh.id:
+    slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+    slot = slot_rows[0] if slot_rows else None
+    if not slot or slot["warehouse_id"] != wh.id:
         raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
-    if slot.status != models.SlotStatus.BOOKED:
+    if slot["status"] != "BOOKED":
         raise HTTPException(status_code=409, detail={"error_code": "INVALID_STATUS"})
 
-    slot.status = models.SlotStatus.APPROVED_WAITING_DETAILS
-    db.commit()
-    db.refresh(slot)
-    return slot_to_out(slot, db)
+    supa.table("slots").update({"status": "APPROVED_WAITING_DETAILS"}).eq("id", slot_id).execute()
+    updated = supa.table("slots").select("*").eq("id", slot_id).execute().data
+    return _slot_to_out(updated[0], supa)
 
 
 @router.post(
     "/{slot_id}/assign-dock",
     response_model=SlotOut,
-    dependencies=[Depends(require_role(models.Role.admin, getattr(models.Role, "superadmin", models.Role.admin)))],
+    dependencies=[Depends(require_role(Role.admin, Role.superadmin))],
 )
 def assign_dock(
     slot_id: int,
     data: SlotAssignDockIn,
-    wh: models.Warehouse = Depends(get_context_warehouse),
-    db: Session = Depends(get_db),
+    wh: WarehouseRow = Depends(get_context_warehouse),
+    supa: Client = Depends(get_supabase),
 ):
-    slot = db.get(models.Slot, slot_id)
-    if not slot or slot.warehouse_id != wh.id:
+    slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+    slot = slot_rows[0] if slot_rows else None
+    if not slot or slot["warehouse_id"] != wh.id:
         raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
 
-    dock = db.get(models.Dock, data.dock_id)
-    if not dock or dock.warehouse_id != wh.id:
+    dock_rows = supa.table("docks").select("*").eq("id", data.dock_id).execute().data
+    dock = dock_rows[0] if dock_rows else None
+    if not dock or dock["warehouse_id"] != wh.id:
         raise HTTPException(status_code=404, detail={"error_code": "DOCK_NOT_FOUND"})
 
-    # block conflicts for "active" statuses
     conflict = (
-        db.query(models.Slot)
-        .filter(
-            models.Slot.warehouse_id == wh.id,
-            models.Slot.dock_id == dock.id,
-            models.Slot.id != slot.id,
-            models.Slot.status.in_(
-                [
-                    models.SlotStatus.BOOKED,
-                    models.SlotStatus.APPROVED_WAITING_DETAILS,
-                    getattr(models.SlotStatus, "RESERVED_CONFIRMED", models.SlotStatus.BOOKED),
-                ]
-            ),
-            or_(
-                and_(models.Slot.start_dt < slot.end_dt, models.Slot.end_dt > slot.start_dt),
-            ),
-        )
-        .first()
+        supa.table("slots").select("id")
+        .eq("warehouse_id", wh.id)
+        .eq("dock_id", data.dock_id)
+        .neq("id", slot_id)
+        .in_("status", ["BOOKED", "APPROVED_WAITING_DETAILS", "RESERVED_CONFIRMED"])
+        .lt("start_dt", slot["end_dt"])
+        .gt("end_dt", slot["start_dt"])
+        .execute().data
     )
     if conflict:
         raise HTTPException(status_code=409, detail={"error_code": "DOCK_CONFLICT"})
 
-    slot.dock_id = dock.id
-    db.commit()
-    db.refresh(slot)
-    return slot_to_out(slot, db)
+    supa.table("slots").update({"dock_id": data.dock_id}).eq("id", slot_id).execute()
+    updated = supa.table("slots").select("*").eq("id", slot_id).execute().data
+    return _slot_to_out(updated[0], supa)
 
 
 @router.post(
     "/{slot_id}/request-cancel",
     response_model=SlotOut,
-    dependencies=[Depends(require_role(models.Role.client))],
+    dependencies=[Depends(require_role(Role.client))],
 )
 def request_cancel_slot(
     slot_id: int,
-    user: models.User = Depends(get_current_user),
-    wh: models.Warehouse = Depends(get_context_warehouse),
-    db: Session = Depends(get_db),
+    user: UserRow = Depends(get_current_user),
+    wh: WarehouseRow = Depends(get_context_warehouse),
+    supa: Client = Depends(get_supabase),
 ):
-    slot = db.get(models.Slot, slot_id)
-    if not slot or slot.warehouse_id != wh.id:
+    slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+    slot = slot_rows[0] if slot_rows else None
+    if not slot or slot["warehouse_id"] != wh.id:
         raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
-    if slot.reserved_by_user_id != user.id:
+    if slot["reserved_by_user_id"] != user.id:
         raise HTTPException(status_code=403, detail={"error_code": "FORBIDDEN"})
 
-    CANCELLABLE = {
-        models.SlotStatus.BOOKED,
-        models.SlotStatus.APPROVED_WAITING_DETAILS,
-        models.SlotStatus.RESERVED_CONFIRMED,
-    }
-    if slot.status not in CANCELLABLE:
+    CANCELLABLE = {"BOOKED", "APPROVED_WAITING_DETAILS", "RESERVED_CONFIRMED"}
+    if slot["status"] not in CANCELLABLE:
         raise HTTPException(status_code=409, detail={"error_code": "INVALID_STATUS"})
 
-    slot.previous_status = slot.status
-    slot.status = models.SlotStatus.CANCEL_PENDING
-    db.commit()
-    db.refresh(slot)
-    return slot_to_out(slot, db)
+    supa.table("slots").update({"previous_status": slot["status"], "status": "CANCEL_PENDING"}).eq("id", slot_id).execute()
+    updated = supa.table("slots").select("*").eq("id", slot_id).execute().data
+    return _slot_to_out(updated[0], supa)
 
 
 @router.post(
     "/{slot_id}/reject-cancel",
     response_model=SlotOut,
-    dependencies=[Depends(require_role(models.Role.admin, models.Role.superadmin))],
+    dependencies=[Depends(require_role(Role.admin, Role.superadmin))],
 )
 def reject_cancel_slot(
     slot_id: int,
-    wh: models.Warehouse = Depends(get_context_warehouse),
-    db: Session = Depends(get_db),
+    wh: WarehouseRow = Depends(get_context_warehouse),
+    supa: Client = Depends(get_supabase),
 ):
-    slot = db.get(models.Slot, slot_id)
-    if not slot or slot.warehouse_id != wh.id:
+    slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+    slot = slot_rows[0] if slot_rows else None
+    if not slot or slot["warehouse_id"] != wh.id:
         raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
-    if slot.status != models.SlotStatus.CANCEL_PENDING:
+    if slot["status"] != "CANCEL_PENDING":
         raise HTTPException(status_code=409, detail={"error_code": "INVALID_STATUS"})
-    if not slot.previous_status:
+    if not slot.get("previous_status"):
         raise HTTPException(status_code=409, detail={"error_code": "NO_PREVIOUS_STATUS"})
 
-    slot.status = slot.previous_status
-    slot.previous_status = None
-    db.commit()
-    db.refresh(slot)
-    return slot_to_out(slot, db)
+    supa.table("slots").update({"status": slot["previous_status"], "previous_status": None}).eq("id", slot_id).execute()
+    updated = supa.table("slots").select("*").eq("id", slot_id).execute().data
+    return _slot_to_out(updated[0], supa)
 
 
 @router.post(
     "/{slot_id}/cancel",
     response_model=SlotOut,
-    dependencies=[Depends(require_role(models.Role.admin, getattr(models.Role, "superadmin", models.Role.admin), models.Role.client))],
+    dependencies=[Depends(require_role(Role.admin, Role.superadmin, Role.client))],
 )
 def cancel_slot(
     slot_id: int,
-    user: models.User = Depends(get_current_user),
-    wh: models.Warehouse = Depends(get_context_warehouse),
-    db: Session = Depends(get_db),
+    user: UserRow = Depends(get_current_user),
+    wh: WarehouseRow = Depends(get_context_warehouse),
+    supa: Client = Depends(get_supabase),
 ):
-    slot = db.get(models.Slot, slot_id)
-    if not slot or slot.warehouse_id != wh.id:
+    slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+    slot = slot_rows[0] if slot_rows else None
+    if not slot or slot["warehouse_id"] != wh.id:
         raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
-    if user.role == models.Role.client and slot.reserved_by_user_id != user.id:
+    if user.role == Role.client and slot["reserved_by_user_id"] != user.id:
         raise HTTPException(status_code=403, detail={"error_code": "FORBIDDEN"})
 
-    slot.status = models.SlotStatus.CANCELLED
-    slot.previous_status = None
-    db.commit()
-    db.refresh(slot)
-    return slot_to_out(slot, db)
-
+    supa.table("slots").update({"status": "CANCELLED", "previous_status": None}).eq("id", slot_id).execute()
+    updated = supa.table("slots").select("*").eq("id", slot_id).execute().data
+    return _slot_to_out(updated[0], supa)
 
 
 @router.patch(
     "/{slot_id}",
     response_model=SlotOut,
-    dependencies=[Depends(require_role(models.Role.admin, models.Role.superadmin))],
+    dependencies=[Depends(require_role(Role.admin, Role.superadmin))],
 )
 def patch_slot(
     slot_id: int,
     data: SlotPatch,
-    wh: models.Warehouse = Depends(get_context_warehouse),
-    db: Session = Depends(get_db),
+    wh: WarehouseRow = Depends(get_context_warehouse),
+    supa: Client = Depends(get_supabase),
 ):
-    slot = db.get(models.Slot, slot_id)
-    if not slot or slot.warehouse_id != wh.id:
+    slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+    slot = slot_rows[0] if slot_rows else None
+    if not slot or slot["warehouse_id"] != wh.id:
         raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
 
-    # tylko AVAILABLE sloty można edytować
-    if slot.status != models.SlotStatus.AVAILABLE:
+    if slot["status"] != "AVAILABLE":
         raise HTTPException(status_code=409, detail={"error_code": "SLOT_NOT_EDITABLE"})
 
-    # tylko dzisiaj i w przyszłości
-    if slot.start_dt.date() < date.today():
+    start_dt = datetime.fromisoformat(slot["start_dt"])
+    if start_dt.date() < date.today():
         raise HTTPException(status_code=409, detail={"error_code": "SLOT_IN_PAST"})
 
     payload = data.model_dump(exclude_unset=True)
@@ -610,56 +563,60 @@ def patch_slot(
         if payload["start_dt"] >= payload["end_dt"]:
             raise HTTPException(status_code=400, detail={"error_code": "INVALID_TIME_RANGE"})
 
-    for k, v in payload.items():
-        setattr(slot, k, v)
+    # serialize enums and datetimes for Supabase
+    if "slot_type" in payload and hasattr(payload["slot_type"], "value"):
+        payload["slot_type"] = payload["slot_type"].value
+    if "start_dt" in payload and isinstance(payload["start_dt"], datetime):
+        payload["start_dt"] = payload["start_dt"].isoformat()
+    if "end_dt" in payload and isinstance(payload["end_dt"], datetime):
+        payload["end_dt"] = payload["end_dt"].isoformat()
 
-    db.commit()
-    db.refresh(slot)
-    return slot_to_out(slot, db)
+    supa.table("slots").update(payload).eq("id", slot_id).execute()
+    updated = supa.table("slots").select("*").eq("id", slot_id).execute().data
+    return _slot_to_out(updated[0], supa)
+
 
 @router.patch(
     "/{slot_id}/status",
     response_model=SlotOut,
-    dependencies=[Depends(require_role(models.Role.admin, models.Role.superadmin))],
+    dependencies=[Depends(require_role(Role.admin, Role.superadmin))],
 )
 def change_slot_status(
     slot_id: int,
     data: SlotStatusPatch,
-    wh: models.Warehouse = Depends(get_context_warehouse),
-    db: Session = Depends(get_db),
+    wh: WarehouseRow = Depends(get_context_warehouse),
+    supa: Client = Depends(get_supabase),
 ):
-    slot = db.get(models.Slot, slot_id)
-    if not slot or slot.warehouse_id != wh.id:
+    slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+    slot = slot_rows[0] if slot_rows else None
+    if not slot or slot["warehouse_id"] != wh.id:
         raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
 
-    if data.status == models.SlotStatus.CANCEL_PENDING:
+    if data.status == SlotStatus.CANCEL_PENDING:
         raise HTTPException(status_code=400, detail={"error_code": "USE_REQUEST_CANCEL_ENDPOINT"})
 
-    slot.status = data.status
+    update: dict = {"status": data.status.value}
+    if data.status == SlotStatus.AVAILABLE:
+        update["reserved_by_user_id"] = None
+        update["dock_id"] = None
 
-    # jeśli cofamy do AVAILABLE, czyścimy rezerwację
-    if data.status == models.SlotStatus.AVAILABLE:
-        slot.reserved_by_user_id = None
-        slot.reserved_by_company_id = None
-        slot.dock_id = None
-
-    db.commit()
-    db.refresh(slot)
-    return slot_to_out(slot, db)
+    supa.table("slots").update(update).eq("id", slot_id).execute()
+    updated = supa.table("slots").select("*").eq("id", slot_id).execute().data
+    return _slot_to_out(updated[0], supa)
 
 
 @router.delete(
     "",
     status_code=200,
-    dependencies=[Depends(require_role(models.Role.superadmin))],
+    dependencies=[Depends(require_role(Role.superadmin))],
 )
 def bulk_delete_slots(
     date_from: str = Query(...),
     date_to: str = Query(...),
     slot_type: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
-    wh: models.Warehouse = Depends(get_context_warehouse),
-    db: Session = Depends(get_db),
+    wh: WarehouseRow = Depends(get_context_warehouse),
+    supa: Client = Depends(get_supabase),
 ):
     try:
         dt_from = date.fromisoformat(date_from)
@@ -667,40 +624,39 @@ def bulk_delete_slots(
     except ValueError:
         raise HTTPException(400, detail={"error_code": "INVALID_DATE_RANGE"})
 
-    q = db.query(models.Slot).filter(
-        models.Slot.warehouse_id == wh.id,
-        func.date(models.Slot.start_dt) >= dt_from,
-        func.date(models.Slot.start_dt) <= dt_to,
+    start_iso = datetime.combine(dt_from, dtime.min).isoformat()
+    end_iso = datetime.combine(dt_to, dtime.max).isoformat()
+
+    q = (
+        supa.table("slots").select("id")
+        .eq("warehouse_id", wh.id)
+        .gte("start_dt", start_iso)
+        .lte("start_dt", end_iso)
     )
     if slot_type:
-        q = q.filter(models.Slot.slot_type == slot_type)
-    if status:
-        q = q.filter(models.Slot.status == status)
-    else:
-        q = q.filter(models.Slot.status == models.SlotStatus.AVAILABLE)
+        q = q.eq("slot_type", slot_type)
+    q = q.eq("status", status if status else "AVAILABLE")
 
-    slots_to_delete = q.all()
-    count = len(slots_to_delete)
-    for slot in slots_to_delete:
-        db.delete(slot)
-    db.commit()
-    return {"deleted": count}
+    slot_ids = [s["id"] for s in q.execute().data]
+    if slot_ids:
+        supa.table("slots").delete().in_("id", slot_ids).execute()
+    return {"deleted": len(slot_ids)}
 
 
 @router.delete(
     "/{slot_id}",
     status_code=204,
-    dependencies=[Depends(require_role(models.Role.superadmin))],
+    dependencies=[Depends(require_role(Role.superadmin))],
 )
 def delete_slot(
     slot_id: int,
-    wh: models.Warehouse = Depends(get_context_warehouse),
-    db: Session = Depends(get_db),
+    wh: WarehouseRow = Depends(get_context_warehouse),
+    supa: Client = Depends(get_supabase),
 ):
-    slot = db.get(models.Slot, slot_id)
-    if not slot or slot.warehouse_id != wh.id:
+    slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+    slot = slot_rows[0] if slot_rows else None
+    if not slot or slot["warehouse_id"] != wh.id:
         raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
-    if slot.status != models.SlotStatus.AVAILABLE:
+    if slot["status"] != "AVAILABLE":
         raise HTTPException(status_code=409, detail={"error_code": "SLOT_NOT_AVAILABLE"})
-    db.delete(slot)
-    db.commit()
+    supa.table("slots").delete().eq("id", slot_id).execute()

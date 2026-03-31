@@ -6,7 +6,6 @@ from fastapi.responses import HTMLResponse
 from pathlib import Path
 
 from .config import settings
-from .db import engine, Base
 from .routers import auth, me, warehouses, companies, users, docks, slots, notices, day_capacity, templates, calendar, seed, reports
 
 
@@ -15,13 +14,7 @@ def create_app() -> FastAPI:
         title="WH Slot Booking API",
         version="2.5",
         openapi_url="/openapi.json",
-        # docs_url=None,
-        # redoc_url=None,
     )
-
-    @app.on_event("startup")
-    def _create_tables() -> None:
-        Base.metadata.create_all(bind=engine)
 
     origins = settings.cors_origins
     app.add_middleware(
