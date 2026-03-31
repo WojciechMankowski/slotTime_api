@@ -23,7 +23,7 @@ def list_caps(
 ):
     try:
         response = (
-            supa.table("day_capacity")
+            supa.table("day_capacities")
             .select("*")
             .eq("warehouse_id", wh.id)
             .gte("date", date_from.isoformat())
@@ -47,7 +47,7 @@ def upsert_cap(
     try:
         # Krok 1: Sprawdzenie, czy rekord dla danego dnia i typu slotu już istnieje
         existing = (
-            supa.table("day_capacity")
+            supa.table("day_capacities")
             .select("id")
             .eq("warehouse_id", wh.id)
             .eq("date", data.date.isoformat())
@@ -59,7 +59,7 @@ def upsert_cap(
             # Krok 2a: Aktualizacja istniejącego rekordu
             cap_id = existing.data[0]["id"]
             response = (
-                supa.table("day_capacity")
+                supa.table("day_capacities")
                 .update({"capacity": data.capacity})
                 .eq("id", cap_id)
                 .execute()
@@ -72,7 +72,7 @@ def upsert_cap(
                 "slot_type": data.slot_type,
                 "capacity": data.capacity
             }
-            response = supa.table("day_capacity").insert(payload).execute()
+            response = supa.table("day_capacities").insert(payload).execute()
 
         if not response.data:
             raise HTTPException(

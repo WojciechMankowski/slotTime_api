@@ -27,7 +27,8 @@ def get_current_user(
 
     try:
         rows = supa.table("users").select("*").eq("id", user_id).execute().data
-    except Exception:
+    except Exception as e:
+        print(f"[DB ERROR get_current_user] {type(e).__name__}: {e}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
     if not rows:
