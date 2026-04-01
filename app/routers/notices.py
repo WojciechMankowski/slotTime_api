@@ -7,6 +7,7 @@ from ..supabase_client import get_supabase
 from ..deps import get_current_user, require_role, get_context_warehouse
 from ..schemas import SlotNoticeOut, SlotNoticeCreate, SlotWithNoticeOut, UserRow, WarehouseRow
 from ..enums import Role, SlotStatus
+from ..webhooks import send_slot_webhook
 
 router = APIRouter(prefix="/api/slots", tags=["notices"])
 
@@ -209,8 +210,10 @@ def post_notice(
         else:
             supa.table("slot_notices").insert({"slot_id": slot_id, **payload}).execute()
 
-        supa.table("slots").update({"status": "RESERVED_CONFIRMED"}).eq("id", slot_id).execute()
-        
+        updated = supa.table("slots").update({"status": "RESERVED_CONFIRMED"}).eq("id", slot_id).execute()
+        if updated.data:
+            send_slot_webhook("slot.confirmed", updated.data[0], user.model_dump(), supa)
+
         return SlotNoticeOut(**payload)
         
     except HTTPException:

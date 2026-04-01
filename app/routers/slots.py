@@ -20,6 +20,7 @@ from ..schemas import (
     WarehouseRow,
 )
 from ..enums import Role, SlotType, SlotStatus
+from ..webhooks import send_slot_webhook
 
 router = APIRouter(prefix="/api/slots", tags=["slots"])
 
@@ -496,7 +497,8 @@ def reserve_slot(
         response = supa.table("slots").update(update).eq("id", slot_id).execute()
         if not response.data:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
-            
+
+        send_slot_webhook("slot.booked", response.data[0], user.model_dump(), supa)
         return _enrich_single_slot(response.data[0], supa)
     except HTTPException:
         raise
@@ -511,6 +513,7 @@ def reserve_slot(
 )
 def approve_slot(
     slot_id: int,
+    user: UserRow = Depends(get_current_user),
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
 ):
@@ -525,7 +528,8 @@ def approve_slot(
         response = supa.table("slots").update({"status": "APPROVED_WAITING_DETAILS"}).eq("id", slot_id).execute()
         if not response.data:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
-            
+
+        send_slot_webhook("slot.approved", response.data[0], user.model_dump(), supa)
         return _enrich_single_slot(response.data[0], supa)
     except HTTPException:
         raise
@@ -607,7 +611,8 @@ def request_cancel_slot(
         response = supa.table("slots").update({"previous_status": slot.get("status"), "status": "CANCEL_PENDING"}).eq("id", slot_id).execute()
         if not response.data:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
-            
+
+        send_slot_webhook("slot.cancel_requested", response.data[0], user.model_dump(), supa)
         return _enrich_single_slot(response.data[0], supa)
     except HTTPException:
         raise
@@ -622,6 +627,7 @@ def request_cancel_slot(
 )
 def reject_cancel_slot(
     slot_id: int,
+    user: UserRow = Depends(get_current_user),
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
 ):
@@ -638,7 +644,8 @@ def reject_cancel_slot(
         response = supa.table("slots").update({"status": slot.get("previous_status"), "previous_status": None}).eq("id", slot_id).execute()
         if not response.data:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
-            
+
+        send_slot_webhook("slot.cancel_rejected", response.data[0], user.model_dump(), supa)
         return _enrich_single_slot(response.data[0], supa)
     except HTTPException:
         raise
@@ -668,7 +675,8 @@ def cancel_slot(
         response = supa.table("slots").update({"status": "CANCELLED", "previous_status": None}).eq("id", slot_id).execute()
         if not response.data:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
-            
+
+        send_slot_webhook("slot.cancelled", response.data[0], user.model_dump(), supa)
         return _enrich_single_slot(response.data[0], supa)
     except HTTPException:
         raise

@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     SUPABASE_URL: str = ""
     SUPABASE_SERVICE_ROLE_KEY: str = ""
 
+    POWER_AUTOMATE_WEBHOOK_URL: str = ""
+
     @property
     def cors_origins(self) -> List[str]:
         return [o.strip() for o in self.APP_CORS_ORIGINS.split(",") if o.strip()]
