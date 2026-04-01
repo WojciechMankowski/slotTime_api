@@ -25,7 +25,7 @@ class SlotStatus(str, enum.Enum):
     CANCEL_PENDING = "CANCEL_PENDING"
 
 
-# ==========================================
+# ==========================================d
 # 2. ALIASY TYPÓW (Dla kompatybilności wstecznej)
 # ==========================================
 # Dzięki temu kod typu `def get_data(wh: models.Warehouse)` 

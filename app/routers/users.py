@@ -129,6 +129,35 @@ def list_users(
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
+@router.get("/{user_id}", response_model=UserOut, dependencies=[Depends(require_role(Role.admin, Role.superadmin))])
+def get_user(
+    user_id: int,
+    actor: UserRow = Depends(get_current_user),
+    supa: Client = Depends(get_supabase),
+):
+    try:
+        rows = supa.table("users").select("*").eq("id", user_id).execute().data
+        if not rows:
+            raise HTTPException(status_code=404, detail={"error_code": "USER_NOT_FOUND"})
+
+        user = rows[0]
+
+        if actor.role == Role.admin:
+            wh_id = actor.warehouse_id
+            user_wh_id = user.get("warehouse_id")
+            if user.get("company_id"):
+                company_rows = supa.table("companies").select("warehouse_id").eq("id", user["company_id"]).execute().data
+                user_wh_id = company_rows[0].get("warehouse_id") if company_rows else None
+            if user_wh_id != wh_id:
+                raise HTTPException(status_code=403, detail={"error_code": "FORBIDDEN"})
+
+        return _enrich_single_user(user, supa)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+
+
 @router.post("", response_model=UserOut, dependencies=[Depends(require_role(Role.admin, Role.superadmin))])
 def create_user(
     data: UserCreate,

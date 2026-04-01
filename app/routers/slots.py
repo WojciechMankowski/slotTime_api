@@ -6,7 +6,7 @@ from datetime import datetime, date, timedelta, time as dtime
 from typing import List, Optional, Tuple, Dict, Any
 
 from ..supabase_client import get_supabase
-from ..deps import get_current_user, require_role, get_context_warehouse
+from ..deps import get_current_user, require_role, get_context_warehouse, get_optional_warehouse
 from ..schemas import (
     SlotOut,
     SlotPatch,
@@ -176,23 +176,23 @@ def _resolve_generate_params(
     dependencies=[Depends(require_role(Role.admin, Role.superadmin, Role.client))],
 )
 def list_slots(
-    date_from: date,
-    date_to: date,
+    date_from: Optional[date] = Query(None),
+    date_to: Optional[date] = Query(None),
     status: Optional[str] = Query(None),
     user: UserRow = Depends(get_current_user),
-    wh: WarehouseRow = Depends(get_context_warehouse),
+    wh: Optional[WarehouseRow] = Depends(get_optional_warehouse),
     supa: Client = Depends(get_supabase),
 ):
     try:
-        start = datetime.combine(date_from, dtime.min)
-        end = datetime.combine(date_to, dtime.max)
+        q = supa.table("slots").select("*")
 
-        q = (
-            supa.table("slots").select("*")
-            .eq("warehouse_id", wh.id)
-            .gte("start_dt", start.isoformat())
-            .lte("start_dt", end.isoformat())
-        )
+        if wh is not None:
+            q = q.eq("warehouse_id", wh.id)
+
+        if date_from:
+            q = q.gte("start_dt", datetime.combine(date_from, dtime.min).isoformat())
+        if date_to:
+            q = q.lte("start_dt", datetime.combine(date_to, dtime.max).isoformat())
 
         if status:
             try:

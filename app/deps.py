@@ -107,3 +107,27 @@ def get_context_warehouse(
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
             
     return warehouse_context(user, supa)
+
+
+def get_optional_warehouse(
+    warehouse_id: Optional[int] = Query(None),
+    user: UserRow = Depends(get_current_user),
+    supa: Client = Depends(get_supabase),
+) -> Optional[WarehouseRow]:
+    """Jak get_context_warehouse, ale dla superadmina bez warehouse_id zwraca None (brak filtra magazynowego)."""
+    if user.role == Role.superadmin:
+        if warehouse_id is None:
+            return None
+
+        try:
+            rows = supa.table("warehouses").select("*").eq("id", warehouse_id).execute().data
+            if not rows:
+                raise HTTPException(status_code=404, detail={"error_code": "WAREHOUSE_NOT_FOUND"})
+            return WarehouseRow(**rows[0])
+
+        except HTTPException:
+            raise
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+
+    return warehouse_context(user, supa)
