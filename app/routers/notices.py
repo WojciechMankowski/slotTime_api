@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from supabase import Client
 from datetime import date, datetime, time as dtime
 from typing import Optional
@@ -7,6 +7,7 @@ from ..supabase_client import get_supabase
 from ..deps import get_current_user, require_role, get_context_warehouse
 from ..schemas import SlotNoticeOut, SlotNoticeCreate, SlotWithNoticeOut, UserRow, WarehouseRow
 from ..enums import Role, SlotStatus
+from ..notifications import send_slot_event
 
 router = APIRouter(prefix="/api/slots", tags=["notices"])
 
@@ -179,6 +180,7 @@ def get_notice(
 def post_notice(
     slot_id: int,
     data: SlotNoticeCreate,
+    background_tasks: BackgroundTasks,
     user: UserRow = Depends(get_current_user),
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
@@ -210,7 +212,7 @@ def post_notice(
             supa.table("slot_notices").insert({"slot_id": slot_id, **payload}).execute()
 
         supa.table("slots").update({"status": "RESERVED_CONFIRMED"}).eq("id", slot_id).execute()
-        
+        background_tasks.add_task(send_slot_event, supa, "RESERVED_CONFIRMED", {**slot, "status": "RESERVED_CONFIRMED"}, user, wh)
         return SlotNoticeOut(**payload)
         
     except HTTPException:

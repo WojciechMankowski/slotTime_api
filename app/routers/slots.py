@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from supabase import Client
 from datetime import datetime, date, timedelta, time as dtime
 from typing import List, Optional, Tuple, Dict, Any
@@ -20,6 +20,7 @@ from ..schemas import (
     WarehouseRow,
 )
 from ..enums import Role, SlotType, SlotStatus
+from ..notifications import send_slot_event
 
 router = APIRouter(prefix="/api/slots", tags=["slots"])
 
@@ -236,7 +237,7 @@ def list_slots(
     except HTTPException:
         raise
     except Exception:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+        raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
 # =========================================================
@@ -313,7 +314,7 @@ def list_archive(
     except HTTPException:
         raise
     except Exception:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+        raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
 # =========================================================
@@ -451,7 +452,7 @@ def generate_slots(
     except HTTPException:
         raise
     except Exception:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+        raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
 # =========================================================
@@ -466,6 +467,7 @@ def generate_slots(
 def reserve_slot(
     slot_id: int,
     data: SlotReserveIn,
+    background_tasks: BackgroundTasks,
     user: UserRow = Depends(get_current_user),
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
@@ -496,12 +498,14 @@ def reserve_slot(
         response = supa.table("slots").update(update).eq("id", slot_id).execute()
         if not response.data:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
-            
-        return _enrich_single_slot(response.data[0], supa)
+
+        slot_out = _enrich_single_slot(response.data[0], supa)
+        background_tasks.add_task(send_slot_event, supa, "BOOKED", response.data[0], user, wh)
+        return slot_out
     except HTTPException:
         raise
     except Exception:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+        raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
 @router.post(
@@ -511,6 +515,8 @@ def reserve_slot(
 )
 def approve_slot(
     slot_id: int,
+    background_tasks: BackgroundTasks,
+    user: UserRow = Depends(get_current_user),
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
 ):
@@ -525,12 +531,14 @@ def approve_slot(
         response = supa.table("slots").update({"status": "APPROVED_WAITING_DETAILS"}).eq("id", slot_id).execute()
         if not response.data:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
-            
-        return _enrich_single_slot(response.data[0], supa)
+
+        slot_out = _enrich_single_slot(response.data[0], supa)
+        background_tasks.add_task(send_slot_event, supa, "APPROVED_WAITING_DETAILS", response.data[0], user, wh)
+        return slot_out
     except HTTPException:
         raise
     except Exception:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+        raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
 @router.post(
@@ -578,7 +586,7 @@ def assign_dock(
     except HTTPException:
         raise
     except Exception:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+        raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
 @router.post(
@@ -588,6 +596,7 @@ def assign_dock(
 )
 def request_cancel_slot(
     slot_id: int,
+    background_tasks: BackgroundTasks,
     user: UserRow = Depends(get_current_user),
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
@@ -607,12 +616,14 @@ def request_cancel_slot(
         response = supa.table("slots").update({"previous_status": slot.get("status"), "status": "CANCEL_PENDING"}).eq("id", slot_id).execute()
         if not response.data:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
-            
-        return _enrich_single_slot(response.data[0], supa)
+
+        slot_out = _enrich_single_slot(response.data[0], supa)
+        background_tasks.add_task(send_slot_event, supa, "CANCEL_PENDING", response.data[0], user, wh)
+        return slot_out
     except HTTPException:
         raise
     except Exception:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+        raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
 @router.post(
@@ -622,6 +633,8 @@ def request_cancel_slot(
 )
 def reject_cancel_slot(
     slot_id: int,
+    background_tasks: BackgroundTasks,
+    user: UserRow = Depends(get_current_user),
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
 ):
@@ -638,12 +651,14 @@ def reject_cancel_slot(
         response = supa.table("slots").update({"status": slot.get("previous_status"), "previous_status": None}).eq("id", slot_id).execute()
         if not response.data:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
-            
-        return _enrich_single_slot(response.data[0], supa)
+
+        slot_out = _enrich_single_slot(response.data[0], supa)
+        background_tasks.add_task(send_slot_event, supa, "CANCEL_REJECTED", response.data[0], user, wh)
+        return slot_out
     except HTTPException:
         raise
     except Exception:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+        raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
 @router.post(
@@ -653,6 +668,7 @@ def reject_cancel_slot(
 )
 def cancel_slot(
     slot_id: int,
+    background_tasks: BackgroundTasks,
     user: UserRow = Depends(get_current_user),
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
@@ -668,12 +684,14 @@ def cancel_slot(
         response = supa.table("slots").update({"status": "CANCELLED", "previous_status": None}).eq("id", slot_id).execute()
         if not response.data:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
-            
-        return _enrich_single_slot(response.data[0], supa)
+
+        slot_out = _enrich_single_slot(response.data[0], supa)
+        background_tasks.add_task(send_slot_event, supa, "CANCELLED", response.data[0], user, wh)
+        return slot_out
     except HTTPException:
         raise
     except Exception:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+        raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
 @router.patch(
@@ -725,7 +743,7 @@ def patch_slot(
     except HTTPException:
         raise
     except Exception:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+        raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
 @router.patch(
@@ -736,6 +754,8 @@ def patch_slot(
 def change_slot_status(
     slot_id: int,
     data: SlotStatusPatch,
+    background_tasks: BackgroundTasks,
+    user: UserRow = Depends(get_current_user),
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
 ):
@@ -756,12 +776,14 @@ def change_slot_status(
         response = supa.table("slots").update(update).eq("id", slot_id).execute()
         if not response.data:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
-            
-        return _enrich_single_slot(response.data[0], supa)
+
+        slot_out = _enrich_single_slot(response.data[0], supa)
+        background_tasks.add_task(send_slot_event, supa, data.status.value, response.data[0], user, wh)
+        return slot_out
     except HTTPException:
         raise
     except Exception:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+        raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
 @router.delete(
@@ -804,7 +826,7 @@ def bulk_delete_slots(
     except HTTPException:
         raise
     except Exception:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+        raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
 @router.delete(
@@ -829,4 +851,4 @@ def delete_slot(
     except HTTPException:
         raise
     except Exception:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+        raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})

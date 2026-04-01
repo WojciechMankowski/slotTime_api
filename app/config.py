@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     SUPABASE_URL: str = ""
     SUPABASE_SERVICE_ROLE_KEY: str = ""
 
+    POWER_AUTOMATE_URL: str = "https://default5fe04b4b7f7347cd93a86c5d873fb2.77.environment.api.powerplatform.com/powerautomate/automations/direct/workflows/418f33bf51b3467ca2ee018cb1f87c68/triggers/manual/paths/invoke?api-version=1"
+
     @property
     def cors_origins(self) -> List[str]:
         return [o.strip() for o in self.APP_CORS_ORIGINS.split(",") if o.strip()]
