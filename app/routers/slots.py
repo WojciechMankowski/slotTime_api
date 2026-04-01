@@ -257,7 +257,7 @@ def list_archive(
     supa: Client = Depends(get_supabase),
 ):
     try:
-        ARCHIVE_STATUSES = {"COMPLETED", "CANCELLED"}
+        ARCHIVE_STATUSES = {"COMPLETED", "CANCELLED", "EXPIRED", "NO_SHOW", "CANCEL_REJECTED"}
 
         if status and status.upper() == "ALL":
             filter_statuses = list(ARCHIVE_STATUSES)
