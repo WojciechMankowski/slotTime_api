@@ -18,6 +18,7 @@ def send_slot_event(
     wh: WarehouseRow,
 ) -> None:
     """Buduje payload i wysyła GET do Power Automate. Wywoływana z BackgroundTasks."""
+    logger.error('SEMD DO POWER AAUTOMATE')
     try:
         reserved_by_id = slot.get("reserved_by_user_id")
         email_user = None
@@ -67,7 +68,13 @@ def send_slot_event(
         }
 
         with httpx.Client(timeout=10) as client:
-            client.get(settings.POWER_AUTOMATE_URL, json=payload)
+            resp = client.post(settings.POWER_AUTOMATE_URL, json=payload)
+            if resp.is_error:
+                logger.warning(
+                    "send_slot_event HTTP %s [event=%s slot=%s]: %s",
+                    resp.status_code, event, slot.get("id"), resp.text,
+                )
+            resp.raise_for_status()
 
     except Exception as exc:
         logger.warning("send_slot_event failed [event=%s slot=%s]: %s", event, slot.get("id"), exc)
