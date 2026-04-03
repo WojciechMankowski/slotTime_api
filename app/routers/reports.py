@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import date as date_type, datetime, time as dtime
+from zoneinfo import ZoneInfo
 from typing import Optional, List, Dict, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -13,6 +14,8 @@ from ..schemas import WarehouseRow
 from ..enums import Role
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
+
+WARSAW = ZoneInfo("Europe/Warsaw")
 
 
 # ---------------------------------------------------------------------------
@@ -28,8 +31,8 @@ def _parse_date(value: str, field: str) -> date_type:
 
 def _fetch_slots(supa: Client, warehouse_id: Optional[int], dt_from: date_type, dt_to: date_type) -> List[Dict[str, Any]]:
     """Pobiera sloty w określonym przedziale czasowym. Opcjonalnie filtruje po ID magazynu."""
-    start = datetime.combine(dt_from, dtime.min).isoformat()
-    end = datetime.combine(dt_to, dtime.max).isoformat()
+    start = datetime.combine(dt_from, dtime.min, tzinfo=WARSAW).isoformat()
+    end = datetime.combine(dt_to, dtime.max, tzinfo=WARSAW).isoformat()
     
     q = supa.table("slots").select("*").gte("start_dt", start).lte("start_dt", end)
     if warehouse_id is not None:
@@ -126,7 +129,7 @@ def report_daily(
             dt_str = slot.get("start_dt")
             if dt_str:
                 # Bezpieczne parsowanie daty ISO z Supabase do formatu YYYY-MM-DD
-                dt_obj = datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
+                dt_obj = datetime.fromisoformat(dt_str.replace("Z", "+00:00")).astimezone(WARSAW)
                 day_iso = dt_obj.date().isoformat()
                 by_date[day_iso].append(slot)
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from supabase import Client
 from datetime import datetime, date, timedelta, time as dtime
+from zoneinfo import ZoneInfo
 from typing import List, Optional, Tuple, Dict, Any
 
 from ..supabase_client import get_supabase
@@ -23,6 +24,8 @@ from ..enums import Role, SlotType, SlotStatus
 from ..notifications import send_slot_event
 
 router = APIRouter(prefix="/api/slots", tags=["slots"])
+
+WARSAW = ZoneInfo("Europe/Warsaw")
 
 
 # =========================================================
@@ -51,6 +54,7 @@ def _enrich_single_slot(slot: dict, supa: Client) -> SlotOut:
 
     return SlotOut(
         id=slot["id"],
+        warehouse_id=slot.get("warehouse_id"),
         start_dt=slot.get("start_dt"),
         end_dt=slot.get("end_dt"),
         slot_type=slot.get("slot_type"),
@@ -81,6 +85,7 @@ def _format_slot_from_maps(slot: dict, docks_map: dict, users_map: dict, compani
 
     return SlotOut(
         id=slot["id"],
+        warehouse_id=slot.get("warehouse_id"),
         start_dt=slot.get("start_dt"),
         end_dt=slot.get("end_dt"),
         slot_type=slot.get("slot_type"),
@@ -191,9 +196,9 @@ def list_slots(
             q = q.eq("warehouse_id", wh.id)
 
         if date_from:
-            q = q.gte("start_dt", datetime.combine(date_from, dtime.min).isoformat())
+            q = q.gte("start_dt", datetime.combine(date_from, dtime.min, tzinfo=WARSAW).isoformat())
         if date_to:
-            q = q.lte("start_dt", datetime.combine(date_to, dtime.max).isoformat())
+            q = q.lte("start_dt", datetime.combine(date_to, dtime.max, tzinfo=WARSAW).isoformat())
 
         if status:
             try:
@@ -277,9 +282,9 @@ def list_archive(
         )
 
         if date_from:
-            q = q.gte("start_dt", datetime.combine(date_from, dtime.min).isoformat())
+            q = q.gte("start_dt", datetime.combine(date_from, dtime.min, tzinfo=WARSAW).isoformat())
         if date_to:
-            q = q.lte("start_dt", datetime.combine(date_to, dtime.max).isoformat())
+            q = q.lte("start_dt", datetime.combine(date_to, dtime.max, tzinfo=WARSAW).isoformat())
 
         if user.role == Role.client:
             q = q.eq("reserved_by_user_id", user.id)
@@ -347,8 +352,8 @@ def generate_slots(
         d = data.date_from
         
         while d <= data.date_to:
-            day_start = datetime.combine(d, start_time)
-            day_end = datetime.combine(d, end_time)
+            day_start = datetime.combine(d, start_time, tzinfo=WARSAW)
+            day_end = datetime.combine(d, end_time, tzinfo=WARSAW)
 
             requested = 0
             generated = 0
@@ -363,8 +368,8 @@ def generate_slots(
             )
             cap_val: Optional[int] = int(cap_rows[0]["capacity"]) if cap_rows else None
 
-            day_start_iso = datetime.combine(d, dtime.min).isoformat()
-            day_end_iso = datetime.combine(d, dtime.max).isoformat()
+            day_start_iso = datetime.combine(d, dtime.min, tzinfo=WARSAW).isoformat()
+            day_end_iso = datetime.combine(d, dtime.max, tzinfo=WARSAW).isoformat()
             
             existing_day_result = (
                 supa.table("slots").select("id", count="exact")
@@ -806,8 +811,8 @@ def bulk_delete_slots(
         except ValueError:
             raise HTTPException(400, detail={"error_code": "INVALID_DATE_RANGE"})
 
-        start_iso = datetime.combine(dt_from, dtime.min).isoformat()
-        end_iso = datetime.combine(dt_to, dtime.max).isoformat()
+        start_iso = datetime.combine(dt_from, dtime.min, tzinfo=WARSAW).isoformat()
+        end_iso = datetime.combine(dt_to, dtime.max, tzinfo=WARSAW).isoformat()
 
         q = (
             supa.table("slots").select("id")

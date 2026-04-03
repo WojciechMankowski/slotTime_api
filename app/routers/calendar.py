@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime, time as dtime, timedelta
+from zoneinfo import ZoneInfo
 from typing import List
 
 from fastapi import APIRouter, Depends
@@ -12,6 +13,8 @@ from .. import models
 from ..deps import require_role, get_context_warehouse
 
 router = APIRouter(prefix="/api/calendar", tags=["calendar"])
+
+WARSAW = ZoneInfo("Europe/Warsaw")
 
 
 class CalendarDaySummary(BaseModel):
@@ -36,8 +39,8 @@ def calendar_summary(
     wh: models.Warehouse = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
 ):
-    start_dt = datetime.combine(date_from, dtime.min)
-    end_dt = datetime.combine(date_to, dtime.max)
+    start_dt = datetime.combine(date_from, dtime.min, tzinfo=WARSAW)
+    end_dt = datetime.combine(date_to, dtime.max, tzinfo=WARSAW)
 
     # Pobieramy tylko potrzebne kolumny, aby zminimalizować transfer danych
     response = (
@@ -67,7 +70,7 @@ def calendar_summary(
     for row in rows:
         # Supabase zwraca daty jako stringi ISO (np. "2026-03-31T10:00:00+00:00")
         dt_str = row["start_dt"].replace("Z", "+00:00")
-        dt_obj = datetime.fromisoformat(dt_str)
+        dt_obj = datetime.fromisoformat(dt_str).astimezone(WARSAW)
         day = dt_obj.date()
         
         if day not in agg:

@@ -12,4 +12,5 @@ python-jose==3.5.0
 python-multipart==0.0.22
 SQLAlchemy==2.0.48
 supabase==2.15.2
+tzdata==2025.2
 uvicorn==0.41.0
