@@ -82,7 +82,8 @@ def warehouse_context(user: UserRow, supa: Client) -> WarehouseRow:
         
     except HTTPException:
         raise
-    except Exception:
+    except Exception as e:
+        print(f"[DB ERROR warehouse_context] {type(e).__name__}: {e}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -103,9 +104,10 @@ def get_context_warehouse(
             
         except HTTPException:
             raise
-        except Exception:
+        except Exception as e:
+            print(f"[DB ERROR get_context_warehouse] {type(e).__name__}: {e}")
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
-            
+
     return warehouse_context(user, supa)
 
 
@@ -127,7 +129,8 @@ def get_optional_warehouse(
 
         except HTTPException:
             raise
-        except Exception:
+        except Exception as e:
+            print(f"[DB ERROR get_optional_warehouse] {type(e).__name__}: {e}")
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
     return warehouse_context(user, supa)

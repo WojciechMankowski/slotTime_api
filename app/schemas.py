@@ -137,6 +137,7 @@ class SlotNoticeCreate(SlotNoticeOut):
 
 class SlotOut(BaseModel):
     id: int
+    warehouse_id: Optional[int] = None
     start_dt: datetime
     end_dt: datetime
     slot_type: SlotType

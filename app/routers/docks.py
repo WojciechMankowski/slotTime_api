@@ -22,7 +22,8 @@ def list_docks(
         if user.role == Role.client:
             q = q.eq("is_active", True)
         return q.order("id").execute().data
-    except Exception:
+    except Exception as e:
+        print(f"[DB ERROR list_docks] {type(e).__name__}: {e}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -59,7 +60,8 @@ def create_dock(
         return response.data[0]
     except HTTPException:
         raise
-    except Exception:
+    except Exception as e:
+        print(f"[DB ERROR create_dock] {type(e).__name__}: {e}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -89,7 +91,8 @@ def delete_dock(
         supa.table("docks").delete().eq("id", dock_id).execute()
     except HTTPException:
         raise
-    except Exception:
+    except Exception as e:
+        print(f"[DB ERROR delete_dock] {type(e).__name__}: {e}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -136,5 +139,6 @@ def patch_dock(
         
     except HTTPException:
         raise
-    except Exception:
+    except Exception as e:
+        print(f"[DB ERROR patch_dock] {type(e).__name__}: {e}")
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
