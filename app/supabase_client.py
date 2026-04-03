@@ -8,7 +8,8 @@ _client: Client | None = None
 def get_supabase() -> Client:
     global _client
     if _client is None:
-        print(f"[get_supabase] creating client, URL={settings.SUPABASE_URL!r}")
+        print(settings)
+        print(f"[get_supabase] creating client, URL={settings.SUPABASE_URL!r} key:${settings.SUPABASE_SERVICE_ROLE_KEY}")
         try:
             _client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
             print("[get_supabase] client created OK")
