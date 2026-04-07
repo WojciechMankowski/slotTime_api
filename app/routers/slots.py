@@ -318,7 +318,9 @@ def list_archive(
 
     except HTTPException:
         raise
-    except Exception:
+    except Exception as e:
+        import traceback
+        print(f"[archive ERROR] {e}\n{traceback.format_exc()}")
         raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
