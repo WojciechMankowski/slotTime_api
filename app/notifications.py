@@ -18,7 +18,7 @@ def send_slot_event(
     wh: WarehouseRow,
 ) -> None:
     """Buduje payload i wysyła GET do Power Automate. Wywoływana z BackgroundTasks."""
-    logger.error('SEMD DO POWER AAUTOMATE')
+    logger.info("send_slot_event: event=%s slot=%s", event, slot.get("id"))
     try:
         reserved_by_id = slot.get("reserved_by_user_id")
         email_user = None

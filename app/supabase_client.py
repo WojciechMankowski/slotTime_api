@@ -1,7 +1,10 @@
+import logging
 from typing import Any, Dict, List, Optional
 from supabase import create_client, Client
 from fastapi import HTTPException, status
 from .config import settings
+
+logger = logging.getLogger(__name__)
 
 _client: Client | None = None
 
@@ -10,9 +13,9 @@ def get_supabase() -> Client:
     if _client is None:
         try:
             _client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
-            print("[get_supabase] client created OK")
+            logger.info("[get_supabase] client created OK")
         except Exception as e:
-            print(f"[get_supabase ERROR] {type(e).__name__}: {e}")
+            logger.error("[get_supabase ERROR] %s: %s", type(e).__name__, e)
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail={"error_code": "DATABASE_ERROR"},

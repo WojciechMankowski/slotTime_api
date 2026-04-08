@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from supabase import Client
 from datetime import datetime, date, timedelta, time as dtime
@@ -21,6 +23,8 @@ from ..schemas import (
     WarehouseRow,
 )
 from ..enums import Role, SlotType, SlotStatus
+
+logger = logging.getLogger(__name__)
 from ..notifications import send_slot_event
 
 router = APIRouter(prefix="/api/slots", tags=["slots"])
@@ -319,9 +323,8 @@ def list_archive(
     except HTTPException:
         raise
     except Exception as e:
-        import traceback
-        print(f"[archive ERROR] {e}\n{traceback.format_exc()}")
-        raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
+        logger.error("[archive ERROR] %s", e, exc_info=True)
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
 # =========================================================

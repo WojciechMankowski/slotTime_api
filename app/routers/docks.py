@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from supabase import Client
 
@@ -5,6 +7,8 @@ from ..supabase_client import get_supabase
 from ..deps import get_current_user, require_role, get_context_warehouse
 from ..schemas import DockOut, DockCreate, DockPatch, UserRow, WarehouseRow
 from ..enums import Role
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/docks", tags=["docks"])
 
@@ -23,7 +27,7 @@ def list_docks(
             q = q.eq("is_active", True)
         return q.order("id").execute().data
     except Exception as e:
-        print(f"[DB ERROR list_docks] {type(e).__name__}: {e}")
+        logger.error("[DB ERROR list_docks] %s: %s", type(e).__name__, e)
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -61,7 +65,7 @@ def create_dock(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[DB ERROR create_dock] {type(e).__name__}: {e}")
+        logger.error("[DB ERROR create_dock] %s: %s", type(e).__name__, e)
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -92,7 +96,7 @@ def delete_dock(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[DB ERROR delete_dock] {type(e).__name__}: {e}")
+        logger.error("[DB ERROR delete_dock] %s: %s", type(e).__name__, e)
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -140,5 +144,5 @@ def patch_dock(
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[DB ERROR patch_dock] {type(e).__name__}: {e}")
+        logger.error("[DB ERROR patch_dock] %s: %s", type(e).__name__, e)
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})

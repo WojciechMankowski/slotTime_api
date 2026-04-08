@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import Depends, HTTPException, Query, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from supabase import Client
@@ -7,6 +9,8 @@ from .supabase_client import get_supabase
 from .security import decode_token
 from .schemas import UserRow, WarehouseRow
 from .enums import Role
+
+logger = logging.getLogger(__name__)
 
 security = HTTPBearer(auto_error=False)
 
@@ -28,7 +32,7 @@ def get_current_user(
     try:
         rows = supa.table("users").select("*").eq("id", user_id).execute().data
     except Exception as e:
-        print(f"[DB ERROR get_current_user] {type(e).__name__}: {e}")
+        logger.error("[DB ERROR get_current_user] %s: %s", type(e).__name__, e)
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
     if not rows:
@@ -49,41 +53,41 @@ def require_role(*roles: Role):
 
 def warehouse_context(user: UserRow, supa: Client) -> WarehouseRow:
     if user.role == Role.superadmin:
-        raise HTTPException(status_code=400, detail={"error_code": "WAREHOUSE_CONTEXT_REQUIRED"})
-        
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error_code": "WAREHOUSE_CONTEXT_REQUIRED"})
+
     try:
         if user.role == Role.admin:
             if not user.warehouse_id:
-                raise HTTPException(status_code=400, detail={"error_code": "USER_WAREHOUSE_MISSING"})
-                
+                raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"error_code": "USER_WAREHOUSE_MISSING"})
+
             rows = supa.table("warehouses").select("*").eq("id", user.warehouse_id).execute().data
             if not rows:
-                raise HTTPException(status_code=400, detail={"error_code": "WAREHOUSE_NOT_FOUND"})
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"error_code": "WAREHOUSE_NOT_FOUND"})
             return WarehouseRow(**rows[0])
-            
+
         # logik dla klienta: pobieramy kontekst przez przypisaną firmę
         if not user.company_id:
-            raise HTTPException(status_code=400, detail={"error_code": "USER_COMPANY_MISSING"})
-            
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"error_code": "USER_COMPANY_MISSING"})
+
         # Optymalizacja: pobieramy tylko kolumnę warehouse_id zamiast całego rekordu firmy
         company_rows = supa.table("companies").select("warehouse_id").eq("id", user.company_id).execute().data
         if not company_rows:
-            raise HTTPException(status_code=400, detail={"error_code": "COMPANY_NOT_FOUND"})
-            
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"error_code": "COMPANY_NOT_FOUND"})
+
         wh_id = company_rows[0].get("warehouse_id")
         if not wh_id:
-            raise HTTPException(status_code=400, detail={"error_code": "WAREHOUSE_NOT_FOUND"})
-            
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"error_code": "WAREHOUSE_NOT_FOUND"})
+
         wh_rows = supa.table("warehouses").select("*").eq("id", wh_id).execute().data
         if not wh_rows:
-            raise HTTPException(status_code=400, detail={"error_code": "WAREHOUSE_NOT_FOUND"})
-            
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"error_code": "WAREHOUSE_NOT_FOUND"})
+
         return WarehouseRow(**wh_rows[0])
-        
+
     except HTTPException:
         raise
     except Exception as e:
-        print(f"[DB ERROR warehouse_context] {type(e).__name__}: {e}")
+        logger.error("[DB ERROR warehouse_context] %s: %s", type(e).__name__, e)
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -94,18 +98,18 @@ def get_context_warehouse(
 ) -> WarehouseRow:
     if user.role == Role.superadmin:
         if warehouse_id is None:
-            raise HTTPException(status_code=400, detail={"error_code": "WAREHOUSE_CONTEXT_REQUIRED"})
-            
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error_code": "WAREHOUSE_CONTEXT_REQUIRED"})
+
         try:
             rows = supa.table("warehouses").select("*").eq("id", warehouse_id).execute().data
             if not rows:
-                raise HTTPException(status_code=404, detail={"error_code": "WAREHOUSE_NOT_FOUND"})
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"error_code": "WAREHOUSE_NOT_FOUND"})
             return WarehouseRow(**rows[0])
-            
+
         except HTTPException:
             raise
         except Exception as e:
-            print(f"[DB ERROR get_context_warehouse] {type(e).__name__}: {e}")
+            logger.error("[DB ERROR get_context_warehouse] %s: %s", type(e).__name__, e)
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
     return warehouse_context(user, supa)
@@ -130,7 +134,7 @@ def get_optional_warehouse(
         except HTTPException:
             raise
         except Exception as e:
-            print(f"[DB ERROR get_optional_warehouse] {type(e).__name__}: {e}")
+            logger.error("[DB ERROR get_optional_warehouse] %s: %s", type(e).__name__, e)
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
     return warehouse_context(user, supa)
