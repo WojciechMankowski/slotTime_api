@@ -303,8 +303,9 @@ def patch_user(
                 raise HTTPException(status_code=403, detail={"error_code": "FORBIDDEN"})
             payload["role"] = payload["role"].value if hasattr(payload["role"], "value") else payload["role"]
 
+        new_password_hash = None
         if "password" in payload:
-            payload["password_hash"] = get_password_hash(payload.pop("password"))
+            new_password_hash = get_password_hash(payload.pop("password"))
 
         if "company_id" in payload and payload["company_id"] is not None:
             company_rows = supa.table("companies").select("*").eq("id", payload["company_id"]).execute().data
@@ -317,7 +318,12 @@ def patch_user(
         response = supa.table("users").update(payload).eq("id", user_id).execute()
         if not response.data:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
-            
+
+        if new_password_hash:
+            pw_response = supa.table("users").update({"password_hash": new_password_hash}).eq("id", user_id).execute()
+            if not pw_response.data:
+                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "PASSWORD_UPDATE_FAILED"})
+
         return _enrich_single_user(response.data[0], supa)
     except HTTPException:
         raise
