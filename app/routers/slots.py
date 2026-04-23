@@ -14,11 +14,14 @@ from ..schemas import (
     SlotOut,
     SlotPatch,
     SlotReserveIn,
+    SlotConfirmIn,
     SlotAssignDockIn,
     SlotGenerateIn,
     SlotGenerateOut,
     SlotGenerateDayReport,
     SlotStatusPatch,
+    SlotWithNoticeOut,
+    SlotNoticeOut,
     UserRow,
     WarehouseRow,
 )
@@ -469,9 +472,12 @@ def generate_slots(
 # ACTIONS
 # =========================================================
 
+NOTICE_REQUIRED_FIELDS = ["numer_zlecenia", "referencja", "rejestracja_auta", "rejestracja_naczepy", "ilosc_palet"]
+
+
 @router.post(
     "/{slot_id}/reserve",
-    response_model=SlotOut,
+    response_model=SlotWithNoticeOut,
     dependencies=[Depends(require_role(Role.client))],
 )
 def reserve_slot(
@@ -498,20 +504,126 @@ def reserve_slot(
         if slot.get("status") != "AVAILABLE":
             raise HTTPException(status_code=409, detail={"error_code": "SLOT_NOT_AVAILABLE"})
 
-        update = {"status": "BOOKED", "reserved_by_user_id": user.id}
         if slot.get("slot_type") == "ANY":
             if not data.requested_type:
                 raise HTTPException(status_code=400, detail={"error_code": "TYPE_REQUIRED"})
+
+        # Walidacja pól awizacji
+        notice_payload = {
+            "numer_zlecenia": data.numer_zlecenia,
+            "referencja": data.referencja,
+            "rejestracja_auta": data.rejestracja_auta,
+            "rejestracja_naczepy": data.rejestracja_naczepy,
+            "ilosc_palet": data.ilosc_palet,
+            "kierowca_imie_nazwisko": data.kierowca_imie_nazwisko,
+            "kierowca_tel": data.kierowca_tel,
+            "uwagi": data.uwagi,
+        }
+        for f in NOTICE_REQUIRED_FIELDS:
+            v = notice_payload.get(f)
+            if v is None or (isinstance(v, str) and not v.strip()):
+                raise HTTPException(status_code=400, detail={"error_code": "FIELD_REQUIRED", "field": f})
+        if notice_payload.get("ilosc_palet", 0) <= 0:
+            raise HTTPException(status_code=400, detail={"error_code": "FIELD_INVALID", "field": "ilosc_palet"})
+
+        # 1. Najpierw INSERT do slot_notices (bezpieczna kolejność)
+        supa.table("slot_notices").insert({"slot_id": slot_id, **notice_payload}).execute()
+
+        # 2. Potem UPDATE slotu na PENDING_CONFIRMATION
+        update: Dict[str, Any] = {"status": "PENDING_CONFIRMATION", "reserved_by_user_id": user.id}
+        if slot.get("slot_type") == "ANY":
             update["slot_type"] = data.requested_type
 
-        # Zwracamy od razu zaktualizowany obiekt
         response = supa.table("slots").update(update).eq("id", slot_id).execute()
         if not response.data:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
 
-        slot_out = _enrich_single_slot(response.data[0], supa)
-        background_tasks.add_task(send_slot_event, supa, "BOOKED", response.data[0], user, wh)
-        return slot_out
+        updated_slot = response.data[0]
+        enriched = _enrich_single_slot(updated_slot, supa)
+        background_tasks.add_task(send_slot_event, supa, "PENDING_CONFIRMATION", updated_slot, user, wh)
+
+        return SlotWithNoticeOut(
+            id=enriched.id,
+            start_dt=enriched.start_dt,
+            end_dt=enriched.end_dt,
+            slot_type=enriched.slot_type,
+            original_slot_type=enriched.original_slot_type,
+            status=enriched.status,
+            dock_id=enriched.dock_id,
+            dock_alias=enriched.dock_alias,
+            reserved_by_user_id=enriched.reserved_by_user_id,
+            reserved_by_alias=enriched.reserved_by_alias,
+            reserved_by_company_alias=enriched.reserved_by_company_alias,
+            notice=SlotNoticeOut(**notice_payload),
+        )
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
+
+
+def _confirm_slot_logic(
+    slot_id: int,
+    data: SlotConfirmIn,
+    background_tasks: BackgroundTasks,
+    user: UserRow,
+    wh: WarehouseRow,
+    supa: Client,
+) -> SlotOut:
+    slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+    slot = slot_rows[0] if slot_rows else None
+    if not slot or slot.get("warehouse_id") != wh.id:
+        raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
+    if slot.get("status") != "PENDING_CONFIRMATION":
+        raise HTTPException(status_code=409, detail={"error_code": "INVALID_STATUS"})
+
+    update: Dict[str, Any] = {"status": "CONFIRMED"}
+
+    if data.dock_id is not None:
+        dock_rows = supa.table("docks").select("*").eq("id", data.dock_id).execute().data
+        dock = dock_rows[0] if dock_rows else None
+        if not dock or dock.get("warehouse_id") != wh.id:
+            raise HTTPException(status_code=404, detail={"error_code": "DOCK_NOT_FOUND"})
+
+        conflict = (
+            supa.table("slots").select("id", count="exact")
+            .eq("warehouse_id", wh.id)
+            .eq("dock_id", data.dock_id)
+            .neq("id", slot_id)
+            .in_("status", ["PENDING_CONFIRMATION", "CONFIRMED"])
+            .lt("start_dt", slot.get("end_dt"))
+            .gt("end_dt", slot.get("start_dt"))
+            .limit(0)
+            .execute()
+        )
+        if conflict.count and conflict.count > 0:
+            raise HTTPException(status_code=409, detail={"error_code": "DOCK_CONFLICT"})
+        update["dock_id"] = data.dock_id
+
+    response = supa.table("slots").update(update).eq("id", slot_id).execute()
+    if not response.data:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
+
+    slot_out = _enrich_single_slot(response.data[0], supa)
+    background_tasks.add_task(send_slot_event, supa, "CONFIRMED", response.data[0], user, wh)
+    return slot_out
+
+
+@router.post(
+    "/{slot_id}/confirm",
+    response_model=SlotOut,
+    dependencies=[Depends(require_role(Role.admin, Role.superadmin))],
+)
+def confirm_slot(
+    slot_id: int,
+    data: SlotConfirmIn = SlotConfirmIn(),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
+    user: UserRow = Depends(get_current_user),
+    wh: WarehouseRow = Depends(get_context_warehouse),
+    supa: Client = Depends(get_supabase),
+):
+    try:
+        return _confirm_slot_logic(slot_id, data, background_tasks, user, wh, supa)
     except HTTPException:
         raise
     except Exception:
@@ -525,26 +637,15 @@ def reserve_slot(
 )
 def approve_slot(
     slot_id: int,
-    background_tasks: BackgroundTasks,
+    data: SlotConfirmIn = SlotConfirmIn(),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
     user: UserRow = Depends(get_current_user),
     wh: WarehouseRow = Depends(get_context_warehouse),
     supa: Client = Depends(get_supabase),
 ):
+    """Legacy alias for confirm_slot — kept for backward compatibility."""
     try:
-        slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
-        slot = slot_rows[0] if slot_rows else None
-        if not slot or slot.get("warehouse_id") != wh.id:
-            raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
-        if slot.get("status") != "BOOKED":
-            raise HTTPException(status_code=409, detail={"error_code": "INVALID_STATUS"})
-
-        response = supa.table("slots").update({"status": "RESERVED_CONFIRMED"}).eq("id", slot_id).execute()
-        if not response.data:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
-
-        slot_out = _enrich_single_slot(response.data[0], supa)
-        background_tasks.add_task(send_slot_event, supa, "RESERVED_CONFIRMED", response.data[0], user, wh)
-        return slot_out
+        return _confirm_slot_logic(slot_id, data, background_tasks, user, wh, supa)
     except HTTPException:
         raise
     except Exception:
@@ -579,7 +680,7 @@ def assign_dock(
             .eq("warehouse_id", wh.id)
             .eq("dock_id", data.dock_id)
             .neq("id", slot_id)
-            .in_("status", ["BOOKED", "APPROVED_WAITING_DETAILS", "RESERVED_CONFIRMED"])
+            .in_("status", ["PENDING_CONFIRMATION", "CONFIRMED"])
             .lt("start_dt", slot.get("end_dt"))
             .gt("end_dt", slot.get("start_dt"))
             .limit(0)
@@ -619,7 +720,7 @@ def request_cancel_slot(
         if slot.get("reserved_by_user_id") != user.id:
             raise HTTPException(status_code=403, detail={"error_code": "FORBIDDEN"})
 
-        CANCELLABLE = {"BOOKED", "APPROVED_WAITING_DETAILS", "RESERVED_CONFIRMED"}
+        CANCELLABLE = {"PENDING_CONFIRMATION", "CONFIRMED"}
         if slot.get("status") not in CANCELLABLE:
             raise HTTPException(status_code=409, detail={"error_code": "INVALID_STATUS"})
 

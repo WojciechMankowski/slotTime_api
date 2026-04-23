@@ -161,10 +161,21 @@ class SlotWithNoticeOut(BaseModel):
     reserved_by_user_id: Optional[int] = None
     reserved_by_alias: Optional[str] = None
     reserved_by_company_alias: Optional[str] = None
-    notice: SlotNoticeOut
+    notice: Optional[SlotNoticeOut] = None
 
 class SlotReserveIn(BaseModel):
     requested_type: Optional[Literal["INBOUND","OUTBOUND"]] = None
+    numer_zlecenia: str = ""
+    referencja: str = ""
+    rejestracja_auta: str = ""
+    rejestracja_naczepy: str = ""
+    ilosc_palet: int = Field(default=1, ge=1)
+    kierowca_imie_nazwisko: Optional[str] = None
+    kierowca_tel: Optional[str] = None
+    uwagi: Optional[str] = None
+
+class SlotConfirmIn(BaseModel):
+    dock_id: Optional[int] = None
 
 class SlotAssignDockIn(BaseModel):
     dock_id: int

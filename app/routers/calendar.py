@@ -61,9 +61,11 @@ def calendar_summary(
         d += timedelta(days=1)
 
     BOOKED_STATUSES = {
-        models.SlotStatus.BOOKED,
-        models.SlotStatus.APPROVED_WAITING_DETAILS,
-        models.SlotStatus.RESERVED_CONFIRMED,
+        models.SlotStatus.PENDING_CONFIRMATION,
+        models.SlotStatus.CONFIRMED,
+        models.SlotStatus.BOOKED,  # Legacy
+        models.SlotStatus.APPROVED_WAITING_DETAILS,  # Legacy
+        models.SlotStatus.RESERVED_CONFIRMED,  # Legacy
         models.SlotStatus.CANCEL_PENDING,
     }
 

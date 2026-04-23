@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/docks", tags=["docks"])
 
-_ACTIVE_STATUSES = ["AVAILABLE", "BOOKED", "APPROVED_WAITING_DETAILS", "RESERVED_CONFIRMED", "CANCEL_PENDING"]
+_ACTIVE_STATUSES = ["AVAILABLE", "PENDING_CONFIRMATION", "CONFIRMED", "CANCEL_PENDING"]
 
 
 @router.get("", response_model=list[DockOut], dependencies=[Depends(require_role(Role.admin, Role.client))])

@@ -73,6 +73,8 @@ def _build_summary(slots: List[Dict[str, Any]]) -> dict:
     return {
         "total": total,
         "available": available,
+        "pending_confirmation": sc.get("PENDING_CONFIRMATION", 0),
+        "confirmed": sc.get("CONFIRMED", 0),
         "booked": sc.get("BOOKED", 0),
         "approved_waiting_details": sc.get("APPROVED_WAITING_DETAILS", 0),
         "reserved_confirmed": sc.get("RESERVED_CONFIRMED", 0),
@@ -144,6 +146,8 @@ def report_daily(
                 "date": day,
                 "total": total,
                 "available": available,
+                "pending_confirmation": sc.get("PENDING_CONFIRMATION", 0),
+                "confirmed": sc.get("CONFIRMED", 0),
                 "booked": sc.get("BOOKED", 0),
                 "approved_waiting_details": sc.get("APPROVED_WAITING_DETAILS", 0),
                 "reserved_confirmed": sc.get("RESERVED_CONFIRMED", 0),
@@ -202,6 +206,8 @@ def report_by_warehouse(
                 "warehouse_alias": wh.get("alias"),
                 "total": total,
                 "available": available,
+                "pending_confirmation": sc.get("PENDING_CONFIRMATION", 0),
+                "confirmed": sc.get("CONFIRMED", 0),
                 "booked": sc.get("BOOKED", 0),
                 "approved_waiting_details": sc.get("APPROVED_WAITING_DETAILS", 0),
                 "reserved_confirmed": sc.get("RESERVED_CONFIRMED", 0),
@@ -267,7 +273,9 @@ def report_by_company(
             sc = _status_counts(c_slots)
             tc = _type_counts(c_slots)
             active = (
-                sc.get("BOOKED", 0)
+                sc.get("PENDING_CONFIRMATION", 0)
+                + sc.get("CONFIRMED", 0)
+                + sc.get("BOOKED", 0)
                 + sc.get("APPROVED_WAITING_DETAILS", 0)
                 + sc.get("RESERVED_CONFIRMED", 0)
                 + sc.get("CANCEL_PENDING", 0)
