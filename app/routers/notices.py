@@ -193,7 +193,7 @@ def post_notice(
             raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
         if slot.get("reserved_by_user_id") != user.id:
             raise HTTPException(status_code=403, detail={"error_code": "FORBIDDEN"})
-        if slot.get("status") != "APPROVED_WAITING_DETAILS":
+        if slot.get("status") not in ("BOOKED", "APPROVED_WAITING_DETAILS"):
             raise HTTPException(status_code=409, detail={"error_code": "INVALID_STATUS"})
 
         payload = data.model_dump()
@@ -211,8 +211,10 @@ def post_notice(
         else:
             supa.table("slot_notices").insert({"slot_id": slot_id, **payload}).execute()
 
-        supa.table("slots").update({"status": "RESERVED_CONFIRMED"}).eq("id", slot_id).execute()
-        background_tasks.add_task(send_slot_event, supa, "RESERVED_CONFIRMED", {**slot, "status": "RESERVED_CONFIRMED"}, user, wh)
+        if slot.get("status") == "APPROVED_WAITING_DETAILS":
+            supa.table("slots").update({"status": "RESERVED_CONFIRMED"}).eq("id", slot_id).execute()
+            background_tasks.add_task(send_slot_event, supa, "RESERVED_CONFIRMED", {**slot, "status": "RESERVED_CONFIRMED"}, user, wh)
+        # Dla BOOKED — nie zmieniamy statusu, dane awizacyjne zapisane
         return SlotNoticeOut(**payload)
         
     except HTTPException:

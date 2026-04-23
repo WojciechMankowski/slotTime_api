@@ -538,12 +538,12 @@ def approve_slot(
         if slot.get("status") != "BOOKED":
             raise HTTPException(status_code=409, detail={"error_code": "INVALID_STATUS"})
 
-        response = supa.table("slots").update({"status": "APPROVED_WAITING_DETAILS"}).eq("id", slot_id).execute()
+        response = supa.table("slots").update({"status": "RESERVED_CONFIRMED"}).eq("id", slot_id).execute()
         if not response.data:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail={"error_code": "UPDATE_FAILED"})
 
         slot_out = _enrich_single_slot(response.data[0], supa)
-        background_tasks.add_task(send_slot_event, supa, "APPROVED_WAITING_DETAILS", response.data[0], user, wh)
+        background_tasks.add_task(send_slot_event, supa, "RESERVED_CONFIRMED", response.data[0], user, wh)
         return slot_out
     except HTTPException:
         raise
