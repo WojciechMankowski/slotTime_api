@@ -245,10 +245,11 @@ def list_slots(
             docks_map = {d["id"]: d.get("alias") for d in docks_data}
 
         return [_format_slot_from_maps(s, docks_map, users_map, companies_map) for s in slots]
-        
+
     except HTTPException:
         raise
     except Exception:
+        logger.exception("[list_slots] date_from=%s date_to=%s", date_from, date_to)
         raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -465,6 +466,7 @@ def generate_slots(
     except HTTPException:
         raise
     except Exception:
+        logger.exception("[generate_slots]")
         raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -559,6 +561,7 @@ def reserve_slot(
     except HTTPException:
         raise
     except Exception:
+        logger.exception("[reserve_slot] slot_id=%s", slot_id)
         raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -627,6 +630,7 @@ def confirm_slot(
     except HTTPException:
         raise
     except Exception:
+        logger.exception("[confirm_slot] slot_id=%s", slot_id)
         raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -649,6 +653,7 @@ def approve_slot(
     except HTTPException:
         raise
     except Exception:
+        logger.exception("[approve_slot] slot_id=%s", slot_id)
         raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -697,6 +702,7 @@ def assign_dock(
     except HTTPException:
         raise
     except Exception:
+        logger.exception("[assign_dock] slot_id=%s", slot_id)
         raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -734,6 +740,7 @@ def request_cancel_slot(
     except HTTPException:
         raise
     except Exception:
+        logger.exception("[request_cancel_slot] slot_id=%s", slot_id)
         raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -769,6 +776,7 @@ def reject_cancel_slot(
     except HTTPException:
         raise
     except Exception:
+        logger.exception("[reject_cancel_slot] slot_id=%s", slot_id)
         raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -802,6 +810,7 @@ def cancel_slot(
     except HTTPException:
         raise
     except Exception:
+        logger.exception("[cancel_slot] slot_id=%s", slot_id)
         raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -854,6 +863,7 @@ def patch_slot(
     except HTTPException:
         raise
     except Exception:
+        logger.exception("[patch_slot] slot_id=%s", slot_id)
         raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -894,6 +904,7 @@ def change_slot_status(
     except HTTPException:
         raise
     except Exception:
+        logger.exception("[change_slot_status] slot_id=%s", slot_id)
         raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -937,6 +948,7 @@ def bulk_delete_slots(
     except HTTPException:
         raise
     except Exception:
+        logger.exception("[bulk_delete_slots]")
         raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -962,4 +974,5 @@ def delete_slot(
     except HTTPException:
         raise
     except Exception:
+        logger.exception("[delete_slot] slot_id=%s", slot_id)
         raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})

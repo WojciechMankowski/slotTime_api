@@ -34,6 +34,11 @@ def send_slot_event(
                     if comp_rows:
                         reserved_by_company_alias = comp_rows[0].get("alias")
 
+        numer_zlecenia = None
+        notice_rows = supa.table("slot_notices").select("numer_zlecenia").eq("slot_id", slot.get("id")).limit(1).execute().data
+        if notice_rows:
+            numer_zlecenia = notice_rows[0].get("numer_zlecenia")
+
         if triggered_by.role in (Role.admin, Role.superadmin):
             email_admin = triggered_by.email
         else:
@@ -65,6 +70,7 @@ def send_slot_event(
             "role": triggered_by.role.value,
             "email_user": email_user,
             "email_admin": email_admin,
+            "order_number": numer_zlecenia,
         }
 
         with httpx.Client(timeout=10) as client:

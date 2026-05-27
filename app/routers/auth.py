@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from supabase import Client
 from pydantic import BaseModel
@@ -52,7 +54,8 @@ def login(data: LoginIn, request: Request, supa: Client = Depends(get_supabase))
     try:
         rows = supa.table("users").select("*").eq("username", data.username).execute().data
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+        logging.error(f"Login DB error for user '{data.username}': {type(e).__name__}: {e}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR", "message": str(e)})
 
     user = rows[0] if rows else None
     
@@ -61,14 +64,18 @@ def login(data: LoginIn, request: Request, supa: Client = Depends(get_supabase))
     is_password_valid = verify_password(data.password, hash_to_check)
 
     if not user or not is_password_valid:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"error_code": "BAD_CREDENTIALS"})
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, 
+                            detail={"error_code": "BAD_CREDENTIALS", 'isPass': is_password_valid})
         
     if user["company_id"] is not None:
         try:
             company_rows = supa.table("companies").select("is_active").eq("id", user["company_id"]).execute().data
             if company_rows and not company_rows[0].get("is_active"):
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={"error_code": "COMPANY_INACTIVE"})
-        except Exception:
+        except HTTPException:
+            raise
+        except Exception as e:
+            logging.error(f"Supabase company fetch error: {str(e)}")
             raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
     access_token = create_access_token(user_id=user["id"], role=user["role"])
@@ -87,8 +94,8 @@ def refresh(data: RefreshIn, supa: Client = Depends(get_supabase)):
 
     try:
         rows = supa.table("users").select("*").eq("id", user_id).execute().data
-    except Exception:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+    except Exception as err:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR", 'err': err})
 
     if not rows:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"error_code": "INVALID_TOKEN"})
@@ -100,8 +107,8 @@ def refresh(data: RefreshIn, supa: Client = Depends(get_supabase)):
             company_rows = supa.table("companies").select("is_active").eq("id", user["company_id"]).execute().data
             if company_rows and not company_rows[0].get("is_active"):
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={"error_code": "COMPANY_INACTIVE"})
-        except Exception:
-            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+        except Exception as err:
+            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR", 'err': err})
 
     new_access_token = create_access_token(user_id=user["id"], role=user["role"])
     return RefreshOut(access_token=new_access_token)
