@@ -42,16 +42,14 @@ def send_slot_event(
         if triggered_by.role in (Role.admin, Role.superadmin):
             email_admin = triggered_by.email
         else:
-            email_admin = None
             admin_rows = (
                 supa.table("users").select("email")
                 .eq("warehouse_id", wh.id)
                 .eq("role", "admin")
-                .limit(1)
                 .execute().data
             )
-            if admin_rows:
-                email_admin = admin_rows[0].get("email")
+            emails = [r.get("email") for r in admin_rows if r.get("email")]
+            email_admin = ";".join(emails) if emails else None
 
         payload = {
             "event": event,
