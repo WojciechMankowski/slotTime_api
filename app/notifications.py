@@ -36,6 +36,7 @@ def send_slot_event(
 
         numer_zlecenia = None
         notice_rows = supa.table("slot_notices").select("numer_zlecenia").eq("slot_id", slot.get("id")).limit(1).execute().data
+        logger.info("send_slot_event: slot_id=%s notice_rows=%s", slot.get("id"), notice_rows)
         if notice_rows:
             numer_zlecenia = notice_rows[0].get("numer_zlecenia")
 
