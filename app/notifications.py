@@ -35,10 +35,23 @@ def send_slot_event(
                         reserved_by_company_alias = comp_rows[0].get("alias")
 
         numer_zlecenia = None
-        notice_rows = supa.table("slot_notices").select("numer_zlecenia").eq("slot_id", slot.get("id")).limit(1).execute().data
+        referencja = None
+        rejestracja_auta = None
+        rejestracja_naczepy = None
+        ilosc_palet = None
+        kierowca_imie_nazwisko = None
+        notice_rows = supa.table("slot_notices").select(
+            "numer_zlecenia, referencja, rejestracja_auta, rejestracja_naczepy, ilosc_palet, kierowca_imie_nazwisko"
+        ).eq("slot_id", slot.get("id")).limit(1).execute().data
         logger.info("send_slot_event: slot_id=%s notice_rows=%s", slot.get("id"), notice_rows)
         if notice_rows:
-            numer_zlecenia = notice_rows[0].get("numer_zlecenia")
+            notice = notice_rows[0]
+            numer_zlecenia = notice.get("numer_zlecenia")
+            referencja = notice.get("referencja")
+            rejestracja_auta = notice.get("rejestracja_auta")
+            rejestracja_naczepy = notice.get("rejestracja_naczepy")
+            ilosc_palet = notice.get("ilosc_palet")
+            kierowca_imie_nazwisko = notice.get("kierowca_imie_nazwisko")
 
         admin_rows = (
             supa.table("users").select("email")
@@ -67,6 +80,11 @@ def send_slot_event(
             "email_user": email_user,
             "email_admin": email_admin,
             "order_number": numer_zlecenia,
+            "referencja": referencja,
+            "rejestracja_auta": rejestracja_auta,
+            "rejestracja_naczepy": rejestracja_naczepy,
+            "ilosc_palet": ilosc_palet,
+            "kierowca_imie_nazwisko": kierowca_imie_nazwisko,
         }
 
         with httpx.Client(timeout=10) as client:
