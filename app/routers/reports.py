@@ -75,9 +75,6 @@ def _build_summary(slots: List[Dict[str, Any]]) -> dict:
         "available": available,
         "pending_confirmation": sc.get("PENDING_CONFIRMATION", 0),
         "confirmed": sc.get("CONFIRMED", 0),
-        "booked": sc.get("BOOKED", 0),
-        "approved_waiting_details": sc.get("APPROVED_WAITING_DETAILS", 0),
-        "reserved_confirmed": sc.get("RESERVED_CONFIRMED", 0),
         "completed": sc.get("COMPLETED", 0),
         "cancelled": sc.get("CANCELLED", 0),
         "cancel_pending": sc.get("CANCEL_PENDING", 0),
@@ -148,9 +145,6 @@ def report_daily(
                 "available": available,
                 "pending_confirmation": sc.get("PENDING_CONFIRMATION", 0),
                 "confirmed": sc.get("CONFIRMED", 0),
-                "booked": sc.get("BOOKED", 0),
-                "approved_waiting_details": sc.get("APPROVED_WAITING_DETAILS", 0),
-                "reserved_confirmed": sc.get("RESERVED_CONFIRMED", 0),
                 "completed": sc.get("COMPLETED", 0),
                 "cancelled": sc.get("CANCELLED", 0),
                 "cancel_pending": sc.get("CANCEL_PENDING", 0),
@@ -208,9 +202,6 @@ def report_by_warehouse(
                 "available": available,
                 "pending_confirmation": sc.get("PENDING_CONFIRMATION", 0),
                 "confirmed": sc.get("CONFIRMED", 0),
-                "booked": sc.get("BOOKED", 0),
-                "approved_waiting_details": sc.get("APPROVED_WAITING_DETAILS", 0),
-                "reserved_confirmed": sc.get("RESERVED_CONFIRMED", 0),
                 "completed": sc.get("COMPLETED", 0),
                 "cancelled": sc.get("CANCELLED", 0),
                 "cancel_pending": sc.get("CANCEL_PENDING", 0),
@@ -275,9 +266,6 @@ def report_by_company(
             active = (
                 sc.get("PENDING_CONFIRMATION", 0)
                 + sc.get("CONFIRMED", 0)
-                + sc.get("BOOKED", 0)
-                + sc.get("APPROVED_WAITING_DETAILS", 0)
-                + sc.get("RESERVED_CONFIRMED", 0)
                 + sc.get("CANCEL_PENDING", 0)
             )
             rows.append({

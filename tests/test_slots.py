@@ -24,7 +24,7 @@ def test_admin_lists_slots(api, db, wh, admin_h):
 
 def test_admin_filter_by_status(api, db, wh, admin_h):
     make_slot(db, wh.id, status=models.SlotStatus.AVAILABLE)
-    make_slot(db, wh.id, status=models.SlotStatus.BOOKED)
+    make_slot(db, wh.id, status=models.SlotStatus.PENDING_CONFIRMATION)
 
     resp = api.get(
         "/api/slots",
@@ -61,7 +61,7 @@ def test_client_reserves_available_slot(api, db, wh, company, client_user, clien
         headers=client_h,
     )
     assert resp.status_code == 200
-    assert resp.json()["status"] == "BOOKED"
+    assert resp.json()["status"] == "PENDING_CONFIRMATION"
 
 
 def test_client_reserves_any_slot_with_type(api, db, wh, company, client_user, client_h):
@@ -73,7 +73,7 @@ def test_client_reserves_any_slot_with_type(api, db, wh, company, client_user, c
         headers=client_h,
     )
     assert resp.status_code == 200
-    assert resp.json()["status"] == "BOOKED"
+    assert resp.json()["status"] == "PENDING_CONFIRMATION"
 
 
 def test_reserve_any_slot_without_type_fails(api, db, wh, company, client_user, client_h):
@@ -89,7 +89,7 @@ def test_reserve_any_slot_without_type_fails(api, db, wh, company, client_user, 
 
 
 def test_reserve_already_booked_slot_fails(api, db, wh, company, client_user, client_h):
-    slot = make_slot(db, wh.id, status=models.SlotStatus.BOOKED)
+    slot = make_slot(db, wh.id, status=models.SlotStatus.PENDING_CONFIRMATION)
 
     resp = api.post(
         f"/api/slots/{slot.id}/reserve",
@@ -114,19 +114,19 @@ def test_admin_cannot_reserve_slot(api, db, wh, admin_h):
 # POST /api/slots/{id}/approve
 # ---------------------------------------------------------------------------
 
-def test_admin_approves_booked_slot(api, db, wh, company, client_user, admin_h):
+def test_admin_approves_pending_slot(api, db, wh, company, client_user, admin_h):
     slot = make_slot(
         db, wh.id,
-        status=models.SlotStatus.BOOKED,
+        status=models.SlotStatus.PENDING_CONFIRMATION,
         reserved_by=client_user.id,
     )
 
     resp = api.post(f"/api/slots/{slot.id}/approve", headers=admin_h)
     assert resp.status_code == 200
-    assert resp.json()["status"] == "APPROVED_WAITING_DETAILS"
+    assert resp.json()["status"] == "CONFIRMED"
 
 
-def test_approve_non_booked_slot_fails(api, db, wh, admin_h):
+def test_approve_non_pending_slot_fails(api, db, wh, admin_h):
     slot = make_slot(db, wh.id, status=models.SlotStatus.AVAILABLE)
 
     resp = api.post(f"/api/slots/{slot.id}/approve", headers=admin_h)
@@ -148,7 +148,7 @@ def test_admin_cancels_available_slot(api, db, wh, admin_h):
 def test_admin_cancels_booked_slot(api, db, wh, company, client_user, admin_h):
     slot = make_slot(
         db, wh.id,
-        status=models.SlotStatus.BOOKED,
+        status=models.SlotStatus.PENDING_CONFIRMATION,
         reserved_by=client_user.id,
     )
 
@@ -185,7 +185,7 @@ def test_admin_cannot_delete_slot(api, db, wh, admin_h):
 def test_superadmin_bulk_deletes_available_slots(api, db, wh, superadmin_h):
     make_slot(db, wh.id, status=models.SlotStatus.AVAILABLE)
     make_slot(db, wh.id, status=models.SlotStatus.AVAILABLE)
-    make_slot(db, wh.id, status=models.SlotStatus.BOOKED)
+    make_slot(db, wh.id, status=models.SlotStatus.PENDING_CONFIRMATION)
 
     resp = api.delete(
         "/api/slots",

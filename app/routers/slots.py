@@ -75,13 +75,13 @@ def _enrich_single_slot(slot: dict, supa: Client) -> SlotOut:
     )
 
 
-def _format_slot_from_maps(slot: dict, docks_map: dict, users_map: dict, companies_map: dict) -> SlotOut:
+def _format_slot_from_maps(slot: dict, docks_map: dict, users_map: dict, companies_map: dict, notices_map: Optional[dict] = None) -> SlotOut:
     """Helper dla list - używa danych pobranych hurtowo do mapowania bez zapytań N+1."""
     dock_alias = docks_map.get(slot.get("dock_id"))
-    
+
     reserved_by_alias = None
     reserved_by_company_alias = None
-    
+
     u_id = slot.get("reserved_by_user_id")
     if u_id and u_id in users_map:
         user_info = users_map[u_id]
@@ -89,6 +89,21 @@ def _format_slot_from_maps(slot: dict, docks_map: dict, users_map: dict, compani
         c_id = user_info.get("company_id")
         if c_id and c_id in companies_map:
             reserved_by_company_alias = companies_map[c_id]
+
+    notice = None
+    if notices_map:
+        n = notices_map.get(slot["id"])
+        if n:
+            notice = SlotNoticeOut(
+                numer_zlecenia=n["numer_zlecenia"],
+                referencja=n["referencja"],
+                rejestracja_auta=n["rejestracja_auta"],
+                rejestracja_naczepy=n["rejestracja_naczepy"],
+                ilosc_palet=n["ilosc_palet"],
+                kierowca_imie_nazwisko=n.get("kierowca_imie_nazwisko"),
+                kierowca_tel=n.get("kierowca_tel"),
+                uwagi=n.get("uwagi"),
+            )
 
     return SlotOut(
         id=slot["id"],
@@ -103,6 +118,7 @@ def _format_slot_from_maps(slot: dict, docks_map: dict, users_map: dict, compani
         reserved_by_user_id=u_id,
         reserved_by_alias=reserved_by_alias,
         reserved_by_company_alias=reserved_by_company_alias,
+        notice=notice,
     )
 
 
@@ -244,7 +260,14 @@ def list_slots(
             docks_data = supa.table("docks").select("id, alias").in_("id", dock_ids).execute().data
             docks_map = {d["id"]: d.get("alias") for d in docks_data}
 
-        return [_format_slot_from_maps(s, docks_map, users_map, companies_map) for s in slots]
+        # Dane awizacji dołączamy tylko dla admina/superadmina (klient nie powinien ich widzieć)
+        notices_map = None
+        if user.role in (Role.admin, Role.superadmin):
+            slot_ids = [s["id"] for s in slots]
+            notices_data = supa.table("slot_notices").select("*").in_("slot_id", slot_ids).execute().data
+            notices_map = {n["slot_id"]: n for n in notices_data}
+
+        return [_format_slot_from_maps(s, docks_map, users_map, companies_map, notices_map) for s in slots]
 
     except HTTPException:
         raise

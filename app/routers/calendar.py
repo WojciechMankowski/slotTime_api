@@ -21,7 +21,7 @@ class CalendarDaySummary(BaseModel):
     date: date
     total: int
     available: int
-    booked: int          # BOOKED + APPROVED_WAITING_DETAILS + RESERVED_CONFIRMED + CANCEL_PENDING
+    booked: int          # PENDING_CONFIRMATION + CONFIRMED + CANCEL_PENDING
     completed: int
     cancelled: int
 
@@ -63,9 +63,6 @@ def calendar_summary(
     BOOKED_STATUSES = {
         models.SlotStatus.PENDING_CONFIRMATION,
         models.SlotStatus.CONFIRMED,
-        models.SlotStatus.BOOKED,  # Legacy
-        models.SlotStatus.APPROVED_WAITING_DETAILS,  # Legacy
-        models.SlotStatus.RESERVED_CONFIRMED,  # Legacy
         models.SlotStatus.CANCEL_PENDING,
     }
 

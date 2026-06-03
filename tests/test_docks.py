@@ -121,7 +121,7 @@ def test_delete_dock_with_active_slot_blocked(api, db, wh, dock, superadmin_h):
     from app import models
     from tests.conftest import make_slot
 
-    make_slot(db, wh.id, status=models.SlotStatus.BOOKED, dock_id=dock.id)
+    make_slot(db, wh.id, status=models.SlotStatus.PENDING_CONFIRMATION, dock_id=dock.id)
 
     resp = api.delete(
         f"/api/docks/{dock.id}",

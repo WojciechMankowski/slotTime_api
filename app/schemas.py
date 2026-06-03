@@ -148,6 +148,7 @@ class SlotOut(BaseModel):
     reserved_by_user_id: Optional[int] = None
     reserved_by_alias: Optional[str] = None
     reserved_by_company_alias: Optional[str] = None
+    notice: Optional[SlotNoticeOut] = None
 
 class SlotWithNoticeOut(BaseModel):
     id: int
