@@ -23,6 +23,7 @@ def send_slot_event(
         reserved_by_id = slot.get("reserved_by_user_id")
         email_user = None
         reserved_by_company_alias = None
+        reserved_by_company_name = None
 
         if reserved_by_id:
             user_rows = supa.table("users").select("email, company_id").eq("id", reserved_by_id).execute().data
@@ -30,9 +31,10 @@ def send_slot_event(
                 email_user = user_rows[0].get("email")
                 c_id = user_rows[0].get("company_id")
                 if c_id:
-                    comp_rows = supa.table("companies").select("alias").eq("id", c_id).execute().data
+                    comp_rows = supa.table("companies").select("alias, name").eq("id", c_id).execute().data
                     if comp_rows:
                         reserved_by_company_alias = comp_rows[0].get("alias")
+                        reserved_by_company_name = comp_rows[0].get("name")
 
         numer_zlecenia = None
         referencja = None
@@ -73,6 +75,7 @@ def send_slot_event(
             "status": slot.get("status"),
             "reserved_by_user_id": reserved_by_id,
             "reserved_by_company_alias": reserved_by_company_alias,
+            "reserved_by_company_name": reserved_by_company_name,
             "user_id": triggered_by.id,
             "name_warehouse": wh.name,
             "username": triggered_by.username,
