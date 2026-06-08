@@ -22,7 +22,6 @@ def send_slot_event(
     try:
         reserved_by_id = slot.get("reserved_by_user_id")
         email_user = None
-        reserved_by_company_alias = None
         reserved_by_company_name = None
 
         if reserved_by_id:
@@ -31,9 +30,8 @@ def send_slot_event(
                 email_user = user_rows[0].get("email")
                 c_id = user_rows[0].get("company_id")
                 if c_id:
-                    comp_rows = supa.table("companies").select("alias, name").eq("id", c_id).execute().data
+                    comp_rows = supa.table("companies").select("name").eq("id", c_id).execute().data
                     if comp_rows:
-                        reserved_by_company_alias = comp_rows[0].get("alias")
                         reserved_by_company_name = comp_rows[0].get("name")
 
         numer_zlecenia = None
@@ -67,27 +65,18 @@ def send_slot_event(
         payload = {
             "event": event,
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "id": slot.get("id"),
             "start_dt": slot.get("start_dt"),
             "end_dt": slot.get("end_dt"),
-            "slot_type": slot.get("slot_type"),
-            "original_slot_type": slot.get("original_slot_type"),
             "status": slot.get("status"),
-            "reserved_by_user_id": reserved_by_id,
-            "reserved_by_company_alias": reserved_by_company_alias,
             "reserved_by_company_name": reserved_by_company_name,
-            "user_id": triggered_by.id,
-            "name_warehouse": wh.name,
-            "username": triggered_by.username,
-            "role": triggered_by.role.value,
-            "email_user": email_user,
-            "email_admin": email_admin,
             "order_number": numer_zlecenia,
             "referencja": referencja,
             "rejestracja_auta": rejestracja_auta,
             "rejestracja_naczepy": rejestracja_naczepy,
             "ilosc_palet": ilosc_palet,
             "kierowca_imie_nazwisko": kierowca_imie_nazwisko,
+            "email_user": email_user,
+            "email_admin": email_admin,
         }
 
         with httpx.Client(timeout=10) as client:
