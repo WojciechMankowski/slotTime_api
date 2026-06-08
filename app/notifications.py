@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from supabase import Client
 
 from .schemas import UserRow, WarehouseRow
-from .enums import Role
+from .enums import Role, CodePurpose
 from .config import settings
 
 logger = logging.getLogger(__name__)
@@ -90,3 +90,36 @@ def send_slot_event(
 
     except Exception as exc:
         logger.warning("send_slot_event failed [event=%s slot=%s]: %s", event, slot.get("id"), exc)
+
+
+def send_verification_code(email: str, name: str, purpose: CodePurpose, code: str) -> None:
+    """Wysyła kod weryfikacyjny do dedykowanego flow Power Automate.
+
+    Bezpieczna do użycia w BackgroundTasks — błędy są logowane, nie podnoszone.
+    Kod (plaintext) trafia wyłącznie do payloadu PA i nie jest logowany.
+    """
+    if not settings.POWER_AUTOMATE_CODE_URL:
+        logger.warning("send_verification_code: POWER_AUTOMATE_CODE_URL nie ustawiony — pomijam")
+        return
+
+    payload = {
+        "event": purpose.value,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "email": email,
+        "name": name,
+        "purpose": purpose.value,
+        "code": code,
+    }
+
+    try:
+        with httpx.Client(timeout=10) as client:
+            resp = client.post(settings.POWER_AUTOMATE_CODE_URL, json=payload)
+            if resp.is_error:
+                logger.warning(
+                    "send_verification_code HTTP %s [purpose=%s email=%s]: %s",
+                    resp.status_code, purpose.value, email, resp.text,
+                )
+            resp.raise_for_status()
+
+    except Exception as exc:
+        logger.warning("send_verification_code failed [purpose=%s email=%s]: %s", purpose.value, email, exc)

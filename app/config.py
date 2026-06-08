@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     SUPABASE_SERVICE_ROLE_KEY: str = ""
 
     POWER_AUTOMATE_URL: str = ""
+    POWER_AUTOMATE_CODE_URL: str = ""
 
     @property
     def cors_origins(self) -> List[str]:

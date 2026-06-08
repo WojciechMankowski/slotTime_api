@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 # Importujemy funkcję z pliku, w którym została zdefiniowana (np. supabase_client)
 from ..supabase_client import get_supabase
 from ..deps import require_role
 from ..verification import create_verification_code
+from ..notifications import send_verification_code
 from ..enums import CodePurpose
 from .. import models
 
@@ -67,6 +68,32 @@ def temp_create_verification_code(
     purpose: CodePurpose = CodePurpose.EMAIL_VERIFY,
     _user: models.User = Depends(require_role(models.Role.superadmin)),
 ):
-    """Chwilowy endpoint do ręcznego testu generowania kodu. Zwraca plaintext."""
+    """Chwilowy endpoint do ręcznego testu generowania kodu i wysyłki mailem.
+
+    Zwraca plaintext kodu oraz informację, czy mail został wysłany (Power Automate).
+    """
+    supa = get_supabase()
+    user_rows = supa.table("users").select("email, alias, username").eq("id", user_id).limit(1).execute().data
+    if not user_rows:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"error_code": "USER_NOT_FOUND", "user_id": user_id},
+        )
+    user_row = user_rows[0]
+
     code = create_verification_code(user_id, purpose)
-    return {"user_id": user_id, "purpose": purpose.value, "code": code}
+
+    email = user_row.get("email")
+    email_sent = False
+    if email:
+        name = user_row.get("alias") or user_row.get("username") or ""
+        send_verification_code(email, name, purpose, code)
+        email_sent = True
+
+    return {
+        "user_id": user_id,
+        "purpose": purpose.value,
+        "code": code,
+        "email": email,
+        "email_sent": email_sent,
+    }
