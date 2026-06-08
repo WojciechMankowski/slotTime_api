@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     JWT_EXPIRE_HOURS: int = 8
     JWT_REFRESH_DAYS: int = 7
 
+    VERIFICATION_CODE_EXPIRE_MINUTES: int = 10
+
     APP_CORS_ORIGINS: str = "http://localhost:5173,https://slot-time.vercel.app,https://volunteer-shed-girlfriend-app.trycloudflare.com"
 
     SUPABASE_URL: str = ""

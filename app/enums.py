@@ -7,6 +7,11 @@ class Role(str, enum.Enum):
     client = "client"
 
 
+class CodePurpose(str, enum.Enum):
+    PASSWORD_RESET = "password_reset"
+    EMAIL_VERIFY = "email_verify"
+
+
 class SlotType(str, enum.Enum):
     INBOUND = "INBOUND"
     OUTBOUND = "OUTBOUND"

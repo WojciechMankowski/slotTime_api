@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends
 # Importujemy funkcję z pliku, w którym została zdefiniowana (np. supabase_client)
 from ..supabase_client import get_supabase
 from ..deps import require_role
+from ..verification import create_verification_code
+from ..enums import CodePurpose
 from .. import models
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -56,3 +58,15 @@ def run_seed(_user: models.User = Depends(require_role(models.Role.superadmin)))
     import seed
     seed.run()
     return {"ok": True}
+
+
+# === TEMP: test create_verification_code — USUŃ po weryfikacji ===
+@router.post("/_temp/verification-code", summary="[TEMP] Wygeneruj kod weryfikacyjny")
+def temp_create_verification_code(
+    user_id: int,
+    purpose: CodePurpose = CodePurpose.EMAIL_VERIFY,
+    _user: models.User = Depends(require_role(models.Role.superadmin)),
+):
+    """Chwilowy endpoint do ręcznego testu generowania kodu. Zwraca plaintext."""
+    code = create_verification_code(user_id, purpose)
+    return {"user_id": user_id, "purpose": purpose.value, "code": code}
