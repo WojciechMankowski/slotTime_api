@@ -1,15 +1,17 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from supabase import Client
 from pydantic import BaseModel
 from collections import defaultdict
 from time import time
 
 from ..supabase_client import get_supabase
-from ..security import verify_password, create_access_token, create_refresh_token, decode_refresh_token
-from ..schemas import TokenOut, RefreshIn, RefreshOut
-from ..enums import Role
+from ..security import verify_password, get_password_hash, create_access_token, create_refresh_token, decode_refresh_token
+from ..schemas import TokenOut, RefreshIn, RefreshOut, ForgotPasswordIn, VerifyResetCodeIn, ResetPasswordIn
+from ..enums import Role, CodePurpose
+from ..verification import create_verification_code, verify_code
+from ..notifications import send_verification_code
 
 router = APIRouter(prefix="/api", tags=["auth"])
 
@@ -112,3 +114,59 @@ def refresh(data: RefreshIn, supa: Client = Depends(get_supabase)):
 
     new_access_token = create_access_token(user_id=user["id"], role=user["role"])
     return RefreshOut(access_token=new_access_token)
+
+
+def _find_user_id_by_email(supa: Client, email: str):
+    """Zwraca id użytkownika o danym emailu lub None. Podnosi 503 przy błędzie DB."""
+    try:
+        rows = supa.table("users").select("id, email, alias, username").eq("email", email).limit(1).execute().data
+    except Exception as e:
+        logging.error(f"User lookup by email error: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+    return rows[0] if rows else None
+
+
+@router.post("/forgot-password")
+def forgot_password(
+    data: ForgotPasswordIn,
+    request: Request,
+    background_tasks: BackgroundTasks,
+    supa: Client = Depends(get_supabase),
+):
+    ip = request.client.host if request.client else "unknown"
+    _check_rate_limit(ip)
+
+    user = _find_user_id_by_email(supa, data.email)
+    if user:
+        code = create_verification_code(user["id"], CodePurpose.PASSWORD_RESET)
+        name = user.get("alias") or user.get("username") or ""
+        background_tasks.add_task(
+            send_verification_code, data.email, name, CodePurpose.PASSWORD_RESET, code
+        )
+
+    # Zawsze ten sam wynik — nie zdradzamy, czy konto istnieje.
+    return {"ok": True}
+
+
+@router.post("/verify-reset-code")
+def verify_reset_code(data: VerifyResetCodeIn, supa: Client = Depends(get_supabase)):
+    user = _find_user_id_by_email(supa, data.email)
+    if not user or not verify_code(user["id"], CodePurpose.PASSWORD_RESET, data.code, consume=False):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error_code": "INVALID_CODE"})
+    return {"valid": True}
+
+
+@router.post("/reset-password")
+def reset_password(data: ResetPasswordIn, supa: Client = Depends(get_supabase)):
+    user = _find_user_id_by_email(supa, data.email)
+    if not user or not verify_code(user["id"], CodePurpose.PASSWORD_RESET, data.code, consume=True):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error_code": "INVALID_CODE"})
+
+    try:
+        supa.table("users").update({"password_hash": get_password_hash(data.new_password)}) \
+            .eq("id", user["id"]).execute()
+    except Exception as e:
+        logging.error(f"Reset password update error: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+
+    return {"ok": True}

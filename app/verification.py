@@ -46,3 +46,44 @@ def create_verification_code(user_id: int, purpose: CodePurpose) -> str:
     }).execute()
 
     return code
+
+
+def verify_code(user_id: int, purpose: CodePurpose, code: str, *, consume: bool) -> bool:
+    """Sprawdza najnowszy aktywny kod (user_id, purpose).
+
+    Zwraca True, jeśli kod jest poprawny, nieprzeterminowany i w limicie prób.
+    Przy niepoprawnym kodzie inkrementuje licznik prób. Gdy `consume=True`
+    i kod poprawny — oznacza go jako zużyty (`consumed_at`).
+    """
+    now = datetime.now(timezone.utc)
+    supa = get_supabase()
+
+    rows = supa.table(_TABLE).select("*") \
+        .eq("user_id", user_id) \
+        .eq("purpose", purpose.value) \
+        .is_("consumed_at", None) \
+        .order("created_at", desc=True) \
+        .limit(1) \
+        .execute().data
+
+    if not rows:
+        return False
+
+    row = rows[0]
+
+    if datetime.fromisoformat(row["expires_at"]) < now:
+        return False
+
+    if row["attempts"] >= settings.VERIFICATION_CODE_MAX_ATTEMPTS:
+        return False
+
+    if not pwd_context.verify(code, row["code_hash"]):
+        supa.table(_TABLE).update({"attempts": row["attempts"] + 1}) \
+            .eq("id", row["id"]).execute()
+        return False
+
+    if consume:
+        supa.table(_TABLE).update({"consumed_at": now.isoformat()}) \
+            .eq("id", row["id"]).execute()
+
+    return True

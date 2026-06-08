@@ -45,6 +45,18 @@ class RefreshIn(BaseModel):
 class RefreshOut(BaseModel):
     access_token: str
 
+class ForgotPasswordIn(BaseModel):
+    email: str
+
+class VerifyResetCodeIn(BaseModel):
+    email: str
+    code: str
+
+class ResetPasswordIn(BaseModel):
+    email: str
+    code: str
+    new_password: str = Field(min_length=8)
+
 class WarehouseOut(BaseModel):
     id: int
     name: str
