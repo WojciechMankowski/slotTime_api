@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
 from supabase import Client
 from datetime import date, datetime, time as dtime
@@ -8,6 +10,8 @@ from ..deps import get_current_user, require_role, get_context_warehouse
 from ..schemas import SlotNoticeOut, SlotNoticeCreate, SlotWithNoticeOut, UserRow, WarehouseRow
 from ..enums import Role, SlotStatus
 from ..notifications import send_slot_event
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/slots", tags=["notices"])
 
@@ -132,6 +136,7 @@ def list_notices(
     except HTTPException:
         raise
     except Exception:
+        logger.exception("[list_notices] date_from=%s date_to=%s wh=%s", date_from, date_to, wh.id)
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -173,6 +178,7 @@ def get_notice(
     except HTTPException:
         raise
     except Exception:
+        logger.exception("[get_notice] slot_id=%s", slot_id)
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
 
@@ -213,8 +219,9 @@ def post_notice(
 
         # Dla PENDING_CONFIRMATION — nie zmieniamy statusu, dane awizacyjne zaktualizowane
         return SlotNoticeOut(**payload)
-        
+
     except HTTPException:
         raise
     except Exception:
+        logger.exception("[post_notice] slot_id=%s", slot_id)
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})

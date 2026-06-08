@@ -37,14 +37,15 @@ def _enrich_single_user(user: dict, supa: Client) -> UserOut:
             warehouse_alias = wh_rows[0].get("alias")
             
     return UserOut(
-        id=user["id"], 
-        username=user.get("username"), 
+        id=user["id"],
+        username=user.get("username"),
         email=user.get("email"),
-        alias=user.get("alias"), 
+        alias=user.get("alias"),
         role=user.get("role"),
-        warehouse_id=w_id, 
+        lang=user.get("lang", "pl"),
+        warehouse_id=w_id,
         company_id=c_id,
-        company_alias=company_alias, 
+        company_alias=company_alias,
         warehouse_alias=warehouse_alias,
     )
 
@@ -67,14 +68,15 @@ def _format_user_from_maps(user: dict, companies_map: dict, warehouses_map: dict
         warehouse_alias = warehouses_map[w_id].get("alias")
 
     return UserOut(
-        id=user["id"], 
-        username=user.get("username"), 
+        id=user["id"],
+        username=user.get("username"),
         email=user.get("email"),
-        alias=user.get("alias"), 
+        alias=user.get("alias"),
         role=user.get("role"),
-        warehouse_id=w_id, 
+        lang=user.get("lang", "pl"),
+        warehouse_id=w_id,
         company_id=c_id,
-        company_alias=company_alias, 
+        company_alias=company_alias,
         warehouse_alias=warehouse_alias,
     )
 
@@ -179,6 +181,7 @@ def create_user(
             "password_hash": get_password_hash(data.password),
             "alias": data.alias,
             "email": data.email,
+            "lang": data.lang,
         }
 
         if actor.role == Role.admin:

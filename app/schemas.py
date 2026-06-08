@@ -14,6 +14,7 @@ class UserRow(BaseModel):
     warehouse_id: Optional[int] = None
     company_id: Optional[int] = None
     password_hash: str
+    lang: str = 'pl'
 
 
 class WarehouseRow(BaseModel):
@@ -82,8 +83,12 @@ class MeOut(BaseModel):
     email: Optional[str] = None
     alias: str
     role: Role
+    lang: str = 'pl'
     company: Optional[CompanyOut] = None
     warehouse: WarehouseOut
+
+class MePatch(BaseModel):
+    lang: Literal['pl', 'en']
 
 class UserOut(BaseModel):
     id: int
@@ -91,6 +96,7 @@ class UserOut(BaseModel):
     email: Optional[str] = None
     alias: str
     role: Role
+    lang: str = 'pl'
     warehouse_id: Optional[int] = None
     company_id: Optional[int] = None
     company_alias: Optional[str] = None
@@ -102,6 +108,7 @@ class UserCreate(BaseModel):
     password: str
     alias: str
     role: Role
+    lang: Literal['pl', 'en'] = 'pl'
     company_id: Optional[int] = None
     warehouse_id: Optional[int] = None  # only for superadmin creating admin
 
@@ -255,6 +262,7 @@ class UserPatch(BaseModel):
     alias: Optional[str] = None
     password: Optional[str] = None
     role: Optional[Role] = None
+    lang: Optional[Literal['pl', 'en']] = None
     company_id: Optional[int] = None
 
 class SlotPatch(BaseModel):
