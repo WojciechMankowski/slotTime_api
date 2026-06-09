@@ -24,6 +24,20 @@ def create_refresh_token(*, user_id: int) -> str:
     to_encode = {"sub": str(user_id), "exp": expire, "type": "refresh"}
     return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
+def create_2fa_token(*, user_id: int) -> str:
+    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.TWO_FACTOR_TOKEN_EXPIRE_MINUTES)
+    to_encode = {"sub": str(user_id), "exp": expire, "type": "2fa_pending"}
+    return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
+
+def decode_2fa_token(token: str) -> dict:
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        if payload.get("type") != "2fa_pending":
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"error_code": "INVALID_TOKEN"})
+        return payload
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"error_code": "INVALID_TOKEN"})
+
 def decode_token(token: str) -> dict:
     try:
         return jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])

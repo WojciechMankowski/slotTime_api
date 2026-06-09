@@ -3,7 +3,7 @@ from supabase import Client
 
 from ..supabase_client import get_supabase
 from ..deps import get_current_user
-from ..schemas import MeOut, MePatch, CompanyOut, WarehouseOut, UserRow
+from ..schemas import MeOut, MePatch, Me2FAPatch, CompanyOut, WarehouseOut, UserRow
 from ..enums import Role
 
 router = APIRouter(prefix="/api", tags=["me"])
@@ -51,6 +51,7 @@ def _build_me(user: UserRow, supa: Client) -> MeOut:
                 alias=user.alias,
                 role=user.role,
                 lang=user.lang,
+                two_factor_enabled=user.two_factor_enabled,
                 company=None,
                 warehouse=warehouse
             )
@@ -78,6 +79,7 @@ def _build_me(user: UserRow, supa: Client) -> MeOut:
             alias=user.alias,
             role=user.role,
             lang=user.lang,
+            two_factor_enabled=user.two_factor_enabled,
             company=company_out,
             warehouse=wh_out
         )
@@ -111,4 +113,28 @@ def patch_me(
         )
 
     user.lang = data.lang
+    return _build_me(user, supa)
+
+
+@router.patch("/me/2fa", response_model=MeOut)
+def patch_me_2fa(
+    data: Me2FAPatch,
+    user: UserRow = Depends(get_current_user),
+    supa: Client = Depends(get_supabase),
+):
+    if data.two_factor_enabled and not user.email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error_code": "EMAIL_REQUIRED_FOR_2FA"},
+        )
+
+    try:
+        supa.table("users").update({"two_factor_enabled": data.two_factor_enabled}).eq("id", user.id).execute()
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={"error_code": "DATABASE_ERROR"},
+        )
+
+    user.two_factor_enabled = data.two_factor_enabled
     return _build_me(user, supa)

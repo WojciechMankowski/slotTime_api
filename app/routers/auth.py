@@ -7,8 +7,8 @@ from collections import defaultdict
 from time import time
 
 from ..supabase_client import get_supabase
-from ..security import verify_password, get_password_hash, create_access_token, create_refresh_token, decode_refresh_token
-from ..schemas import TokenOut, RefreshIn, RefreshOut, ForgotPasswordIn, VerifyResetCodeIn, ResetPasswordIn
+from ..security import verify_password, get_password_hash, create_access_token, create_refresh_token, decode_refresh_token, create_2fa_token, decode_2fa_token
+from ..schemas import TokenOut, RefreshIn, RefreshOut, ForgotPasswordIn, VerifyResetCodeIn, ResetPasswordIn, Login2FAChallengeOut, Verify2FAIn
 from ..enums import Role, CodePurpose
 from ..verification import create_verification_code, verify_code
 from ..notifications import send_verification_code
@@ -48,11 +48,32 @@ class LoginIn(BaseModel):
     password: str
 
 
-@router.post("/login", response_model=TokenOut)
-def login(data: LoginIn, request: Request, supa: Client = Depends(get_supabase)):
+def _assert_company_active(supa: Client, user: dict) -> None:
+    """Rzuca 403 COMPANY_INACTIVE, jeśli firma użytkownika jest nieaktywna."""
+    if user.get("company_id") is None:
+        return
+    try:
+        company_rows = supa.table("companies").select("is_active").eq("id", user["company_id"]).execute().data
+        if company_rows and not company_rows[0].get("is_active"):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={"error_code": "COMPANY_INACTIVE"})
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Supabase company fetch error: {str(e)}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+
+
+def _issue_tokens(user: dict) -> TokenOut:
+    access_token = create_access_token(user_id=user["id"], role=user["role"])
+    refresh_token = create_refresh_token(user_id=user["id"])
+    return TokenOut(access_token=access_token, refresh_token=refresh_token, role=Role(user["role"]))
+
+
+@router.post("/login", response_model=None)
+def login(data: LoginIn, request: Request, background_tasks: BackgroundTasks, supa: Client = Depends(get_supabase)):
     ip = request.client.host if request.client else "unknown"
     _check_rate_limit(ip)
-    
+
     try:
         rows = supa.table("users").select("*").eq("username", data.username).execute().data
     except Exception as e:
@@ -60,30 +81,51 @@ def login(data: LoginIn, request: Request, supa: Client = Depends(get_supabase))
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR", "message": str(e)})
 
     user = rows[0] if rows else None
-    
+
     # Zabezpieczenie przed atakami czasowymi
     hash_to_check = user["password_hash"] if user else _DUMMY_HASH
     is_password_valid = verify_password(data.password, hash_to_check)
 
     if not user or not is_password_valid:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, 
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail={"error_code": "BAD_CREDENTIALS", 'isPass': is_password_valid})
-        
-    if user["company_id"] is not None:
-        try:
-            company_rows = supa.table("companies").select("is_active").eq("id", user["company_id"]).execute().data
-            if company_rows and not company_rows[0].get("is_active"):
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail={"error_code": "COMPANY_INACTIVE"})
-        except HTTPException:
-            raise
-        except Exception as e:
-            logging.error(f"Supabase company fetch error: {str(e)}")
-            raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
 
-    access_token = create_access_token(user_id=user["id"], role=user["role"])
-    refresh_token = create_refresh_token(user_id=user["id"])
-    
-    return TokenOut(access_token=access_token, refresh_token=refresh_token, role=Role(user["role"]))
+    _assert_company_active(supa, user)
+
+    # Drugi etap logowania: wysyłamy kod e-mailem i zwracamy krótkożyjący pre-auth token.
+    if user.get("two_factor_enabled"):
+        code = create_verification_code(user["id"], CodePurpose.EMAIL_VERIFY)
+        name = user.get("alias") or user.get("username") or ""
+        if user.get("email"):
+            background_tasks.add_task(send_verification_code, user["email"], name, CodePurpose.EMAIL_VERIFY, code)
+        return Login2FAChallengeOut(pre_auth_token=create_2fa_token(user_id=user["id"]))
+
+    return _issue_tokens(user)
+
+
+@router.post("/login/verify", response_model=TokenOut)
+def login_verify(data: Verify2FAIn, request: Request, supa: Client = Depends(get_supabase)):
+    ip = request.client.host if request.client else "unknown"
+    _check_rate_limit(ip)
+
+    user_id = int(decode_2fa_token(data.pre_auth_token)["sub"])
+
+    if not verify_code(user_id, CodePurpose.EMAIL_VERIFY, data.code, consume=True):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"error_code": "INVALID_CODE"})
+
+    try:
+        rows = supa.table("users").select("*").eq("id", user_id).execute().data
+    except Exception as e:
+        logging.error(f"Login verify DB error for user '{user_id}': {type(e).__name__}: {e}")
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+
+    if not rows:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail={"error_code": "INVALID_TOKEN"})
+
+    user = rows[0]
+    _assert_company_active(supa, user)
+
+    return _issue_tokens(user)
 
 
 @router.post("/refresh", response_model=RefreshOut)

@@ -15,6 +15,7 @@ class UserRow(BaseModel):
     company_id: Optional[int] = None
     password_hash: str
     lang: str = 'pl'
+    two_factor_enabled: bool = False
 
 
 class WarehouseRow(BaseModel):
@@ -44,6 +45,14 @@ class RefreshIn(BaseModel):
 
 class RefreshOut(BaseModel):
     access_token: str
+
+class Login2FAChallengeOut(BaseModel):
+    two_factor_required: bool = True
+    pre_auth_token: str
+
+class Verify2FAIn(BaseModel):
+    pre_auth_token: str
+    code: str
 
 class ForgotPasswordIn(BaseModel):
     email: str
@@ -96,11 +105,15 @@ class MeOut(BaseModel):
     alias: str
     role: Role
     lang: str = 'pl'
+    two_factor_enabled: bool = False
     company: Optional[CompanyOut] = None
     warehouse: WarehouseOut
 
 class MePatch(BaseModel):
     lang: Literal['pl', 'en']
+
+class Me2FAPatch(BaseModel):
+    two_factor_enabled: bool
 
 class UserOut(BaseModel):
     id: int
@@ -113,6 +126,7 @@ class UserOut(BaseModel):
     company_id: Optional[int] = None
     company_alias: Optional[str] = None
     warehouse_alias: Optional[str] = None
+    two_factor_enabled: bool = False
 
 class UserCreate(BaseModel):
     username: str
@@ -276,6 +290,7 @@ class UserPatch(BaseModel):
     role: Optional[Role] = None
     lang: Optional[Literal['pl', 'en']] = None
     company_id: Optional[int] = None
+    two_factor_enabled: Optional[bool] = None
 
 class SlotPatch(BaseModel):
     slot_type: Optional[SlotType] = None

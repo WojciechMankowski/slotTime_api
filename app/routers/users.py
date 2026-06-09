@@ -47,6 +47,7 @@ def _enrich_single_user(user: dict, supa: Client) -> UserOut:
         company_id=c_id,
         company_alias=company_alias,
         warehouse_alias=warehouse_alias,
+        two_factor_enabled=user.get("two_factor_enabled", False),
     )
 
 
@@ -78,6 +79,7 @@ def _format_user_from_maps(user: dict, companies_map: dict, warehouses_map: dict
         company_id=c_id,
         company_alias=company_alias,
         warehouse_alias=warehouse_alias,
+        two_factor_enabled=user.get("two_factor_enabled", False),
     )
 
 
@@ -278,6 +280,11 @@ def patch_user(
         payload = data.model_dump(exclude_unset=True)
         if not payload:
             return _enrich_single_user(user, supa)
+
+        if payload.get("two_factor_enabled"):
+            effective_email = payload["email"] if "email" in payload else user.get("email")
+            if not effective_email:
+                raise HTTPException(status_code=400, detail={"error_code": "EMAIL_REQUIRED_FOR_2FA"})
 
         if "username" in payload:
             taken = (

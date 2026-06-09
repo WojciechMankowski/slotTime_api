@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     VERIFICATION_CODE_EXPIRE_MINUTES: int = 10
     VERIFICATION_CODE_MAX_ATTEMPTS: int = 5
 
+    TWO_FACTOR_TOKEN_EXPIRE_MINUTES: int = 5
+
     APP_CORS_ORIGINS: str = "http://localhost:5173,https://slot-time.vercel.app,https://volunteer-shed-girlfriend-app.trycloudflare.com"
 
     SUPABASE_URL: str = ""
