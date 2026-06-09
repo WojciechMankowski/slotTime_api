@@ -24,6 +24,8 @@ class CalendarDaySummary(BaseModel):
     booked: int          # PENDING_CONFIRMATION + CONFIRMED + CANCEL_PENDING
     completed: int
     cancelled: int
+    inbound: int         # wszystkie sloty INBOUND (niezależnie od statusu)
+    outbound: int        # wszystkie sloty OUTBOUND (niezależnie od statusu)
 
     model_config = {"from_attributes": True}
 
@@ -45,7 +47,7 @@ def calendar_summary(
     # Pobieramy tylko potrzebne kolumny, aby zminimalizować transfer danych
     response = (
         supa.table("slots")
-        .select("start_dt, status")
+        .select("start_dt, status, slot_type")
         .eq("warehouse_id", wh.id)
         .gte("start_dt", start_dt.isoformat())
         .lte("start_dt", end_dt.isoformat())
@@ -57,7 +59,7 @@ def calendar_summary(
     agg: dict[date, dict] = {}
     d = date_from
     while d <= date_to:
-        agg[d] = {"total": 0, "available": 0, "booked": 0, "completed": 0, "cancelled": 0}
+        agg[d] = {"total": 0, "available": 0, "booked": 0, "completed": 0, "cancelled": 0, "inbound": 0, "outbound": 0}
         d += timedelta(days=1)
 
     BOOKED_STATUSES = {
@@ -81,7 +83,13 @@ def calendar_summary(
             continue  # Pomijamy w przypadku nieznanego statusu w bazie
             
         agg[day]["total"] += 1
-        
+
+        # Liczniki kierunku — wszystkie sloty, niezależnie od statusu (ANY pomijamy)
+        if row.get("slot_type") == models.SlotType.INBOUND:
+            agg[day]["inbound"] += 1
+        elif row.get("slot_type") == models.SlotType.OUTBOUND:
+            agg[day]["outbound"] += 1
+
         if status == models.SlotStatus.AVAILABLE:
             agg[day]["available"] += 1
         elif status in BOOKED_STATUSES:
