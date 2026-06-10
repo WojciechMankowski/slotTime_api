@@ -68,6 +68,7 @@ def send_slot_event(
             "start_dt": slot.get("start_dt"),
             "end_dt": slot.get("end_dt"),
             "status": slot.get("status"),
+            "slot_type": slot.get("slot_type"),
             "reserved_by_company_name": reserved_by_company_name,
             "order_number": numer_zlecenia,
             "referencja": referencja,
