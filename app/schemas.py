@@ -171,7 +171,6 @@ class SlotNoticeCreate(SlotNoticeOut):
 class SlotEventPayload(BaseModel):
     """Payload slotu w formacie Power Automate (power_automat.json) — zwracany przez endpoint pull."""
     event: str
-    timestamp: str
     start_dt: Optional[str] = None
     end_dt: Optional[str] = None
     status: Optional[str] = None

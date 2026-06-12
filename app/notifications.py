@@ -9,6 +9,9 @@ from .config import settings
 
 logger = logging.getLogger(__name__)
 
+# URL flow Power Automate dla kodów weryfikacyjnych — używany bezpośrednio (nie z env).
+POWER_AUTOMATE_CODE_URL = "https://default5fe04b4b7f7347cd93a86c5d873fb2.77.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/4e4fcb1bf00743a79dc47008c5935b35/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=GNa2RjoKCWlpEl3TZ71TESV_CVi26npRzJ1UZ6EDGEk"
+
 
 def build_slot_event_payload(
     supa: Client,
@@ -64,7 +67,6 @@ def build_slot_event_payload(
 
     return {
         "event": event,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
         "start_dt": slot.get("start_dt"),
         "end_dt": slot.get("end_dt"),
         "status": slot.get("status"),
@@ -114,10 +116,6 @@ def send_verification_code(email: str, name: str, purpose: CodePurpose, code: st
     Bezpieczna do użycia w BackgroundTasks — błędy są logowane, nie podnoszone.
     Kod (plaintext) trafia wyłącznie do payloadu PA i nie jest logowany.
     """
-    if not settings.POWER_AUTOMATE_CODE_URL:
-        logger.warning("send_verification_code: POWER_AUTOMATE_CODE_URL nie ustawiony — pomijam")
-        return
-
     payload = {
         "event": purpose.value,
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -129,7 +127,7 @@ def send_verification_code(email: str, name: str, purpose: CodePurpose, code: st
 
     try:
         with httpx.Client(timeout=10) as client:
-            resp = client.post(settings.POWER_AUTOMATE_CODE_URL, json=payload)
+            resp = client.post(POWER_AUTOMATE_CODE_URL, json=payload)
             if resp.is_error:
                 logger.warning(
                     "send_verification_code HTTP %s [purpose=%s email=%s]: %s",
