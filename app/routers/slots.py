@@ -22,13 +22,14 @@ from ..schemas import (
     SlotStatusPatch,
     SlotWithNoticeOut,
     SlotNoticeOut,
+    SlotEventPayload,
     UserRow,
     WarehouseRow,
 )
 from ..enums import Role, SlotType, SlotStatus
 
 logger = logging.getLogger(__name__)
-from ..notifications import send_slot_event
+from ..notifications import send_slot_event, build_slot_event_payload
 
 router = APIRouter(prefix="/api/slots", tags=["slots"])
 
@@ -352,6 +353,34 @@ def list_archive(
     except Exception as e:
         logger.error("[archive ERROR] %s", e, exc_info=True)
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail={"error_code": "DATABASE_ERROR"})
+
+
+# =========================================================
+# PAYLOAD (pull w formacie Power Automate)
+# =========================================================
+
+@router.get(
+    "/{slot_id}/payload",
+    response_model=SlotEventPayload,
+    dependencies=[Depends(require_role(Role.admin, Role.superadmin))],
+)
+def get_slot_payload(
+    slot_id: int,
+    wh: WarehouseRow = Depends(get_context_warehouse),
+    supa: Client = Depends(get_supabase),
+):
+    """Zwraca dane slotu po ID w formacie power_automat.json (event = bieżący status)."""
+    try:
+        slot_rows = supa.table("slots").select("*").eq("id", slot_id).execute().data
+        slot = slot_rows[0] if slot_rows else None
+        if not slot or slot.get("warehouse_id") != wh.id:
+            raise HTTPException(status_code=404, detail={"error_code": "SLOT_NOT_FOUND"})
+        return build_slot_event_payload(supa, event=slot.get("status"), slot=slot, wh=wh)
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("[get_slot_payload] slot_id=%s", slot_id)
+        raise HTTPException(status_code=503, detail={"error_code": "DATABASE_ERROR"})
 
 
 # =========================================================
