@@ -93,9 +93,9 @@ def send_slot_event(
     """Buduje payload i wysyła GET do Power Automate. Wywoływana z BackgroundTasks."""
     logger.info("send_slot_event: event=%s slot=%s", event, slot.get("id"))
     try:
-        # Po zmianie do PA leci wyłącznie id slotu — pełne dane PA dociąga
-        # przez GET /api/slots/{id}/payload (build_slot_event_payload).
-        payload = {"id": slot.get("id")}
+        # Do PA leci pełny payload w formacie power_automat.json
+        # (ta sama struktura co GET /api/slots/{id}/payload).
+        payload = build_slot_event_payload(supa, event=event, slot=slot, wh=wh)
 
         with httpx.Client(timeout=10) as client:
             resp = client.post(settings.POWER_AUTOMATE_URL, json=payload)
