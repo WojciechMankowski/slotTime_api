@@ -413,6 +413,10 @@ def generate_slots(
         d = data.date_from
         
         while d <= data.date_to:
+            if data.skip_weekends and d.weekday() >= 5:
+                d += timedelta(days=1)
+                continue
+
             day_start = datetime.combine(d, start_time, tzinfo=WARSAW)
             day_end = datetime.combine(d, end_time, tzinfo=WARSAW)
 

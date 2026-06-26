@@ -246,6 +246,8 @@ class SlotGenerateIn(BaseModel):
 
     parallel_slots: Optional[int] = 1
 
+    skip_weekends: Optional[bool] = False
+
 class SlotGenerateDayReport(BaseModel):
     date: date
     requested: int
